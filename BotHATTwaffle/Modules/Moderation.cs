@@ -52,6 +52,8 @@ namespace BotHATTwaffle.Modules
             });
         }
 
+
+        //TODO: Rewrite these are the settings module is rewritten. Get the values from there instead of from the mute command.
         public void SetMuteRole(SocketRole inMuteRole)
         {
             muteRole = inMuteRole;
@@ -81,6 +83,16 @@ namespace BotHATTwaffle.Modules
         {
             _mod = mod;
         }
+
+        //TODO: Shutdown Command.
+        //Safely shutdown the bot. Deletes the Playtest Announcement message so it can be rebuilt next load.
+        //This will eventually save any pending information to a file
+
+
+        //TODO: Announce Command
+        //Posts announcement to Announcements channel. Will need to be responsive
+        //so it can prompt people for: title, description, ect... Then use embed builder to post it.
+        //Have a time limit on the module so it can auto remove after X amount of time.
 
         [Command("mute")]
         [Summary("`>mute [@user]` Mutes someone.")]

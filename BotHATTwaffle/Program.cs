@@ -185,7 +185,9 @@ public class Program
             await context.Channel.SendMessageAsync(result.ErrorReason);
         }
     }
-
+    
+    //TODO: Move to its own service class that I can DI where needed.
+    //Rewrite to be easier to add new keys, and get new keys
     private Dictionary<string, string> ReadSettings()
     {
         string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;

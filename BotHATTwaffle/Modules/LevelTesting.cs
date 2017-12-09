@@ -13,8 +13,8 @@ namespace BotHATTwaffle.Modules
     {
         RestUserMessage announceMessage = null;
         public GoogleCalendar _googleCalendar;
-        string[] lastEventInfo;
-        string[] currentEventInfo;
+        public string[] lastEventInfo;
+        public string[] currentEventInfo;
         Boolean alertedHour = false;
         Boolean alertedStart = false;
         int calUpdateTicks = 2;
@@ -275,7 +275,12 @@ namespace BotHATTwaffle.Modules
         [Alias("up")]
         public async Task UpcomingAsync()
         {
-            await ReplyAsync("", false, _levelTesting.FormatPlaytestInformationAsync(_levelTesting._googleCalendar.GetEvents(), true));
+            //Purges last and current stored info about the test. This is a easy way to reset the stored info manually
+            //if something happens and the announcement glitches out.
+            _levelTesting.currentEventInfo = _levelTesting._googleCalendar.GetEvents();
+            _levelTesting.lastEventInfo = _levelTesting.currentEventInfo;
+
+            await ReplyAsync("", false, _levelTesting.FormatPlaytestInformationAsync(_levelTesting.currentEventInfo, true));
         }
     }
 }
