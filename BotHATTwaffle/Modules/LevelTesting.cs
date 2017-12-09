@@ -135,8 +135,6 @@ namespace BotHATTwaffle.Modules
                             x.Mentionable = true;
                         });
                         Task.Delay(1000);
-                        Program.testingChannel.SendMessageAsync("", false, FormatPlaytestInformationAsync(currentEventInfo, false));
-                        Task.Delay(1000);
                         Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
                         $"\n**Playtest starting now!** `connect {eventInfo[10]}`");
                         Task.Delay(1000);
@@ -167,8 +165,6 @@ namespace BotHATTwaffle.Modules
                     Task.Delay(1000);
                     Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
                             $"\n**Playtest starting in 1 hour**");
-                    Task.Delay(1000);
-                    Program.testingChannel.SendMessageAsync("", false, FormatPlaytestInformationAsync(currentEventInfo, false));
                     Task.Delay(1000);
                     Program.playTesterRole.ModifyAsync(x =>
                     {
