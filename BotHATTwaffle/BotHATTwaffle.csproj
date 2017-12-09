@@ -185,7 +185,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="client_secret.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
