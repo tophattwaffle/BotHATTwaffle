@@ -126,7 +126,7 @@ namespace BotHATTwaffle.Modules
                 //Check if we need to adjust the time until for after a test starts.
                 if (time.CompareTo(DateTime.Now) < 0)
                 {
-                    timeLeftStr = $"Started: {timeLeft.ToString(@"dd\.hh\:mm")} ago!";
+                    timeLeftStr = $"Started: {timeLeft.ToString("d'D 'h'H 'm'M'").TrimStart(' ', 'D', 'H', '0')} ago!";
                     if(!userCall && !alertedStart) //Prevents user calls for upcoming from sending alert message.
                     {
                         alertedStart = true;
@@ -137,7 +137,7 @@ namespace BotHATTwaffle.Modules
                 }
                 else
                 {
-                    timeLeftStr = timeLeft.ToString(@"dd\.hh\:mm");
+                    timeLeftStr = timeLeft.ToString("d'D 'h'H 'm'M'").TrimStart(' ', 'D', 'H', '0');
                 }
 
                 //Let's check if we should be announcing a playtest. Easier to do it here since the variables are already computed.
