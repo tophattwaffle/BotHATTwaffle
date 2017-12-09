@@ -126,13 +126,26 @@ namespace BotHATTwaffle.Modules
                 //Check if we need to adjust the time until for after a test starts.
                 if (time.CompareTo(DateTime.Now) < 0)
                 {
-                    timeLeftStr = $"Started: {timeLeft.ToString("d'D 'h'H 'm'M'").TrimStart(' ', 'D', 'H', '0')} ago!";
+                    timeLeftStr = $"Started: {timeLeft.ToString("h'H 'm'M'")} ago!";
                     if(!userCall && !alertedStart) //Prevents user calls for upcoming from sending alert message.
                     {
                         alertedStart = true;
+                        Program.playTesterRole.ModifyAsync(x =>
+                        {
+                            x.Mentionable = true;
+                        });
+                        Task.Delay(500);
                         Program.testingChannel.SendMessageAsync("", false, FormatPlaytestInformationAsync(currentEventInfo, false));
+                        Task.Delay(500);
                         Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
-                            $"\n**Playtest starting now!** `connect {eventInfo[10]}`");
+                        $"\n**Playtest starting now!** `connect {eventInfo[10]}`");
+                        Task.Delay(500);
+                        alertedStart = true;
+                        Task.Delay(500);
+                        Program.playTesterRole.ModifyAsync(x =>
+                        {
+                            x.Mentionable = false;
+                        });
                     }
                 }
                 else
@@ -147,9 +160,20 @@ namespace BotHATTwaffle.Modules
                 if (timeCompare > 0 && !alertedHour)
                 {
                     alertedHour = true;
+                    Program.playTesterRole.ModifyAsync(x =>
+                    {
+                        x.Mentionable = true;
+                    });
+                    Task.Delay(500);
                     Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
                             $"\n**Playtest starting in 1 hour**");
+                    Task.Delay(500);
                     Program.testingChannel.SendMessageAsync("", false, FormatPlaytestInformationAsync(currentEventInfo, false));
+                    Task.Delay(500);
+                    Program.playTesterRole.ModifyAsync(x =>
+                    {
+                        x.Mentionable = false;
+                    });
                 }
 
 
