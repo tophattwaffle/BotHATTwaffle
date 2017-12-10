@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 namespace BotHATTwaffle.Modules
 {
     public class Information : ModuleBase<SocketCommandContext>

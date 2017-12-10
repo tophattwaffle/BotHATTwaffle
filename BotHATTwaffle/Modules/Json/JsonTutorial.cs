@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 
-namespace TestHATTwaffle
+
+namespace BotHATTwaffle.Modules.Json
 {
     class JsonTutorial
     {

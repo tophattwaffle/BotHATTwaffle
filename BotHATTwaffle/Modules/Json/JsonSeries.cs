@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TestHATTwaffle
+namespace BotHATTwaffle.Modules.Json
 {
     class JsonSeries
     {

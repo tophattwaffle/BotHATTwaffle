@@ -181,6 +181,7 @@
     <Compile Include="Modules\Json\JsonTutorial.cs" />
     <Compile Include="Modules\LevelTesting.cs" />
     <Compile Include="Modules\Moderation.cs" />
+    <Compile Include="Modules\TimerService.cs" />
     <Compile Include="Modules\UtilityService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
