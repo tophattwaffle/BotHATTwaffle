@@ -85,7 +85,7 @@ namespace BotHATTwaffle
                 }
             }
             //hammer troubleshooting
-            if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5" || searchSeries.ToLower() == "all")
+            if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5")
             {
                 tempTutorials.Clear();
                 tempTutorials.TrimExcess();
