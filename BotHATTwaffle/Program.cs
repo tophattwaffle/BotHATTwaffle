@@ -112,7 +112,7 @@ public class Program
             {
                 testingChannel = s;
                 Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {announcementChannel}");
-                
+
             }
         }
 
@@ -183,11 +183,11 @@ public class Program
         if (!result.IsSuccess)
         {
             Console.WriteLine(result.ErrorReason);
-            if(result.ErrorReason != "Unknown command.")
+            if (result.ErrorReason != "Unknown command.")
                 await context.Channel.SendMessageAsync(result.ErrorReason);
         }
     }
-    
+
     //TODO: Move to its own service class that I can DI where needed.
     //Rewrite to be easier to add new keys, and get new keys
     private Dictionary<string, string> ReadSettings()
@@ -218,8 +218,8 @@ public class Program
             //prefixChar = config["prefixChar"][0];
         }
 
-        // Add existing settings at their default
-        //General or global
+        #region Add existing settings at their default
+        #region General or global
         mainConfig.AddKeyIfMissing("botToken", "NEEDS_TO_BE_REPLACED");
         mainConfig.AddKeyIfMissing("startDelay", "10");
         mainConfig.AddKeyIfMissing("updateInterval", "60");
@@ -229,27 +229,34 @@ public class Program
         mainConfig.AddKeyIfMissing("announcementChannel", "announcements");
         mainConfig.AddKeyIfMissing("playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
         mainConfig.AddKeyIfMissing("agreeUserCSV", "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
+        #endregion
 
-        //Playtesting vars
+        #region Playtesting vars
         mainConfig.AddKeyIfMissing("testCalID", "Replace My Buddy");
         mainConfig.AddKeyIfMissing("playTesterRole", "Playtester");
         mainConfig.AddKeyIfMissing("testingChannel", "csgo_level_testing");
+        #endregion
 
-        //Eavesdropping vars
+        #region Eavesdropping vars
         mainConfig.AddKeyIfMissing("pakRatEavesDropCSV", "use pakrat,download pakrat,get pakrat,use packrat");
         mainConfig.AddKeyIfMissing("howToPackEavesDropCSV", "how do i pack,how can i pack,how to pack,how to use vide,help me pack");
         mainConfig.AddKeyIfMissing("carveEavesDropCSV", "carve");
         mainConfig.AddKeyIfMissing("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
         mainConfig.AddKeyIfMissing("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
         mainConfig.AddKeyIfMissing("yorkCSV", "de_york,de york");
+        #endregion
 
-        //Command Dependent
+        #region Command Dependent
         mainConfig.AddKeyIfMissing("roleMeWhiteListCSV", "Programmer,Level_Designer,3D_Modeler,Texture_Artist,Blender,Maya,3dsmax");
         mainConfig.AddKeyIfMissing("moderatorRoleName", "Moderators");
         mainConfig.AddKeyIfMissing("mutedRoleName", "Muted");
+        #endregion
 
-        //Shitpost vars
+        #region  Shitpost vars
         mainConfig.AddKeyIfMissing("catFactPath", $"X:\\Scripts\\catfacts.txt");
+        #endregion
+
+        #endregion
 
         // Save new config file
         File.WriteAllLines(configPath, mainConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}").ToArray());
