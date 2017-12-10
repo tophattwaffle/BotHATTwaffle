@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Eavesdropping.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="GoogleCalendar.cs" />
     <Compile Include="DataService.cs" />
     <Compile Include="Modules\Help.cs" />
