@@ -12,11 +12,9 @@ namespace BotHATTwaffle
         {
         }
 
-        public Boolean CanUnmute()
+        public bool CanUnmute()
         {
-            if (unmuteTime.CompareTo(DateTime.Now) < 0)
-                return true;
-            return false;
+            return unmuteTime.CompareTo(DateTime.Now) < 0;
         }
     }
 }
