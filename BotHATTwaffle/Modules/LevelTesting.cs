@@ -135,6 +135,8 @@ namespace BotHATTwaffle.Modules
                             x.Mentionable = true;
                         });
 
+                        //Display the map to be tested.
+                        await Program.testingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(currentEventInfo, true));
                         await Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
                         $"\n**Playtest starting now!** `connect {eventInfo[10]}`");
 
@@ -162,6 +164,9 @@ namespace BotHATTwaffle.Modules
                     {
                         x.Mentionable = true;
                     });
+
+                    //Display the map to be tested.
+                    await Program.testingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(currentEventInfo, true));
 
                     await Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
                             $"\n**Playtest starting in 1 hour**");
