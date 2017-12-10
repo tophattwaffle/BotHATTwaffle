@@ -70,7 +70,7 @@ namespace BotHATTwaffle.Modules
             //Display roles, or modify role state
             if (inRoleStr == "display")
             {
-                await ReplyAsync($"Valid roles are:```\n{string.Join("\n", roleMeWhiteList)}```\n**Remember they are case sensative!**");
+                await ReplyAsync($"Valid roles are:```\n{string.Join("\n", roleMeWhiteList)}```\n**Remember roles are case sensitive!**");
             }
             else
             {

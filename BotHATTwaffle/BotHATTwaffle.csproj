@@ -171,6 +171,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataServices.cs" />
     <Compile Include="Eavesdropping.cs" />
     <Compile Include="GoogleCalendar.cs" />
     <Compile Include="Modules\Help.cs" />

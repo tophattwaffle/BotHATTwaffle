@@ -250,7 +250,7 @@ public class Program
         if (!mainConfig.ContainsKey("howToPackEavesDropCSV"))
             mainConfig.Add("howToPackEavesDropCSV", $"how do i pack,how can i pack,how to pack,how to use vide,help me pack");
         if (!mainConfig.ContainsKey("carveEavesDropCSV"))
-            mainConfig.Add("carveEavesDropCSV", $"how do i carve,use carve,with carve,carve");
+            mainConfig.Add("carveEavesDropCSV", $"carve");
         if (!mainConfig.ContainsKey("propperEavesDropCSV"))
             mainConfig.Add("propperEavesDropCSV", $"use propper,download propper,get propper,configure propper,setup propper");
         if (!mainConfig.ContainsKey("vbEavesDropCSV"))
