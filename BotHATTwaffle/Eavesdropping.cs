@@ -78,7 +78,9 @@ namespace BotHATTwaffle
                 $"any of the relevant channels you see. Just try to keep things on topic. \n\nAdditionally, you've been given a role called" +
                 $" `Playtester`. This role is used to notify you when we have a playtest starting. You can remove yourself from the " +
                 $"notifications by typing: `>playtester`.\n\nIf you want to see any of my commands, type: `>help`. Thanks for reading," +
-                $" and we hope you enjoy your stay here!\n\nGLHF"
+                $" and we hope you enjoy your stay here!" +
+                $"\n\nThere are roles you can use to show what skills you have. To see what roles you can give yourself, type: `>roleme display`" +
+                $"\n\nGLHF"
             };
             await (user as IGuildUser).AddRoleAsync(Program.playTesterRole);
             await user.SendMessageAsync("",false,builder);

@@ -56,7 +56,7 @@ namespace BotHATTwaffle.Modules
         [Remarks("This will let you add roles to yourself. Typically for saying you have a skill like 3D Modeling, or level design." +
             "\n__Channel names are case sensative!!!__\n" +
             "You can type `>roleme display` to show all roles avaiable")]
-        public async Task RolemeAsync(string inRoleStr)
+        public async Task RolemeAsync([Remainder]string inRoleStr)
         {
             if (Context.IsPrivate)
             {

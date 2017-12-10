@@ -70,10 +70,12 @@ public class Program
             .AddSingleton<ModerationServices>()
             .AddSingleton<LevelTesting>()
             .AddSingleton<Eavesdropping>()
+            .AddSingleton<DataServices>()
             .AddSingleton<Random>()
             .BuildServiceProvider();
 
         _services.GetRequiredService<TimerService>();
+        _services.GetRequiredService<DataServices>();
 
         Eavesdropping _eavesdrop = new Eavesdropping(config);
 
@@ -181,7 +183,8 @@ public class Program
         if (!result.IsSuccess)
         {
             Console.WriteLine(result.ErrorReason);
-            await context.Channel.SendMessageAsync(result.ErrorReason);
+            if(result.ErrorReason != "Unknown command.")
+                await context.Channel.SendMessageAsync(result.ErrorReason);
         }
     }
     

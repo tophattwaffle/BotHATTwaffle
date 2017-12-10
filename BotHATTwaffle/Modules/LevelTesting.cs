@@ -42,11 +42,11 @@ namespace BotHATTwaffle.Modules
 
                 if (announceMessage == null) //No current message.
                 {
-                    await PostAnnounce(FormatPlaytestInformationAsync(currentEventInfo, false));
+                    await PostAnnounce(await FormatPlaytestInformationAsync(currentEventInfo, false));
                 }
                 else if (currentEventInfo[2] == lastEventInfo[2]) //Title is same. 
                 {
-                    await UpdateAnnounce(FormatPlaytestInformationAsync(currentEventInfo, false));
+                    await UpdateAnnounce(await FormatPlaytestInformationAsync(currentEventInfo, false));
                 }
                 else //Title is different, scrub and rebuild
                 {
@@ -87,7 +87,7 @@ namespace BotHATTwaffle.Modules
             await Announce();
         }
 
-        public Embed FormatPlaytestInformationAsync(string[] eventInfo, Boolean userCall)
+        async public Task<Embed> FormatPlaytestInformationAsync(string[] eventInfo, Boolean userCall)
         {
             //0 EVENT HEADER. "BEGIN_EVENT" or "NO_EVENT_FOUND"
             //1 Time-
@@ -130,17 +130,17 @@ namespace BotHATTwaffle.Modules
                     if(!userCall && !alertedStart) //Prevents user calls for upcoming from sending alert message.
                     {
                         alertedStart = true;
-                        Program.playTesterRole.ModifyAsync(x =>
+                        await  Program.playTesterRole.ModifyAsync(x =>
                         {
                             x.Mentionable = true;
                         });
-                        Task.Delay(1000);
-                        Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
+
+                        await Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
                         $"\n**Playtest starting now!** `connect {eventInfo[10]}`");
-                        Task.Delay(1000);
+
                         alertedStart = true;
-                        Task.Delay(1000);
-                        Program.playTesterRole.ModifyAsync(x =>
+
+                        await Program.playTesterRole.ModifyAsync(x =>
                         {
                             x.Mentionable = false;
                         });
@@ -158,15 +158,15 @@ namespace BotHATTwaffle.Modules
                 if (timeCompare > 0 && !alertedHour)
                 {
                     alertedHour = true;
-                    Program.playTesterRole.ModifyAsync(x =>
+                    await Program.playTesterRole.ModifyAsync(x =>
                     {
                         x.Mentionable = true;
                     });
-                    Task.Delay(1000);
-                    Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
+
+                    await Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
                             $"\n**Playtest starting in 1 hour**");
-                    Task.Delay(1000);
-                    Program.playTesterRole.ModifyAsync(x =>
+
+                    await Program.playTesterRole.ModifyAsync(x =>
                     {
                         x.Mentionable = false;
                     });
@@ -300,7 +300,7 @@ namespace BotHATTwaffle.Modules
             _levelTesting.currentEventInfo = _levelTesting._googleCalendar.GetEvents();
             _levelTesting.lastEventInfo = _levelTesting.currentEventInfo;
 
-            await ReplyAsync("", false, _levelTesting.FormatPlaytestInformationAsync(_levelTesting.currentEventInfo, true));
+            await ReplyAsync("", false, await _levelTesting.FormatPlaytestInformationAsync(_levelTesting.currentEventInfo, true));
         }
     }
 }

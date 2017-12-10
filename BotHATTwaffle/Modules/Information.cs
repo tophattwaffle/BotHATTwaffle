@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -8,8 +9,25 @@ using System.Threading.Tasks;
 
 namespace BotHATTwaffle.Modules
 {
-    public class Information : ModuleBase<SocketCommandContext>
+    public class InformationService
     {
+        private DataServices _data;
+
+        public InformationService(DataServices data)
+        {
+            _data = data;
+        }
+    }
+
+    public class InformationModule : ModuleBase<SocketCommandContext>
+    {
+        private readonly DataServices _data;
+
+        public InformationModule(DataServices data)
+        {
+            _data = data;
+        }
+
         [Command("vdc")]
         [Summary("`>vdc [Search]` Quick link back to a VDC search")]
         [Remarks("Does a search on the VDC and gives you the link back. Try to use the proper full term, for instance: " +
@@ -61,21 +79,57 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("",false,builder);
         }
 
-        [Command("tutorial")]
-        [Summary("`>tutorial [series] [SearchTerm]` searches a tutorial series.")]
-        [Remarks("`>tutorial [series] [SearchTerm]` searches our tutorial database for a result." +
-            "\nThere are a few series you can searh from. You can use `>tutorial all [SearchTerm] to search them all." +
-            "\n`1` `V2 Series` `v2`" +
-            "\n`2` `CSGO Bootcamp` `bc` `csgobootcamp`" +
+        [Command("search")]
+        [Summary("`>search [series] [SearchTerm]` searches a tutorial series.")]
+        [Remarks("`>search [series] [SearchTerm]` searches our tutorial database for a result." +
+            "\nThere are a few series you can searh from. You can use `>tutorial all [SearchTerm] to search them all. All does not search the FAQ" +
+            "\nExample: `>search v2 displacements` `>search f leak`" +
+            "\n`1` `V2Series` `v2`" +
+            "\n`2` `CSGOBootcamp` `bc` `csgobootcamp`" +
             "\n`3` `3dsmax` `3ds`" +
-            "\n`4` `Written Tutorials` `written`" +
-            "\n`5` `Legacy Series` `v1` `lg`" +
-            "\n`6` `Hammer Troubleshooting` `ht`" +
-            "\n`7` `FAQ` `f` `q`" +
+            "\n`4` `WrittenTutorials` `written`" +
+            "\n`5` `LegacySeries` `v1` `lg`" +
+            "\n`6` `HammerTroubleshooting` `ht`" +
+            "\n`7` `FAQ` `f`" +
             "\nReally big thanks to Mark for helping make the JSON searching work!")]
-        public async Task TutorialAsync()
+        [Alias("s")]
+        public async Task TutorialAsync(string series, [Remainder]string search)
         {
-            await ReplyAsync("You cannot unsubscribe from cat facts...");
+            await Context.Channel.TriggerTypingAsync();
+            var results = _data.Search(series, search);
+
+            foreach(var r in results)
+            {
+                var builder = new EmbedBuilder();
+                var authBuilder = new EmbedAuthorBuilder();
+                var footBuilder = new EmbedFooterBuilder();
+                authBuilder = new EmbedAuthorBuilder()
+                {
+                    Name = r[0],
+                    IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+                };
+
+                footBuilder = new EmbedFooterBuilder()
+                {
+                    Text = "Thanks for using the FAQ search!",
+                    IconUrl = Program._client.CurrentUser.GetAvatarUrl()
+                };
+
+                builder = new EmbedBuilder()
+                {
+                    Author = authBuilder,
+                    Footer = footBuilder,
+
+                    //Title = $"**Search Results**",
+                    Url = r[1],
+                    //ImageUrl = ,
+                    ThumbnailUrl = r[3],//"https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                    Color = new Color(243,128,72),
+
+                    Description = r[2]
+                };
+                await ReplyAsync("",false,builder);
+            }
         }
 
         [Command("catFact")]

@@ -89,6 +89,9 @@
     <Reference Include="Google.Apis.PlatformServices, Version=1.30.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Apis.1.30.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.6.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.6.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.1.1.1\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
@@ -173,9 +176,9 @@
   <ItemGroup>
     <Compile Include="Eavesdropping.cs" />
     <Compile Include="GoogleCalendar.cs" />
-    <Compile Include="Modules\DataService.cs" />
+    <Compile Include="DataService.cs" />
     <Compile Include="Modules\Help.cs" />
-    <Compile Include="Information.cs" />
+    <Compile Include="Modules\Information.cs" />
     <Compile Include="Modules\Json\JsonRoot.cs" />
     <Compile Include="Modules\Json\JsonSeries.cs" />
     <Compile Include="Modules\Json\JsonTutorial.cs" />

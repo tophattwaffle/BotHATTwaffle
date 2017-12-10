@@ -77,7 +77,6 @@ namespace BotHATTwaffle.Modules
 
         public TimerModule(TimerService service)
         {
-
             _service = service;
         }/*
     [Command("stoptimer")]
