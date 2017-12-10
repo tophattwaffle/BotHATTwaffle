@@ -9,9 +9,9 @@ using System.Threading;
 
 namespace BotHATTwaffle.Modules
 {
-    public class UtilityServices
+    public class UtilityService
     {
-        public UtilityServices()
+        public UtilityService()
         {
             
         }
@@ -24,11 +24,11 @@ namespace BotHATTwaffle.Modules
 
     public class UtilityModule : ModuleBase<SocketCommandContext>
     {
-        private readonly UtilityServices _utility;
+        private readonly UtilityService _utility;
 
         string[] roleMeWhiteList;
 
-        public UtilityModule(UtilityServices utility)
+        public UtilityModule(UtilityService utility)
         {
             _utility = utility;
             if (Program.config.ContainsKey("roleMeWhiteListCSV"))

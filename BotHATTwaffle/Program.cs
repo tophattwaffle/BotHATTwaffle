@@ -66,7 +66,7 @@ public class Program
             .AddSingleton(_client)
             .AddSingleton(_commands)
             .AddSingleton<TimerService>()
-            .AddSingleton<UtilityServices>()
+            .AddSingleton<UtilityService>()
             .AddSingleton<ModerationServices>()
             .AddSingleton<LevelTesting>()
             .AddSingleton<Eavesdropping>()

@@ -60,6 +60,23 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("",false,builder);
         }
 
+        [Command("tutorial")]
+        [Summary("`>tutorial [series] [SearchTerm]` searches a tutorial series.")]
+        [Remarks("`>tutorial [series] [SearchTerm]` searches our tutorial database for a result." +
+            "\nThere are a few series you can searh from. You can use `>tutorial all [SearchTerm] to search them all." +
+            "\n`1` `V2 Series` `v2`" +
+            "\n`2` `CSGO Bootcamp` `bc` `csgobootcamp`" +
+            "\n`3` `3dsmax` `3ds`" +
+            "\n`4` `Written Tutorials` `written`" +
+            "\n`5` `Legacy Series` `v1` `lg`" +
+            "\n`6` `Hammer Troubleshooting` `ht`" +
+            "\n`7` `FAQ` `f` `q`" +
+            "\nReally big thanks to Mark for helping make the JSON searching work!")]
+        public async Task TutorialAsync()
+        {
+            await ReplyAsync("You cannot unsubscribe from cat facts...");
+        }
+
         [Command("catFact")]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]

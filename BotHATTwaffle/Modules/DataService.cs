@@ -1,14 +1,12 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.IO;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Linq;
-using System.Collections.Generic;
+using BotHATTwaffle.Modules.Json;
 
-namespace TestHATTwaffle
+
+namespace BotHATTwaffle.Modules
 {
     class DataServices
     {
@@ -37,7 +35,7 @@ namespace TestHATTwaffle
 
             var returns = v2.tutorial.FindAll(x => x.tags.Contains(searchTerm));
 
-            foreach(var result in returns)
+            foreach (var result in returns)
             {
                 Console.WriteLine(result.url);
             }
