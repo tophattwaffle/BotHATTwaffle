@@ -220,58 +220,36 @@ public class Program
 
         // Add existing settings at their default
         //General or global
-        if (!mainConfig.ContainsKey("botToken"))
-            mainConfig.Add("botToken", $"NEEDS_TO_BE_REPLACED");
-        if (!mainConfig.ContainsKey("startDelay"))
-            mainConfig.Add("startDelay", $"10");
-        if (!mainConfig.ContainsKey("updateInterval"))
-            mainConfig.Add("updateInterval", $"60");
-        if (!mainConfig.ContainsKey("calUpdateTicks"))
-            mainConfig.Add("calUpdateTicks", $"1");
-        if (!mainConfig.ContainsKey("prefixChar"))
-            mainConfig.Add("prefixChar", ">");
-        if (!mainConfig.ContainsKey("logChannel"))
-            mainConfig.Add("logChannel", $"bothattwaffle_logs");
-        if (!mainConfig.ContainsKey("announcementChannel"))
-            mainConfig.Add("announcementChannel", $"announcements");
-        if (!mainConfig.ContainsKey("playingStringsCSV"))
-            mainConfig.Add("playingStringsCSV", $"Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
-        if (!mainConfig.ContainsKey("agreeUserCSV"))
-            mainConfig.Add("agreeUserCSV", $"TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
+        mainConfig.AddKeyIfMissing("botToken", "NEEDS_TO_BE_REPLACED");
+        mainConfig.AddKeyIfMissing("startDelay", "10");
+        mainConfig.AddKeyIfMissing("updateInterval", "60");
+        mainConfig.AddKeyIfMissing("calUpdateTicks", "1");
+        mainConfig.AddKeyIfMissing("prefixChar", ">");
+        mainConfig.AddKeyIfMissing("logChannel", "bothattwaffle_logs");
+        mainConfig.AddKeyIfMissing("announcementChannel", "announcements");
+        mainConfig.AddKeyIfMissing("playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
+        mainConfig.AddKeyIfMissing("agreeUserCSV", "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
 
         //Playtesting vars
-        if (!mainConfig.ContainsKey("testCalID"))
-            mainConfig.Add("testCalID", $"Replace My Buddy");
-        if (!mainConfig.ContainsKey("playTesterRole"))
-            mainConfig.Add("playTesterRole", $"Playtester");
-        if (!mainConfig.ContainsKey("testingChannel"))
-            mainConfig.Add("testingChannel", $"csgo_level_testing");
+        mainConfig.AddKeyIfMissing("testCalID", "Replace My Buddy");
+        mainConfig.AddKeyIfMissing("playTesterRole", "Playtester");
+        mainConfig.AddKeyIfMissing("testingChannel", "csgo_level_testing");
 
         //Eavesdropping vars
-        if (!mainConfig.ContainsKey("pakRatEavesDropCSV"))
-            mainConfig.Add("pakRatEavesDrop", $"use pakrat,download pakrat,get pakrat,use packrat");
-        if (!mainConfig.ContainsKey("howToPackEavesDropCSV"))
-            mainConfig.Add("howToPackEavesDropCSV", $"how do i pack,how can i pack,how to pack,how to use vide,help me pack");
-        if (!mainConfig.ContainsKey("carveEavesDropCSV"))
-            mainConfig.Add("carveEavesDropCSV", $"carve");
-        if (!mainConfig.ContainsKey("propperEavesDropCSV"))
-            mainConfig.Add("propperEavesDropCSV", $"use propper,download propper,get propper,configure propper,setup propper");
-        if (!mainConfig.ContainsKey("vbEavesDropCSV"))
-            mainConfig.Add("vbEavesDropCSV", $"velocity brawl,velocitybrawl,velocity ballsack");
-        if (!mainConfig.ContainsKey("yorkCSV"))
-            mainConfig.Add("yorkCSV", $"de_york,de york");
+        mainConfig.AddKeyIfMissing("pakRatEavesDropCSV", "use pakrat,download pakrat,get pakrat,use packrat");
+        mainConfig.AddKeyIfMissing("howToPackEavesDropCSV", "how do i pack,how can i pack,how to pack,how to use vide,help me pack");
+        mainConfig.AddKeyIfMissing("carveEavesDropCSV", "carve");
+        mainConfig.AddKeyIfMissing("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
+        mainConfig.AddKeyIfMissing("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
+        mainConfig.AddKeyIfMissing("yorkCSV", "de_york,de york");
 
         //Command Dependent
-        if (!mainConfig.ContainsKey("roleMeWhiteListCSV"))
-            mainConfig.Add("roleMeWhiteListCSV", $"Programmer,Level_Designer,3D_Modeler,Texture_Artist,Blender,Maya,3dsmax");
-        if (!mainConfig.ContainsKey("moderatorRoleName"))
-            mainConfig.Add("moderatorRoleName", $"Moderators");
-        if (!mainConfig.ContainsKey("mutedRoleName"))
-            mainConfig.Add("mutedRoleName", $"Muted");
+        mainConfig.AddKeyIfMissing("roleMeWhiteListCSV", "Programmer,Level_Designer,3D_Modeler,Texture_Artist,Blender,Maya,3dsmax");
+        mainConfig.AddKeyIfMissing("moderatorRoleName", "Moderators");
+        mainConfig.AddKeyIfMissing("mutedRoleName", "Muted");
 
         //Shitpost vars
-        if (!mainConfig.ContainsKey("catFactPath"))
-            mainConfig.Add("catFactPath", $"X:\\Scripts\\catfacts.txt");
+        mainConfig.AddKeyIfMissing("catFactPath", $"X:\\Scripts\\catfacts.txt");
 
         // Save new config file
         File.WriteAllLines(configPath, mainConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}").ToArray());
