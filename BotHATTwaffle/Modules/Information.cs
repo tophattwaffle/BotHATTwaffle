@@ -40,12 +40,21 @@ namespace BotHATTwaffle.Modules
             searchTerm = searchTerm.Replace(' ','+');
             string builtUrl = $"https://developer.valvesoftware.com/w/index.php?search={searchTerm}&title=Special%3ASearch&go=Go";
 
+            
+
             //Download webpage title and store to string
             WebClient x = new WebClient();
             string siteTitle = x.DownloadString(builtUrl);
             string regex = @"(?<=<title.*>)([\s\S]*)(?=</title>)";
             Regex ex = new Regex(regex, RegexOptions.IgnoreCase);
             siteTitle = ex.Match(siteTitle).Value.Trim();
+
+            //If the URL isn't properly formatted, default
+            if (!Uri.IsWellFormedUriString(builtUrl, UriKind.Absolute))
+            {
+                builtUrl = "https://developer.valvesoftware.com/wiki/Main_Page";
+                searchTerm = "Valve Developer Community";
+            }
 
             var builder = new EmbedBuilder();
             var authBuilder = new EmbedAuthorBuilder();
@@ -83,8 +92,9 @@ namespace BotHATTwaffle.Modules
         [Summary("`>search [series] [SearchTerm]` searches a tutorial series.")]
         [Remarks("`>search [series] [SearchTerm]` searches our tutorial database for a result." +
             "\nThere are a few series you can searh from. You can use `>tutorial all [SearchTerm] to search them all. All does not search the FAQ" +
-            "\nExample: `>search v2 displacements` `>search f leak`" +
-            "\n`1` `V2Series` `v2`" +
+            "\nExample:" +
+            "\n`>search v2 displacements` or `>search f leak`" +
+            "\n\n`1` `V2Series` `v2`" +
             "\n`2` `CSGOBootcamp` `bc` `csgobootcamp`" +
             "\n`3` `3dsmax` `3ds`" +
             "\n`4` `WrittenTutorials` `written`" +

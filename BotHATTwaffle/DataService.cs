@@ -122,8 +122,10 @@ namespace BotHATTwaffle
                 {
                     description = htmlDocument.GetElementbyId("content-area").InnerText;
                 }
+                //Fix the bad characters that get pulled from the web page.
                 description = $" {description.Replace(@"&#8211;", "-").Replace("\n", "")}";
                 title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", ""); ;
+
                 //Limit length if needed
                 if (description.Length >= 250)
                 {
