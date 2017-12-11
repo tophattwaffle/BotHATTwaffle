@@ -103,7 +103,7 @@ namespace BotHATTwaffle.Modules
             "\n`7` `FAQ` `f`" +
             "\nReally big thanks to Mark for helping make the JSON searching work!")]
         [Alias("s")]
-        public async Task TutorialAsync(string series, [Remainder]string search)
+        public async Task SearchAsync(string series, [Remainder]string search)
         {
             await Context.Channel.TriggerTypingAsync();
             var results = _data.Search(series, search);
@@ -140,6 +140,146 @@ namespace BotHATTwaffle.Modules
                 };
                 await ReplyAsync("",false,builder);
             }
+        }
+
+        [Command("tutorials")]
+        [Summary("`>tutorials [Optional series]` Displays links to tutorial series")]
+        [Remarks("`>tutorials [Optional series]` Example: `>tutorials` `>tutorials v2`" +
+            "\nDisplays information about all tutorial series, or the specific one you're looking for" +
+            "\n\n`1` `V2Series` `v2`" +
+            "\n`2` `CSGOBootcamp` `bc` `csgobootcamp`" +
+            "\n`3` `3dsmax` `3ds`" +
+            "\n`4` `WrittenTutorials` `written`" +
+            "\n`5` `LegacySeries` `v1` `lg`" +
+            "\n`6` `HammerTroubleshooting` `ht`")]
+        [Alias("t")]
+        public async Task TutorialsAsync(string searchSeries = "all")
+        {
+            string authTitle = null;
+            string authImgUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png";
+            string footText = null;
+            string footImgUrl = Program._client.CurrentUser.GetAvatarUrl();
+            string bodyTitle = null;
+            string bodyUrl = null;
+            string bodyThumbUrl = null;  //"https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png"
+            string bodyImageUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/header.png";
+            string bodyDescription = null;
+            #region TutorialsIf
+            //V2
+            if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1")
+            {
+                authTitle = "Version 2 Tutorial Series";
+
+                bodyUrl = "https://goo.gl/XoVXzd";
+
+                bodyDescription = "The Version 2 Tutorial series was created with the knowledge that I gained from creating the " +
+                    "Version 1(Now Legacy) series of tutorials.The goal is to help someone who hasn’t ever touched the tools " +
+                    "get up and running in Source Engine level design. You can watch them in any order, " +
+                    "but they have been designed to build upon each other.";
+            }
+            //Bootcamp
+            else if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2")
+            {
+                authTitle = "CSGO Level Design Bootcamp";
+
+                bodyUrl = "https://goo.gl/srFBxe";
+
+                bodyDescription = "The CSGO Boot Camp series was created for ECS to air during their Twitch streams between matches." +
+                    " It is created to help someone with no experience with the level design tools learn everything they need to" +
+                    " create a competitive CSGO level. Most these tutorials apply to every Source Engine game," +
+                    " but a handful are specific to CSGO.";
+            }
+            //3dsmax
+            else if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3")
+            {
+                authTitle = "3dsmax Tutorials";
+
+                bodyUrl = "https://goo.gl/JGg48X";
+
+                bodyDescription = "There are a few sub series in the 3dsmax section. If you’re looking to create and export your very first Source Engine prop, check out the **My First Prop** series." +
+                    "\nIf you’re getting start with 3dsmax look at the **Beginners Guide** series, which is like the Version 2 Tutorial series but for 3dsmax." +
+                    "\nThere are a few one - off tutorials listed on the page as well covering WallWorm functions";
+            }
+            //Writtentutorials
+            else if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4")
+            {
+                authTitle = "Written Tutorials";
+
+                bodyUrl = "https://goo.gl/i4aAqh";
+
+                bodyDescription = "My library of written tutorials is typically about 1 off things that I want to cover. They are usually independent of any specific game.";
+            }
+            //legacy
+            else if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5")
+            {
+                authTitle = "Legacy Series";
+
+                bodyUrl = "https://goo.gl/aHFcvX";
+
+                bodyDescription = "Hammer Troubleshooting is a smaller series that is created off user questions that I see come up quite often.y are usually independent of any specific game.";
+            }
+            //Hammer Troubleshooting
+            else if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6")
+            {
+                authTitle = "Hammer Troubleshooting";
+
+                bodyUrl = "https://goo.gl/tBh7jT";
+
+                bodyDescription = "The First tutorial series was my launching point for getting better at mapping. Not only did I learn a lot from making it, but I like to " +
+                    "think that many others learned something from the series as well. The series was flawed in that it was not structured, and lacked quality control. But" +
+                    " you may notice that the further along in the series you are, the better quality they get. Example is the 100th tutorial, it heavily reflects how the " +
+                    "V2 series was created. You can view the entire series below. Just be warned that some of the information in these videos may not be correct, or even " +
+                    "work any longer. Please watch at your own risk. I attempt to support these tutorials, but cannot due to time. Please watch the V2 series";
+            }
+            else if (searchSeries.ToLower() == "all")
+            {
+                authTitle = "All Tutorial Series Information";
+                
+                bodyUrl = "https://www.tophattwaffle.com/tutorials/";
+                
+                bodyDescription = $"Over the years I've built up quite the collection of tutorial series! " +
+                    $"\n__Here they are are__" +
+                    $"\n[Version 2 Series](https://goo.gl/XoVXzd)" +
+                    $"\n[CSGO Bootcamp](https://goo.gl/srFBxe)" +
+                    $"\n[3dsmax](https://goo.gl/JGg48X)" +
+                    $"\n[Written Tutorials](https://goo.gl/i4aAqh)" +
+                    $"\n[Hammer Troubleshooting](https://goo.gl/tBh7jT)" +
+                    $"\n[Legacy Series V1](https://goo.gl/aHFcvX)";
+            }
+            else {
+                await ReplyAsync("Unknown series. Please try `>help tutorials` to see all the options.");
+                return; }
+            #endregion
+            var builder = new EmbedBuilder();
+            var authBuilder = new EmbedAuthorBuilder();
+            var footBuilder = new EmbedFooterBuilder();
+            authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = authTitle,
+                IconUrl = authImgUrl
+            };
+
+            footBuilder = new EmbedFooterBuilder()
+            {
+                Text = footText,
+                IconUrl = footImgUrl
+            };
+
+            builder = new EmbedBuilder()
+            {
+                Author = authBuilder,
+                Footer = footBuilder,
+
+                Title = bodyTitle,
+                Url = bodyUrl,
+                ImageUrl = bodyImageUrl,
+                ThumbnailUrl = bodyThumbUrl,
+                Color = new Color(243,128,72),
+
+                Description = bodyDescription
+            };
+            await ReplyAsync("",false,builder);
+
         }
 
         [Command("catFact")]
