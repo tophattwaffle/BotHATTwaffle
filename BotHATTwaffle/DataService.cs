@@ -146,18 +146,19 @@ namespace BotHATTwaffle
                 singleResult.Add(result.url);
                 singleResult.Add(description);
                 singleResult.Add(finalImg);
-                listResults.Add(singleResult);
 
                 //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.
-                if (listResults.Count >= 3 && searchSeries == "all")
+                if (listResults.Count >= 2 && searchSeries == "all")
                 {
                     singleResult.Clear();
-                    singleResult.Add(@"I cannot display any more results!");
-                    singleResult.Add("http://tophattwaffle.com/faq");
-                    singleResult.Add(@"I found more results than I can display here. Consider going directly to the FAQ main page and searching from there.");
+                    singleResult.Add(@"View All Tutorials");
+                    singleResult.Add("https://www.tophattwaffle.com/tutorials/");
+                    singleResult.Add(@"There are more results than I can display without flooding chat. Consider viewing all tutorials, or do a search without `all`");
                     singleResult.Add(null);
+                    listResults.Add(singleResult);
                     break;
                 }
+                listResults.Add(singleResult);
             }
             return listResults;
         }
@@ -215,18 +216,19 @@ namespace BotHATTwaffle
                     singleResult.Add(finalUrl);
                     singleResult.Add(description);
                     singleResult.Add(finalImg);
-                    listResults.Add(singleResult);
 
                     //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.
-                    if (listResults.Count >= 3)
+                    if (listResults.Count >= 2)
                     {
                         singleResult.Clear();
                         singleResult.Add(@"I cannot display any more results!");
                         singleResult.Add("http://tophattwaffle.com/faq");
                         singleResult.Add(@"I found more results than I can display here. Consider going directly to the FAQ main page and searching from there.");
                         singleResult.Add(null);
+                        listResults.Add(singleResult);
                         break;
                     }
+                    listResults.Add(singleResult);
                 }
             }
             catch(Exception)
