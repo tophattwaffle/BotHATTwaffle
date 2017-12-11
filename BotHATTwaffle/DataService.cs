@@ -30,7 +30,7 @@ namespace BotHATTwaffle
             series = root.series;
         }
 
-        public List<List<string>> Search(string searchSeries, string searchTerm)
+        public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
         {
             List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
             List<JsonTutorial> tempTutorials = new List<JsonTutorial>();
@@ -38,7 +38,7 @@ namespace BotHATTwaffle
             
 
             if(searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
-                return SearchFAQ(searchTerm);
+                return SearchFAQ(searchTerm, isPrivate);
 
             //V2
             if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
@@ -147,13 +147,13 @@ namespace BotHATTwaffle
                 singleResult.Add(description);
                 singleResult.Add(finalImg);
 
-                //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.
-                if (listResults.Count >= 2 && searchSeries == "all")
+                //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page. Only limit for non-DM
+                if (listResults.Count >= 2 && searchSeries == "all" && !isPrivate)
                 {
                     singleResult.Clear();
                     singleResult.Add(@"View All Tutorials");
                     singleResult.Add("https://www.tophattwaffle.com/tutorials/");
-                    singleResult.Add(@"There are more results than I can display without flooding chat. Consider viewing all tutorials, or do a search without `all`");
+                    singleResult.Add(@"There are more results than I can display without flooding chat. Consider viewing all tutorials, or do a search without `all`. If you DM me your search results won't be limited.");
                     singleResult.Add(null);
                     listResults.Add(singleResult);
                     break;
@@ -163,7 +163,7 @@ namespace BotHATTwaffle
             return listResults;
         }
 
-        public List<List<string>> SearchFAQ(string searchTerm)
+        public List<List<string>> SearchFAQ(string searchTerm, bool isPrivate)
         {
             List<List<string>> listResults = new List<List<string>>();
             
@@ -219,17 +219,18 @@ namespace BotHATTwaffle
                     singleResult.Add(description);
                     singleResult.Add(finalImg);
 
-                    //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.
-                    if (listResults.Count >= 2)
+                    //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.  Only limit for non-DM.
+                    if (listResults.Count >= 2 && !isPrivate)
                     {
                         singleResult.Clear();
                         singleResult.Add(@"I cannot display any more results!");
                         singleResult.Add("http://tophattwaffle.com/faq");
-                        singleResult.Add(@"I found more results than I can display here. Consider going directly to the FAQ main page and searching from there.");
+                        singleResult.Add(@"I found more results than I can display here. Consider going directly to the FAQ main page and searching from there. If you DM me your search results won't be limited.");
                         singleResult.Add(null);
                         listResults.Add(singleResult);
                         break;
                     }
+
                     listResults.Add(singleResult);
                 }
             }

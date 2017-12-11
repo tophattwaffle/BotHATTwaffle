@@ -106,8 +106,13 @@ namespace BotHATTwaffle.Modules
         [Alias("s")]
         public async Task SearchAsync(string series, [Remainder]string search)
         {
+            bool isPrivate = false;
+
+            if (Context.IsPrivate)
+                isPrivate = true;
+
             await Context.Channel.TriggerTypingAsync();
-            var results = _data.Search(series, search);
+            var results = _data.Search(series, search, isPrivate);
 
             if (results.Count == 0)
             {
