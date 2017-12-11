@@ -109,7 +109,17 @@ namespace BotHATTwaffle.Modules
             await Context.Channel.TriggerTypingAsync();
             var results = _data.Search(series, search);
 
-            foreach(var r in results)
+            if (results.Count == 0)
+            {
+                List<string> singleResult = new List<string>();
+                singleResult.Add("Try a different search term");
+                singleResult.Add("http://tophattwaffle.com/faq");
+                singleResult.Add("I could not locate anything for the search term you provided. Please try a different search term.");
+                singleResult.Add(null);
+                results.Add(singleResult);
+            }
+
+            foreach (var r in results)
             {
                 var builder = new EmbedBuilder();
                 var authBuilder = new EmbedAuthorBuilder();
@@ -140,11 +150,6 @@ namespace BotHATTwaffle.Modules
                     Description = r[2]
                 };
                 await ReplyAsync("",false,builder);
-            }
-
-            if(results.Count == 0)
-            {
-                await ReplyAsync("I could not find any results. Please try another search term.");
             }
         }
         #endregion

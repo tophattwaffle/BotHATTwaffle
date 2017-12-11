@@ -230,12 +230,7 @@ namespace BotHATTwaffle
             }
             catch(Exception)
             {
-                List<string> singleResult = new List<string>();
-                singleResult.Add("Try a different search term");
-                singleResult.Add("http://tophattwaffle.com/faq");
-                singleResult.Add("I could not locate anything for the search term you provided. Please try a different search term.");
-                singleResult.Add(null);
-                listResults.Add(singleResult);
+                //Do nothing. The command that called this will handle the no results found message.
             }
             return listResults;
         }
