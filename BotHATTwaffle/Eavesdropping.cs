@@ -36,11 +36,13 @@ namespace BotHATTwaffle
                 agreeEavesDrop = (config["agreeUserCSV"]).Split(',');
 
             _random = new Random();
+
             agreeStrings = new string[]{
                 "^",
                 "^^^",
                 "^^^ I agree with ^^^",
             };
+
         }
 
         async internal Task UserJoin(SocketUser user)
@@ -394,6 +396,20 @@ namespace BotHATTwaffle
 
         private static Task DeYork(SocketMessage message)
         {
+            Random _rand = new Random();
+            string[] yorkUrls = new string[]{
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014230815_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014230840_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014230850_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014230941_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231005_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231026_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231046_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231116_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231156_1.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231204_1.jpg",
+            };
+
             Program.ChannelLog($"{message.Author} posted about de_york #{message.Channel}. You should go meme them.");
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -406,15 +422,15 @@ namespace BotHATTwaffle
                 Text = "This was an automated message about - de_york"
 
             };
-
+            
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
                 Footer = footBuilder,
-
+                
                 Title = $"You talking about the best level ever?",
-
-                ImageUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/690235828_preview_20161014231026_1-1.jpg",
+                
+                ImageUrl = yorkUrls[_rand.Next(0, yorkUrls.Length)],
                 ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
                 Color = new Color(243, 128, 72),
 
