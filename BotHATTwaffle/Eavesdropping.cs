@@ -44,7 +44,7 @@ namespace BotHATTwaffle
             };
 
         }
-
+#region UserJoin
         async internal Task UserJoin(SocketUser user)
         {
             await Program.ChannelLog($"userjoin", $"{user.Username} has joined the server. Apply roles and sending them a message.");
@@ -87,7 +87,8 @@ namespace BotHATTwaffle
             await (user as IGuildUser).AddRoleAsync(Program.playTesterRole);
             await user.SendMessageAsync("",false,builder);
         }
-
+#endregion
+#region listen
         async internal Task Listen(SocketMessage message)
         {
             bool proceed = true;
@@ -181,6 +182,7 @@ namespace BotHATTwaffle
                     }
                 }
         }
+#endregion
 #region PakRat
         private static Task PakRat(SocketMessage message)
         {
