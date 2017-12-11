@@ -77,7 +77,7 @@ namespace BotHATTwaffle.Modules
         #endregion
         #region VMTEditor
         [Command("VMTEditor")]
-        [Summary("`>VMTeditor` Gives you a link to GCFScape download")]
+        [Summary("`>VMTeditor` Gives you a link to VMT Editor download")]
         [Alias("vmt")]
         public async Task VMTEditorAsync()
         {
@@ -96,6 +96,30 @@ namespace BotHATTwaffle.Modules
                 Description = "VMT Editor is, hands down, one of the best VMT creation tools that exists for Source engine. " +
                 "It quickly became a standard tool for most designers that regularly create VMT files. " +
                 "Created by Yanzl over at MapCore."
+
+            };
+            await ReplyAsync("", false, builder.Build());
+        }
+        #endregion
+        #region VIDE
+        [Command("VIDE")]
+        [Summary("`>VIDE` Gives you a link to VIDE download")]
+        public async Task VIDEAsync()
+        {
+            var authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = "Download VIDE",
+                IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
+            };
+
+            var builder = new EmbedBuilder()
+            {
+                Author = authBuilder,
+                Url = "https://www.tophattwaffle.com/downloads/vide/",
+                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vide.png",
+                Color = new Color(50, 50, 50),
+                Description = "VIDE is a 3rd party tool that has many tools rolled into one awesome package. " +
+                "Most people use it for packing assets into a level, but it can do so much more than that."
 
             };
             await ReplyAsync("", false, builder.Build());
