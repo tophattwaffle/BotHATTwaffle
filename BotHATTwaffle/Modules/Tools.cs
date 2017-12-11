@@ -94,7 +94,7 @@ namespace BotHATTwaffle.Modules
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vmteditor.png",
                 Color = new Color(50,50,50),
                 Description = "VMTEditor is, hands down, one of the best VMT creation tools that exists for Source engine. " +
-                "It quickly became a standard tool for most designers that regularly create VMT files." +
+                "It quickly became a standard tool for most designers that regularly create VMT files. " +
                 "Created by Yanzl over at MapCore."
 
             };
