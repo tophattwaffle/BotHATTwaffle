@@ -27,7 +27,7 @@ namespace BotHATTwaffle.Modules
         {
             _data = data;
         }
-
+#region VDC
         [Command("vdc")]
         [Summary("`>vdc [Search]` Quick link back to a VDC search")]
         [Remarks("Does a search on the VDC and gives you the link back. Try to use the proper full term, for instance: " +
@@ -87,7 +87,8 @@ namespace BotHATTwaffle.Modules
 
             await ReplyAsync("",false,builder);
         }
-
+        #endregion
+#region Search
         [Command("search")]
         [Summary("`>search [series] [SearchTerm]` searches a tutorial series.")]
         [Remarks("`>search [series] [SearchTerm]` searches our tutorial database for a result." +
@@ -141,7 +142,8 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("",false,builder);
             }
         }
-
+        #endregion
+#region Tutorials
         [Command("tutorials")]
         [Summary("`>tutorials [Optional series]` Displays links to tutorial series")]
         [Remarks("`>tutorials [Optional series]` Example: `>tutorials` `>tutorials v2`" +
@@ -238,7 +240,7 @@ namespace BotHATTwaffle.Modules
                 bodyUrl = "https://www.tophattwaffle.com/tutorials/";
                 
                 bodyDescription = $"Over the years I've built up quite the collection of tutorial series! " +
-                    $"\n__Here they are are__" +
+                    $"\n__Here they all are__" +
                     $"\n[Version 2 Series](https://goo.gl/XoVXzd)" +
                     $"\n[CSGO Bootcamp](https://goo.gl/srFBxe)" +
                     $"\n[3dsmax](https://goo.gl/JGg48X)" +
@@ -281,7 +283,8 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("",false,builder);
 
         }
-
+        #endregion
+#region CatFact
         [Command("catFact")]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]
@@ -333,5 +336,6 @@ namespace BotHATTwaffle.Modules
         {
             await ReplyAsync("You cannot unsubscribe from cat facts...");
         }
+#endregion
     }
 }

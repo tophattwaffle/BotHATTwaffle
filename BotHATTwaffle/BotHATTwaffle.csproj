@@ -179,6 +179,7 @@
     <Compile Include="GoogleCalendar.cs" />
     <Compile Include="DataService.cs" />
     <Compile Include="Modules\Help.cs" />
+    <Compile Include="Modules\Tools.cs" />
     <Compile Include="Modules\Information.cs" />
     <Compile Include="Modules\Json\JsonRoot.cs" />
     <Compile Include="Modules\Json\JsonSeries.cs" />
