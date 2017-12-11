@@ -181,44 +181,7 @@ namespace BotHATTwaffle
                     }
                 }
         }
-
-        private static Task KYS(SocketMessage message)
-        {
-            Program.ChannelLog($"{message.Author} was asking about PakRat in #{message.Channel}");
-
-            var authBuilder = new EmbedAuthorBuilder()
-            {
-                Name = $"Hey there {message.Author.Username}!",
-                IconUrl = message.Author.GetAvatarUrl(),
-            };
-
-            var footBuilder = new EmbedFooterBuilder()
-            {
-                Text = "This was an automated message about - PakRat"
-
-            };
-
-            var builder = new EmbedBuilder()
-            {
-                Author = authBuilder,
-                Footer = footBuilder,
-
-                Title = $"Click here to learn how to use VIDE!",
-                Url = "https://www.tophattwaffle.com/packing-custom-content-using-vide-in-steampipe/",
-                ImageUrl = "https://www.tophattwaffle.com/wp-content/uploads/2013/11/vide.png",
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-                Color = new Color(243, 128, 72),
-
-                Description = "I was minding my own business when I heard you mention something about PakRat. " +
-                "Don't know if you know this, but PakRat is super old and has been know to cause issues in newer games. " +
-                "There is a newer program that handles packing better called VIDE. You should check that out instead."
-            };
-
-            message.Channel.SendMessageAsync(":kms:");
-
-            return Task.CompletedTask;
-        }
-
+#region PakRat
         private static Task PakRat(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} was asking about PakRat in #{message.Channel}");
@@ -228,19 +191,12 @@ namespace BotHATTwaffle
                 IconUrl = message.Author.GetAvatarUrl(),
             };
 
-            var footBuilder = new EmbedFooterBuilder() {
-                Text = "This was an automated message about - PakRat"
-
-            };
-
             var builder = new EmbedBuilder() {
                 Author = authBuilder,
-                Footer = footBuilder,
 
                 Title = $"Click here to learn how to use VIDE!",
                 Url = "https://www.tophattwaffle.com/packing-custom-content-using-vide-in-steampipe/",
-                ImageUrl = "https://www.tophattwaffle.com/wp-content/uploads/2013/11/vide.png",
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2013/11/vide.png",
                 Color = new Color(243, 128, 72),
 
                 Description = "I was minding my own business when I heard you mention something about PakRat. " +
@@ -252,7 +208,8 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-
+        #endregion
+#region HowToPack
         private static Task HowToPack(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} was asking how to pack a level in #{message.Channel}");
@@ -263,32 +220,25 @@ namespace BotHATTwaffle
                 IconUrl = message.Author.GetAvatarUrl(),
             };
 
-            var footBuilder = new EmbedFooterBuilder()
-            {
-                Text = "This was an automated message about - HowToPack"
-
-            };
-
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
-                Footer = footBuilder,
 
                 Title = $"Click here to learn how to use VIDE!",
                 Url = "https://www.tophattwaffle.com/packing-custom-content-using-vide-in-steampipe/",
-                ImageUrl = "https://www.tophattwaffle.com/wp-content/uploads/2013/11/vide.png",
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2013/11/vide.png",
                 Color = new Color(243, 128, 72),
 
                 Description = $"I noticed you may be looking for information on how to pack custom content into your level. " +
-                $"This is easily done using VIDE. Click the like above to download VIDE and learn how to use it."
+                $"This is easily done using VIDE. Click the link above to download VIDE and learn how to use it."
             };
 
             message.Channel.SendMessageAsync("", false, builder);
 
             return Task.CompletedTask;
         }
-
+        #endregion
+#region Carve
         private static Task Carve(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} was asking how to carve in #{message.Channel}. You should probably kill them.");
@@ -299,16 +249,9 @@ namespace BotHATTwaffle
                 IconUrl = message.Author.GetAvatarUrl(),
             };
 
-            var footBuilder = new EmbedFooterBuilder()
-            {
-                Text = "This was an automated message about - Carve"
-
-            };
-
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
-                Footer = footBuilder,
 
                 Title = $"DO NOT USE CARVE",
                 ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
@@ -322,7 +265,8 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-
+        #endregion
+#region Propper
         private static Task Propper(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} was asking about Propper in #{message.Channel}. You should go WWMT fanboy.");
@@ -333,21 +277,13 @@ namespace BotHATTwaffle
                 IconUrl = message.Author.GetAvatarUrl(),
             };
 
-            var footBuilder = new EmbedFooterBuilder()
-            {
-                Text = "This was an automated message about - Propper"
-
-            };
-
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
-                Footer = footBuilder,
 
                 Title = $"Click here to go to the WallWorm site!",
                 Url = "https://dev.wallworm.com/",
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-                ImageUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/12/worm_logo.png",
+                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/12/worm_logo.png",
                 Color = new Color(243, 128, 72),
 
                 Description = $"I saw you were asking about propper. While Propper still works, it's advised to learn" +
@@ -360,7 +296,8 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-
+        #endregion
+#region VB
         private static Task VB(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} posted about Velocity Brawl #{message.Channel}. You should go kill them.");
@@ -371,16 +308,9 @@ namespace BotHATTwaffle
                 IconUrl = message.Author.GetAvatarUrl(),
             };
 
-            var footBuilder = new EmbedFooterBuilder()
-            {
-                Text = "This was an automated message about - Velocity Brawl"
-
-            };
-
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
-                Footer = footBuilder,
 
                 Title = $"Please no...",
                 ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
@@ -393,7 +323,8 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-
+        #endregion
+#region deYork
         private static Task DeYork(SocketMessage message)
         {
             Random _rand = new Random();
@@ -416,22 +347,13 @@ namespace BotHATTwaffle
                 Name = $"Hey there {message.Author.Username}!",
                 IconUrl = message.Author.GetAvatarUrl(),
             };
-
-            var footBuilder = new EmbedFooterBuilder()
-            {
-                Text = "This was an automated message about - de_york"
-
-            };
             
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
-                Footer = footBuilder,
-                
                 Title = $"You talking about the best level ever?",
                 
                 ImageUrl = yorkUrls[_rand.Next(0, yorkUrls.Length)],
-                //ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
                 Color = new Color(243, 128, 72),
 
                 Description = $"I see that we both share the same love for amazing levels."
@@ -441,5 +363,6 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
+#endregion
     }
 }
