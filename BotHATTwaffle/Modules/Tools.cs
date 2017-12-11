@@ -14,6 +14,7 @@ namespace BotHATTwaffle.Modules
 
         public ToolsService()
         {
+
         }
     }
 
