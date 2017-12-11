@@ -228,7 +228,7 @@ namespace BotHATTwaffle
 
                 Title = $"Click here to learn how to use VIDE!",
                 Url = "https://www.tophattwaffle.com/packing-custom-content-using-vide-in-steampipe/",
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2013/11/vide.png",
+                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vide.png",
                 Color = new Color(243, 128, 72),
 
                 Description = $"I noticed you may be looking for information on how to pack custom content into your level. " +
