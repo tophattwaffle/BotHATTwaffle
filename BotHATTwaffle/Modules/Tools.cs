@@ -83,7 +83,7 @@ namespace BotHATTwaffle.Modules
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
-                Name = "Download VMTEditor",
+                Name = "Download VMT Editor",
                 IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
             };
 
@@ -93,7 +93,7 @@ namespace BotHATTwaffle.Modules
                 Url = "https://gira-x.github.io/VMT-Editor/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vmteditor.png",
                 Color = new Color(50,50,50),
-                Description = "VMTEditor is, hands down, one of the best VMT creation tools that exists for Source engine. " +
+                Description = "VMT Editor is, hands down, one of the best VMT creation tools that exists for Source engine. " +
                 "It quickly became a standard tool for most designers that regularly create VMT files. " +
                 "Created by Yanzl over at MapCore."
 

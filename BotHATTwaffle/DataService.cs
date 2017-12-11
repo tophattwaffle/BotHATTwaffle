@@ -124,8 +124,8 @@ namespace BotHATTwaffle
                     description = htmlDocument.GetElementbyId("content-area").InnerText;
                 }
                 //Fix the bad characters that get pulled from the web page.
-                description = $" {description.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"")}";
-                title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"");
+                description = description.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+                title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
 
                 //Limit length if needed
                 if (description.Length >= 250)
@@ -194,6 +194,8 @@ namespace BotHATTwaffle
                         description = htmlDocument.GetElementbyId("kb-article-content").InnerText;
                     }
 
+                    description = description.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+                    title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
 
                     //Limit length if needed
                     if (description.Length >= 180)
