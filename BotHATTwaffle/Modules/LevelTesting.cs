@@ -189,7 +189,7 @@ namespace BotHATTwaffle.Modules
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "Creator", Value = eventInfo[3], IsInline = true });
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "Where?", Value = eventInfo[10], IsInline = true });
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "Moderator", Value = eventInfo[8], IsInline = true });
-                fieldBuilder.Add(new EmbedFieldBuilder { Name = "More Images", Value = eventInfo[5], IsInline = false });
+                fieldBuilder.Add(new EmbedFieldBuilder { Name = "More Images", Value = $"[Click Here]({eventInfo[5]})", IsInline = false });
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "When?", Value = postTime, IsInline = false });
 
                 footBuilder = new EmbedFooterBuilder()

@@ -431,7 +431,7 @@ namespace BotHATTwaffle
                 Title = $"You talking about the best level ever?",
                 
                 ImageUrl = yorkUrls[_rand.Next(0, yorkUrls.Length)],
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                //ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
                 Color = new Color(243, 128, 72),
 
                 Description = $"I see that we both share the same love for amazing levels."

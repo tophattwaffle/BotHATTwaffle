@@ -69,6 +69,7 @@ public class Program
             .AddSingleton<UtilityService>()
             .AddSingleton<ModerationServices>()
             .AddSingleton<LevelTesting>()
+            .AddSingleton<ToolsService>()
             .AddSingleton<Eavesdropping>()
             .AddSingleton<DataServices>()
             .AddSingleton<Random>()

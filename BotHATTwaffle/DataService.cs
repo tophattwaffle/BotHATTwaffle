@@ -123,8 +123,8 @@ namespace BotHATTwaffle
                     description = htmlDocument.GetElementbyId("content-area").InnerText;
                 }
                 //Fix the bad characters that get pulled from the web page.
-                description = $" {description.Replace(@"&#8211;", "-").Replace("\n", "")}";
-                title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", ""); ;
+                description = $" {description.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"")}";
+                title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"");
 
                 //Limit length if needed
                 if (description.Length >= 250)
@@ -142,7 +142,7 @@ namespace BotHATTwaffle
                     finalImg = imgs[_random.Next(0, imgs.Count)];
 
                 singleResult.Add(title);
-                singleResult.Add(null);
+                singleResult.Add(result.url);
                 singleResult.Add(description);
                 singleResult.Add(finalImg);
                 listResults.Add(singleResult);
