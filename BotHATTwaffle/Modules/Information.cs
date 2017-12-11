@@ -141,6 +141,11 @@ namespace BotHATTwaffle.Modules
                 };
                 await ReplyAsync("",false,builder);
             }
+
+            if(results.Count == 0)
+            {
+                await ReplyAsync("I could not find any results. Please try another search term.");
+            }
         }
         #endregion
 #region Tutorials

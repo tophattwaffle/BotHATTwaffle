@@ -166,67 +166,77 @@ namespace BotHATTwaffle
             List<List<string>> listResults = new List<List<string>>();
             
             string faqurl = "https://www.tophattwaffle.com/wp-admin/admin-ajax.php?action=epkb-search-kb&epkb_kb_id=1&search_words=";
-
-            HtmlWeb faqWeb = new HtmlWeb();
-            HtmlDocument faqDocument = faqWeb.Load($"{faqurl}{searchTerm}");
-            foreach (HtmlNode link in faqDocument.DocumentNode.SelectNodes("//a[@href]"))
+            try
             {
-                List<string> singleResult = new List<string>();
-
-                //Setup the web request for this specific link found. Format it so we can get data about it.
-                string finalUrl = link.GetAttributeValue("href", string.Empty).Replace(@"\", "").Replace("\"", "");
-                HtmlWeb htmlWeb = new HtmlWeb();
-                HtmlDocument htmlDocument = htmlWeb.Load(finalUrl);
-
-                //Get page title.
-                string title = (from x in htmlDocument.DocumentNode.Descendants()
-                                where x.Name.ToLower() == "title"
-                                select x.InnerText).FirstOrDefault();
-
-                //Get atricle content, this is by ID. Only works for my site.
-                string description = null;
-                //Get atricle content, this is by ID. Only works for my site.
-                if (finalUrl.ToLower().Contains("tophattwaffle"))
+                HtmlWeb faqWeb = new HtmlWeb();
+                HtmlDocument faqDocument = faqWeb.Load($"{faqurl}{searchTerm}");
+                foreach (HtmlNode link in faqDocument.DocumentNode.SelectNodes("//a[@href]"))
                 {
-                    description = htmlDocument.GetElementbyId("kb-article-content").InnerText;
-                }
+                    List<string> singleResult = new List<string>();
+
+                    //Setup the web request for this specific link found. Format it so we can get data about it.
+                    string finalUrl = link.GetAttributeValue("href", string.Empty).Replace(@"\", "").Replace("\"", "");
+                    HtmlWeb htmlWeb = new HtmlWeb();
+                    HtmlDocument htmlDocument = htmlWeb.Load(finalUrl);
+
+                    //Get page title.
+                    string title = (from x in htmlDocument.DocumentNode.Descendants()
+                                    where x.Name.ToLower() == "title"
+                                    select x.InnerText).FirstOrDefault();
+
+                    //Get atricle content, this is by ID. Only works for my site.
+                    string description = null;
+                    //Get atricle content, this is by ID. Only works for my site.
+                    if (finalUrl.ToLower().Contains("tophattwaffle"))
+                    {
+                        description = htmlDocument.GetElementbyId("kb-article-content").InnerText;
+                    }
 
 
-                //Limit length if needed
-                if (description.Length >= 180)
-                {
-                    description = description.Substring(0, 180) + "...";
-                }
+                    //Limit length if needed
+                    if (description.Length >= 180)
+                    {
+                        description = description.Substring(0, 180) + "...";
+                    }
 
-                //Get images on the page
-                List<string> imgs = (from x in htmlDocument.DocumentNode.Descendants()
-                                     where x.Name.ToLower() == "img"
-                                     select x.Attributes["src"].Value).ToList<String>();
+                    //Get images on the page
+                    List<string> imgs = (from x in htmlDocument.DocumentNode.Descendants()
+                                         where x.Name.ToLower() == "img"
+                                         select x.Attributes["src"].Value).ToList<String>();
 
-                //Set image to the first non-header image if it exists.
-                string finalImg = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png";
-                if (imgs.Count > 1)
-                    finalImg = imgs[_random.Next(0, imgs.Count)];
+                    //Set image to the first non-header image if it exists.
+                    string finalImg = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png";
+                    if (imgs.Count > 1)
+                        finalImg = imgs[_random.Next(0, imgs.Count)];
 
-                //Add results to list.
-                singleResult.Add(title);
-                singleResult.Add(finalUrl);
-                singleResult.Add(description);
-                singleResult.Add(finalImg);
-                listResults.Add(singleResult);
+                    //Add results to list.
+                    singleResult.Add(title);
+                    singleResult.Add(finalUrl);
+                    singleResult.Add(description);
+                    singleResult.Add(finalImg);
+                    listResults.Add(singleResult);
 
-                //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.
-                if(listResults.Count >= 3)
-                {
-                    singleResult.Clear();
-                    singleResult.Add(@"I cannot display any more results!");
-                    singleResult.Add("http://tophattwaffle.com/faq");
-                    singleResult.Add(@"I found more results than I can display here. Consider going directly to the FAQ main page and searching from there.");
-                    singleResult.Add(null);
-                    break;
+                    //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.
+                    if (listResults.Count >= 3)
+                    {
+                        singleResult.Clear();
+                        singleResult.Add(@"I cannot display any more results!");
+                        singleResult.Add("http://tophattwaffle.com/faq");
+                        singleResult.Add(@"I found more results than I can display here. Consider going directly to the FAQ main page and searching from there.");
+                        singleResult.Add(null);
+                        break;
+                    }
                 }
             }
-
+            catch(Exception)
+            {
+                List<string> singleResult = new List<string>();
+                singleResult.Add("Try a different search term");
+                singleResult.Add("http://tophattwaffle.com/faq");
+                singleResult.Add("I could not locate anything for the search term you provided. Please try a different search term.");
+                singleResult.Add(null);
+                listResults.Add(singleResult);
+            }
             return listResults;
         }
     }
