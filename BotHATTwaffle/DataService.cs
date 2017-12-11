@@ -35,7 +35,7 @@ namespace BotHATTwaffle
             List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
             List<JsonTutorial> tempTutorials = new List<JsonTutorial>();
             List<List<string>> listResults = new List<List<string>>();
-            List<string> singleResult = new List<string>();
+            
 
             if(searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
                 return SearchFAQ(searchTerm);
@@ -109,6 +109,7 @@ namespace BotHATTwaffle
 
             foreach (var result in foundTutorials)
             {
+                List<string> singleResult = new List<string>();
                 HtmlWeb htmlWeb = new HtmlWeb();
                 HtmlDocument htmlDocument = htmlWeb.Load(result.url);
 
@@ -148,7 +149,7 @@ namespace BotHATTwaffle
                 listResults.Add(singleResult);
 
                 //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.
-                if (listResults.Count >= 3)
+                if (listResults.Count >= 3 && searchSeries == "all")
                 {
                     singleResult.Clear();
                     singleResult.Add(@"I cannot display any more results!");

@@ -94,14 +94,14 @@ namespace BotHATTwaffle.Modules
         [Remarks("`>search [series] [SearchTerm]` searches our tutorial database for a result." +
             "\nThere are a few series you can searh from. You can use `>tutorial all [SearchTerm] to search them all. All does not search the FAQ or Legacy Series" +
             "\nExample:" +
-            "\n`>search v2 displacements` or `>search f leak`" +
-            "\n\n`1` `V2Series` `v2`" +
-            "\n`2` `CSGOBootcamp` `bc` `csgobootcamp`" +
-            "\n`3` `3dsmax` `3ds`" +
-            "\n`4` `WrittenTutorials` `written`" +
-            "\n`5` `LegacySeries` `v1` `lg`" +
-            "\n`6` `HammerTroubleshooting` `ht`" +
-            "\n`7` `FAQ` `f`" +
+            "\n `>search v2 displacements` or `>search f leak`" +
+            "\n `1` `V2Series` `v2`" +
+            "\n `2` `CSGOBootcamp` `bc` `csgobootcamp`" +
+            "\n `3` `3dsmax` `3ds`" +
+            "\n `4` `WrittenTutorials` `written`" +
+            "\n `5` `LegacySeries` `v1` `lg`" +
+            "\n `6` `HammerTroubleshooting` `ht`" +
+            "\n `7` `FAQ` `f`" +
             "\nReally big thanks to Mark for helping make the JSON searching work!")]
         [Alias("s")]
         public async Task SearchAsync(string series, [Remainder]string search)
@@ -132,14 +132,14 @@ namespace BotHATTwaffle.Modules
 
                 footBuilder = new EmbedFooterBuilder()
                 {
-                    Text = "Thanks for using the FAQ search!",
+                    Text = "Thanks for using search!",
                     IconUrl = Program._client.CurrentUser.GetAvatarUrl()
                 };
 
                 builder = new EmbedBuilder()
                 {
                     Author = authBuilder,
-                    Footer = footBuilder,
+                    //Footer = footBuilder,
 
                     //Title = $"**Search Results**",
                     Url = r[1],
