@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 namespace BotHATTwaffle.Modules
 {
@@ -79,22 +81,55 @@ namespace BotHATTwaffle.Modules
     public class ModerationModule : ModuleBase<SocketCommandContext>
     {
         private readonly ModerationServices _mod;
+        private readonly LevelTesting _levelTesting;
 
-        public ModerationModule(ModerationServices mod)
+        public ModerationModule(ModerationServices mod, LevelTesting levelTesting)
         {
+            _levelTesting = levelTesting;
             _mod = mod;
         }
 
         //TODO: Shutdown Command.
         //Safely shutdown the bot. Deletes the Playtest Announcement message so it can be rebuilt next load.
         //This will eventually save any pending information to a file
+        #region shutdown
+        [Command("shutdown")]
+        [Summary("`>shutdown [type]` shuts down or restarts bot services")]
+        [Remarks("Requirements: Moderator Role. `s` for shutdown `r` for restart")]
+        public async Task ShutdownAsync(char type)
+        {
+            _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
 
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
+            {
+                await Context.Message.DeleteAsync();
+                await _levelTesting.announceMessage.DeleteAsync();
+
+                if(type == 's')
+                {
+                    Environment.Exit(0);
+                }
+                if(type == 'r')
+                {
+                    Process secondProc = new Process();
+                    secondProc.StartInfo.FileName = "BotHATTwaffle.exe";
+                    secondProc.Start();
+                    Environment.Exit(0);
+                }
+            }
+            else
+            {
+                await Program.ChannelLog($"{Context.User} is trying to shutdown the bot.");
+                await ReplyAsync("You cannot use this command with your current permission level!");
+            }
+        }
+        #endregion
 
         //TODO: Announce Command
         //Posts announcement to Announcements channel. Will need to be responsive
         //so it can prompt people for: title, description, ect... Then use embed builder to post it.
         //Have a time limit on the module so it can auto remove after X amount of time.
-
+        #region Mute
         [Command("mute")]
         [Summary("`>mute [@user]` Mutes someone.")]
         [Remarks("Requirements: Moderator Role")]
@@ -123,5 +158,6 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("You cannot use this command with your current permission level!");
             }
         }
+        #endregion
     }
 }
