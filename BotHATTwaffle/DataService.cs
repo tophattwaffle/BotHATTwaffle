@@ -35,81 +35,98 @@ namespace BotHATTwaffle
             List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
             List<JsonTutorial> tempTutorials = new List<JsonTutorial>();
             List<List<string>> listResults = new List<List<string>>();
-            
+            string[] searchTermArray = searchTerm.Split(' ');
+                
 
             if(searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
                 return SearchFAQ(searchTerm, isPrivate);
 
-            //V2
+            //V2 0
             if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
             {
                 tempTutorials.Clear();
                 tempTutorials.TrimExcess();
-                tempTutorials = series[0].tutorial.FindAll(x => x.tags.Contains(searchTerm));
-                foreach (var t in tempTutorials)
+                foreach(string s in searchTermArray)
                 {
-                    foundTutorials.Add(t);
+                    tempTutorials = series[0].tutorial.FindAll(x => x.tags.Contains(s));
                 }
+                foundTutorials.Concat(tempTutorials).ToList();
             }
-            //Bootcamp
+            //Bootcamp 1
             if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2" || searchSeries.ToLower() == "all")
             {
                 tempTutorials.Clear();
                 tempTutorials.TrimExcess();
-                tempTutorials = series[1].tutorial.FindAll(x => x.tags.Contains(searchTerm));
-                foreach (var t in tempTutorials)
+                foreach (string s in searchTermArray)
                 {
-                    foundTutorials.Add(t);
+                    tempTutorials = series[1].tutorial.FindAll(x => x.tags.Contains(s));
                 }
+                foundTutorials.Concat(tempTutorials).ToList();
             }
-            //3dsmax
+            //3dsmax 2
             if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3" || searchSeries.ToLower() == "all")
             {
                 tempTutorials.Clear();
                 tempTutorials.TrimExcess();
-                tempTutorials = series[2].tutorial.FindAll(x => x.tags.Contains(searchTerm));
-                foreach (var t in tempTutorials)
+                foreach (string s in searchTermArray)
                 {
-                    foundTutorials.Add(t);
+                    tempTutorials = series[2].tutorial.FindAll(x => x.tags.Contains(s));
                 }
+                foundTutorials.Concat(tempTutorials).ToList();
             }
-            //Writtentutorials
+            //Writtentutorials 3
             if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4" || searchSeries.ToLower() == "all")
             {
                 tempTutorials.Clear();
                 tempTutorials.TrimExcess();
-                tempTutorials = series[3].tutorial.FindAll(x => x.tags.Contains(searchTerm));
-                foreach (var t in tempTutorials)
+                foreach (string s in searchTermArray)
                 {
-                    foundTutorials.Add(t);
+                    tempTutorials = series[3].tutorial.FindAll(x => x.tags.Contains(s));
                 }
+                foundTutorials.Concat(tempTutorials).ToList();
             }
-            //hammer troubleshooting
+            //hammer troubleshooting 4
             if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5")
             {
                 tempTutorials.Clear();
                 tempTutorials.TrimExcess();
-                tempTutorials = series[4].tutorial.FindAll(x => x.tags.Contains(searchTerm));
-                foreach (var t in tempTutorials)
+                foreach (string s in searchTermArray)
                 {
-                    foundTutorials.Add(t);
+                    tempTutorials = series[4].tutorial.FindAll(x => x.tags.Contains(s));
                 }
+                foundTutorials.Concat(tempTutorials).ToList();
             }
-            //legacy
+            //legacy 5
             if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "all")
             {
                 tempTutorials.Clear();
                 tempTutorials.TrimExcess();
-                tempTutorials = series[5].tutorial.FindAll(x => x.tags.Contains(searchTerm));
-                foreach (var t in tempTutorials)
+                foreach (string s in searchTermArray)
                 {
-                    foundTutorials.Add(t);
+                    tempTutorials = series[5].tutorial.FindAll(x => x.tags.Contains(s));
                 }
+                foundTutorials.Concat(tempTutorials).ToList();
             }
 
-            foreach (var result in foundTutorials)
+            //Remove douplicates from list.
+            List<JsonTutorial> noDoups = foundTutorials.Distinct().ToList();
+
+            foreach (var result in noDoups)
             {
                 List<string> singleResult = new List<string>();
+
+                //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page. Only limit for non-DM
+                if (listResults.Count >= 2 && searchSeries == "all" && !isPrivate)
+                {
+                    singleResult.Clear();
+                    singleResult.Add(@"View All Tutorials");
+                    singleResult.Add("https://www.tophattwaffle.com/tutorials/");
+                    singleResult.Add(@"There are more results than I can display without flooding chat. Consider viewing all tutorials, or do a search without `all`. If you DM me your search results won't be limited.");
+                    singleResult.Add(null);
+                    listResults.Add(singleResult);
+                    break;
+                }
+                
                 HtmlWeb htmlWeb = new HtmlWeb();
                 HtmlDocument htmlDocument = htmlWeb.Load(result.url);
 
@@ -146,18 +163,6 @@ namespace BotHATTwaffle
                 singleResult.Add(result.url);
                 singleResult.Add(description);
                 singleResult.Add(finalImg);
-
-                //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page. Only limit for non-DM
-                if (listResults.Count >= 2 && searchSeries == "all" && !isPrivate)
-                {
-                    singleResult.Clear();
-                    singleResult.Add(@"View All Tutorials");
-                    singleResult.Add("https://www.tophattwaffle.com/tutorials/");
-                    singleResult.Add(@"There are more results than I can display without flooding chat. Consider viewing all tutorials, or do a search without `all`. If you DM me your search results won't be limited.");
-                    singleResult.Add(null);
-                    listResults.Add(singleResult);
-                    break;
-                }
                 listResults.Add(singleResult);
             }
             return listResults;
@@ -175,6 +180,18 @@ namespace BotHATTwaffle
                 foreach (HtmlNode link in faqDocument.DocumentNode.SelectNodes("//a[@href]"))
                 {
                     List<string> singleResult = new List<string>();
+
+                    //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.  Only limit for non-DM.
+                    if (listResults.Count >= 2 && !isPrivate)
+                    {
+                        singleResult.Clear();
+                        singleResult.Add(@"I cannot display any more results!");
+                        singleResult.Add("http://tophattwaffle.com/faq");
+                        singleResult.Add(@"I found more results than I can display here. Consider going directly to the FAQ main page and searching from there. If you DM me your search results won't be limited.");
+                        singleResult.Add(null);
+                        listResults.Add(singleResult);
+                        break;
+                    }
 
                     //Setup the web request for this specific link found. Format it so we can get data about it.
                     string finalUrl = link.GetAttributeValue("href", string.Empty).Replace(@"\", "").Replace("\"", "");
@@ -218,19 +235,6 @@ namespace BotHATTwaffle
                     singleResult.Add(finalUrl);
                     singleResult.Add(description);
                     singleResult.Add(finalImg);
-
-                    //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.  Only limit for non-DM.
-                    if (listResults.Count >= 2 && !isPrivate)
-                    {
-                        singleResult.Clear();
-                        singleResult.Add(@"I cannot display any more results!");
-                        singleResult.Add("http://tophattwaffle.com/faq");
-                        singleResult.Add(@"I found more results than I can display here. Consider going directly to the FAQ main page and searching from there. If you DM me your search results won't be limited.");
-                        singleResult.Add(null);
-                        listResults.Add(singleResult);
-                        break;
-                    }
-
                     listResults.Add(singleResult);
                 }
             }
