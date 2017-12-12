@@ -44,7 +44,7 @@ namespace BotHATTwaffle.Modules
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vtfedit.png",
                 Color = new Color(255, 206, 199),
                 Description = "VTFEdit is a lightweight program that can be used to convert images into the Valve VTF image format." +
-                " It is much easier to use than VTEX.exe and provides a nice GUI for everythign you'd ever need to get your images into the Source Engine"
+                " It is much easier to use than VTEX.exe and provides a nice GUI for everything you'd ever need to get your images into the Source Engine."
 
             };
             await ReplyAsync("", false, builder.Build());
