@@ -104,13 +104,16 @@ namespace BotHATTwaffle.Modules
             {
                 await Context.Message.DeleteAsync();
                 await _levelTesting.announceMessage.DeleteAsync();
+                
 
                 if(type == 's')
                 {
+                    await Program.ChannelLog($"Shutting down! Invoked by {Context.Message.Author.Username}");
                     Environment.Exit(0);
                 }
                 if(type == 'r')
                 {
+                    await Program.ChannelLog($"Restarting! Invoked by {Context.Message.Author.Username}");
                     Process secondProc = new Process();
                     secondProc.StartInfo.FileName = "BotHATTwaffle.exe";
                     secondProc.Start();
