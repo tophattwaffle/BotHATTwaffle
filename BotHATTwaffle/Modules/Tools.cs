@@ -67,7 +67,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Url = "https://www.tophattwaffle.com/downloads/gcfscape/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/gcfscape.png",
-                Color = new Color(63,56,156),
+                Color = new Color(63, 56, 156),
                 Description = "GCFScape is a utility that will let you explore, extract, and manage content in various packages used by Valve / Steam games." +
                 " Such as VPK, GCF, PAK, BSP, and more."
 
@@ -92,7 +92,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Url = "https://gira-x.github.io/VMT-Editor/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vmteditor.png",
-                Color = new Color(50,50,50),
+                Color = new Color(50, 50, 50),
                 Description = "VMT Editor is, hands down, one of the best VMT creation tools that exists for Source engine. " +
                 "It quickly became a standard tool for most designers that regularly create VMT files. " +
                 "Created by Yanzl over at MapCore."
@@ -120,6 +120,55 @@ namespace BotHATTwaffle.Modules
                 Color = new Color(50, 50, 50),
                 Description = "VIDE is a 3rd party tool that has many tools rolled into one awesome package. " +
                 "Most people use it for packing assets into a level, but it can do so much more than that."
+
+            };
+            await ReplyAsync("", false, builder.Build());
+        }
+        #endregion
+        #region WallWorm
+        [Command("wwmt")]
+        [Summary("`>wwmt` Gives you a link to Wall Worm's site")]
+        public async Task WallWormAsync()
+        {
+            var authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = "Check out Wall Worm",
+                IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
+            };
+
+            var builder = new EmbedBuilder()
+            {
+                Author = authBuilder,
+                Url = "https://dev.wallworm.com/",
+                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/worm_logo.png",
+                Color = new Color(21, 21, 21),
+                Description = "Wall Worm tools are a scripting package created to help designers working in 3dsmax " +
+                "export assets and levels into the Source Engine. It's the best thing to ever happen to Source Engine modeling."
+
+            };
+            await ReplyAsync("", false, builder.Build());
+        }
+        #endregion
+        #region bspsource
+        [Command("bspsource")]
+        [Summary("`>bspsource` Gives you a link to Wall Worm's site")]
+        [Alias("bsp")]
+        public async Task bspsourceAsync()
+        {
+            var authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = "Download BSPSource",
+                IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
+            };
+
+            var builder = new EmbedBuilder()
+            {
+                Author = authBuilder,
+                Url = "https://www.tophattwaffle.com/downloads/bspsource/",
+                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/BSPSource_icon.png",
+                Color = new Color(84,137,71),
+                Description = "BSPSource is a community tool that can be used to decompile a BSP file into a VMF that can be " +
+                "opened inside Hammer. It is a great tool to see how things are done in a map. It should not be used to steal content."
 
             };
             await ReplyAsync("", false, builder.Build());
