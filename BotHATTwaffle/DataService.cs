@@ -36,7 +36,6 @@ namespace BotHATTwaffle
             List<JsonTutorial> tempTutorials = new List<JsonTutorial>();
             List<List<string>> listResults = new List<List<string>>();
             string[] searchTermArray = searchTerm.Split(' ');
-                
 
             if(searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
                 return SearchFAQ(searchTerm, isPrivate);
@@ -44,68 +43,50 @@ namespace BotHATTwaffle
             //V2 0
             if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
             {
-                tempTutorials.Clear();
-                tempTutorials.TrimExcess();
                 foreach(string s in searchTermArray)
                 {
-                    tempTutorials = series[0].tutorial.FindAll(x => x.tags.Contains(s));
+                    foundTutorials.AddRange(series[0].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
-                foundTutorials.Concat(tempTutorials).ToList();
             }
             //Bootcamp 1
             if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2" || searchSeries.ToLower() == "all")
             {
-                tempTutorials.Clear();
-                tempTutorials.TrimExcess();
                 foreach (string s in searchTermArray)
                 {
-                    tempTutorials = series[1].tutorial.FindAll(x => x.tags.Contains(s));
+                    foundTutorials.AddRange(series[1].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
-                foundTutorials.Concat(tempTutorials).ToList();
             }
             //3dsmax 2
             if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3" || searchSeries.ToLower() == "all")
             {
-                tempTutorials.Clear();
-                tempTutorials.TrimExcess();
                 foreach (string s in searchTermArray)
                 {
-                    tempTutorials = series[2].tutorial.FindAll(x => x.tags.Contains(s));
+                    foundTutorials.AddRange(series[2].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
-                foundTutorials.Concat(tempTutorials).ToList();
             }
             //Writtentutorials 3
             if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4" || searchSeries.ToLower() == "all")
             {
-                tempTutorials.Clear();
-                tempTutorials.TrimExcess();
                 foreach (string s in searchTermArray)
                 {
-                    tempTutorials = series[3].tutorial.FindAll(x => x.tags.Contains(s));
+                    foundTutorials.AddRange(series[3].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
-                foundTutorials.Concat(tempTutorials).ToList();
             }
             //hammer troubleshooting 4
             if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5")
             {
-                tempTutorials.Clear();
-                tempTutorials.TrimExcess();
                 foreach (string s in searchTermArray)
                 {
-                    tempTutorials = series[4].tutorial.FindAll(x => x.tags.Contains(s));
+                    foundTutorials.AddRange(series[4].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
-                foundTutorials.Concat(tempTutorials).ToList();
             }
             //legacy 5
             if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "all")
             {
-                tempTutorials.Clear();
-                tempTutorials.TrimExcess();
                 foreach (string s in searchTermArray)
                 {
-                    tempTutorials = series[5].tutorial.FindAll(x => x.tags.Contains(s));
+                    foundTutorials.AddRange(series[5].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
-                foundTutorials.Concat(tempTutorials).ToList();
             }
 
             //Remove douplicates from list.
@@ -121,7 +102,7 @@ namespace BotHATTwaffle
                     singleResult.Clear();
                     singleResult.Add(@"View All Tutorials");
                     singleResult.Add("https://www.tophattwaffle.com/tutorials/");
-                    singleResult.Add(@"There are more results than I can display without flooding chat. Consider viewing all tutorials, or do a search without `all`. If you DM me your search results won't be limited.");
+                    singleResult.Add(@"There are more results than I can display without flooding chat. Consider viewing all tutorials, or do a search without `all`. If you DM me your search the results won't be limited.");
                     singleResult.Add(null);
                     listResults.Add(singleResult);
                     break;

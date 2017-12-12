@@ -6,12 +6,13 @@ using Discord;
 using System;
 using System.Collections.Generic;
 using Discord.Rest;
+using System.IO;
 
 namespace BotHATTwaffle.Modules
 {
     public class LevelTesting
     {
-        RestUserMessage announceMessage = null;
+        public RestUserMessage announceMessage { get; set; }
         public GoogleCalendar _googleCalendar;
         public string[] lastEventInfo;
         public string[] currentEventInfo;
