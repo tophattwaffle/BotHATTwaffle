@@ -38,6 +38,7 @@ namespace BotHATTwaffle.Modules
                     u.user.RemoveRoleAsync(muteRole);
                     u.user.SendMessageAsync("You have been unmuted!");
                     muteList.Remove(u);
+                    Program.ChannelLog($"{u.user.Username} Has been unmuted.");
                     Task.Delay(1000);
                 }
             }

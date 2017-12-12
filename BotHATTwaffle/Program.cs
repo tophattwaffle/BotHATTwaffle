@@ -139,16 +139,16 @@ public class Program
 
     public static Task ChannelLog(string message)
     {
-        logChannel.SendMessageAsync($"\n```{message}```");
-        Console.WriteLine($"{DateTime.Now} {message}");
+        logChannel.SendMessageAsync($"```{DateTime.Now}\n{message}```");
+        Console.WriteLine($"{DateTime.Now}: {message}");
 
         return Task.CompletedTask;
     }
 
     public static Task ChannelLog(string title, string message)
     {
-        logChannel.SendMessageAsync($"\n```{title}\n\n{message}```");
-        Console.WriteLine($"{DateTime.Now} {title}\n{message}");
+        logChannel.SendMessageAsync($"```{DateTime.Now}\n{title}\n{message}```");
+        Console.WriteLine($"{DateTime.Now}: {title}\n{message}");
 
         return Task.CompletedTask;
     }
