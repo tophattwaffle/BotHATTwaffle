@@ -33,7 +33,6 @@ namespace BotHATTwaffle
         public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
         {
             List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
-            List<JsonTutorial> tempTutorials = new List<JsonTutorial>();
             List<List<string>> listResults = new List<List<string>>();
             string[] searchTermArray = searchTerm.Split(' ');
 
