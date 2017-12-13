@@ -5,14 +5,19 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using BotHATTwaffle.Modules.Json;
 using HtmlAgilityPack;
+using System.Threading.Tasks;
+using CoreRCON;
+using System.Net;
 
 namespace BotHATTwaffle
 {
     public class DataServices
     {
         JObject searchData;
+        JObject serverData;
         JsonRoot root;
         List<JsonSeries> series;
+        List<JsonServer> servers;
         Random _random;
 
         public DataServices(Random random)
@@ -23,11 +28,38 @@ namespace BotHATTwaffle
 
         private void Start()
         {
-            string dataPath = "searchData.json";
-            searchData = JObject.Parse(File.ReadAllText(dataPath));
-
+            string searchDataPath = "searchData.json";
+            searchData = JObject.Parse(File.ReadAllText(searchDataPath));
             root = searchData.ToObject<JsonRoot>();
             series = root.series;
+
+            string serverDataPath = "servers.json";
+            serverData = JObject.Parse(File.ReadAllText(serverDataPath));
+            root = serverData.ToObject<JsonRoot>();
+            servers = root.servers;
+
+            
+        }
+
+        public JsonServer GetServer(string serverStr)
+        {
+            return servers.Find(x => x.Name == serverStr);
+        }
+
+        async public Task<string> RconCommand(string command, JsonServer server)
+        {
+            IPHostEntry iPHostEntry = null;
+            try
+            {
+                iPHostEntry = Dns.GetHostEntry(server.Address);
+            }
+            catch
+            {
+                return "HOST_NOT_FOUND";
+            }
+            var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password);
+            string reply = await rcon.SendCommandAsync(command);
+            return reply;
         }
 
         public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
@@ -224,5 +256,6 @@ namespace BotHATTwaffle
             }
             return listResults;
         }
+
     }
 }

@@ -7,22 +7,27 @@ using System;
 using System.Collections.Generic;
 using Discord.Rest;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace BotHATTwaffle.Modules
 {
     public class LevelTesting
     {
+        private readonly DataServices _dataServices;
         public RestUserMessage announceMessage { get; set; }
         public GoogleCalendar _googleCalendar;
         public string[] lastEventInfo;
         public string[] currentEventInfo;
         Boolean alertedHour = false;
         Boolean alertedStart = false;
+        Boolean alertedTwenty = false;
+        Boolean alertedFifteen = false;
         int calUpdateTicks = 2;
         int caltick = 0;
 
-        public LevelTesting()
+        public LevelTesting(DataServices dataServices)
         {
+            _dataServices = dataServices;
             if ((Program.config.ContainsKey("calUpdateTicks") && !int.TryParse(Program.config["calUpdateTicks"], out calUpdateTicks)))
             {
                 Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {calUpdateTicks}.");
@@ -84,8 +89,51 @@ namespace BotHATTwaffle.Modules
             //Reset announcement flags.
             alertedHour = false;
             alertedStart = false;
+            alertedTwenty = false;
+            alertedFifteen = false;
 
             await Announce();
+        }
+
+        async public Task SetupServerAsync(string serverStr, Boolean type)
+        {
+            //type true = Change map
+            //type false = set config
+            var server = _dataServices.GetServer(serverStr.Substring(0, 3));
+
+            if (type) //Change map
+            {
+                var result = Regex.Match(currentEventInfo[6], @"\d+$").Value;
+                await _dataServices.RconCommand($"host_workshop_map {result}", server);
+            }
+            else //Set config and post about it
+            {
+                
+                var builder = new EmbedBuilder();
+                var authBuilder = new EmbedAuthorBuilder();
+                List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
+                authBuilder = new EmbedAuthorBuilder()
+                {
+                    Name = $"Setting up {server.Address} for {currentEventInfo[2]}",
+                    IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+                };
+
+                fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"connect {currentEventInfo[10]}", IsInline = false });
+
+                builder = new EmbedBuilder()
+                {
+                    Author = authBuilder,
+                    Fields = fieldBuilder,
+                    Title = $"--Workshop Link--",
+                    Url = currentEventInfo[6],
+                    ThumbnailUrl = currentEventInfo[4],
+                    Color = new Color(71, 126, 159),
+
+                    Description = $"**{server.Description}**\n\n{currentEventInfo[9]}"
+                };
+                await Program.testingChannel.SendMessageAsync("", false, builder);
+                await _dataServices.RconCommand($"exec postgame", server);
+            }
         }
 
         async public Task<Embed> FormatPlaytestInformationAsync(string[] eventInfo, Boolean userCall)
@@ -176,6 +224,26 @@ namespace BotHATTwaffle.Modules
                     {
                         x.Mentionable = false;
                     });
+                }
+
+                //Change map 20 minutes beforehand
+                TimeSpan twentyMinutes = new TimeSpan(0, 20, 0);
+                DateTime twentyAdjusted = DateTime.Now.Add(twentyMinutes);
+                int twentyTimeCompare = DateTime.Compare(twentyAdjusted, time);
+                if (twentyTimeCompare > 0 && !alertedTwenty)
+                {
+                    alertedTwenty = true;
+                    await SetupServerAsync(eventInfo[10], true);
+                }
+
+                //Exec postgame config for people to mess around on the server
+                TimeSpan fifteenMinutes = new TimeSpan(0, 15, 0);
+                DateTime fifteenAdjusted = DateTime.Now.Add(fifteenMinutes);
+                int fifteenTimeCompare = DateTime.Compare(fifteenAdjusted, time);
+                if (fifteenTimeCompare > 0 && !alertedFifteen)
+                {
+                    alertedFifteen = true;
+                    await SetupServerAsync(eventInfo[10], false);
                 }
 
 

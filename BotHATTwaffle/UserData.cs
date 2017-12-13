@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using System;
 
 namespace BotHATTwaffle
@@ -7,6 +8,8 @@ namespace BotHATTwaffle
     {
         public SocketGuildUser user { get; set; }
         public DateTime unmuteTime { get; set; }
+        public DateTime joinRoleTime { get; set; }
+        public Embed joinMessage { get; set; }
 
         public UserData()
         {
@@ -15,6 +18,11 @@ namespace BotHATTwaffle
         public bool CanUnmute()
         {
             return unmuteTime.CompareTo(DateTime.Now) < 0;
+        }
+
+        public bool CanRole()
+        {
+            return joinRoleTime.CompareTo(DateTime.Now) < 0;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace BotHATTwaffle.Modules
 {
     public class ModerationServices
     {
-        public List<UserData> muteList;
+        public List<UserData> muteList = new List<UserData>();
         SocketRole muteRole;
         SocketRole modRole;
         public string modRoleStr;
@@ -21,8 +21,6 @@ namespace BotHATTwaffle.Modules
 
         public ModerationServices()
         {
-            muteList = new List<UserData>();
-
             if (Program.config.ContainsKey("moderatorRoleName"))
                 modRoleStr = (Program.config["moderatorRoleName"]);
             
@@ -82,17 +80,49 @@ namespace BotHATTwaffle.Modules
     {
         private readonly ModerationServices _mod;
         private readonly LevelTesting _levelTesting;
+        private readonly DataServices _dataServices;
 
-        public ModerationModule(ModerationServices mod, LevelTesting levelTesting)
+        public ModerationModule(ModerationServices mod, LevelTesting levelTesting, DataServices dataServices)
         {
+            _dataServices = dataServices;
             _levelTesting = levelTesting;
             _mod = mod;
         }
 
-        //TODO: Shutdown Command.
-        //Safely shutdown the bot. Deletes the Playtest Announcement message so it can be rebuilt next load.
-        //This will eventually save any pending information to a file
-        #region shutdown
+        [Command("rcon")]
+        [Summary("`>rcon [server] [command]` Sends rcon command to server.")]
+        [Remarks("Requirements: Moderator Role. Sends rcon command to the desired server. Use the server 3 letter code (eus) to pick the server. If " +
+            "the command returns output it will be displayed. Some commands do not have output.")]
+        [Alias("r")]
+        public async Task RconAsync(string serverString, [Remainder]string command)
+        {
+            _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
+            {
+                var server = _dataServices.GetServer(serverString);
+                string reply = null;
+                try
+                {
+                    if (server != null)
+                        reply = await _dataServices.RconCommand(command, server);
+                }
+                catch { }
+
+                if(reply == "HOST_NOT_FOUND")
+                    await ReplyAsync($"```Cannot send command because the servers IP address could not be found\nThis is a probably a DNS issue.```");
+                else if(server == null)
+                    await ReplyAsync($"```Cannot send command because the server could not be found.\nIs it in the json?.```");
+                else
+                    await ReplyAsync($"```Command Sent to {server.Name}\n{reply}```");
+                
+            }
+            else
+            {
+                await Program.ChannelLog($"{Context.User} is trying to rcon from the bot.");
+                await ReplyAsync("You cannot use this command with your current permission level!");
+            }
+        }
+
         [Command("shutdown")]
         [Summary("`>shutdown [type]` shuts down or restarts bot services")]
         [Remarks("Requirements: Moderator Role. `s` for shutdown `r` for restart")]
@@ -126,13 +156,13 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("You cannot use this command with your current permission level!");
             }
         }
-        #endregion
+
 
         //TODO: Announce Command
         //Posts announcement to Announcements channel. Will need to be responsive
         //so it can prompt people for: title, description, ect... Then use embed builder to post it.
         //Have a time limit on the module so it can auto remove after X amount of time.
-        #region Mute
+
         [Command("mute")]
         [Summary("`>mute [@user]` Mutes someone.")]
         [Remarks("Requirements: Moderator Role")]
@@ -161,6 +191,5 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("You cannot use this command with your current permission level!");
             }
         }
-        #endregion
     }
 }

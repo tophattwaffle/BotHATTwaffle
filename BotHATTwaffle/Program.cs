@@ -78,7 +78,7 @@ public class Program
         _services.GetRequiredService<TimerService>();
         _services.GetRequiredService<DataServices>();
 
-        Eavesdropping _eavesdrop = new Eavesdropping(config);
+        Eavesdropping _eavesdrop = new Eavesdropping();
 
         //Event Subscriptions
         _client.Log += Log;

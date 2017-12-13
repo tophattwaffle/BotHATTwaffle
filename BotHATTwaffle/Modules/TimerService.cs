@@ -1,13 +1,8 @@
 ﻿#pragma warning disable CS4014 //Disable the async warning. #yolo
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
-using Discord;
-using BotHATTwaffle;
-using BotHATTwaffle.Modules;
-using Discord.Rest;
 
 namespace BotHATTwaffle.Modules
 {

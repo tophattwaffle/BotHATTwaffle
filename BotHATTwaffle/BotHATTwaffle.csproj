@@ -49,6 +49,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CoreRCON, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CoreRCON.3.0.0\lib\netstandard1.6\CoreRCON.dll</HintPath>
+    </Reference>
     <Reference Include="Costura, Version=1.6.2.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.1.6.2\lib\dotnet\Costura.dll</HintPath>
       <Private>False</Private>
@@ -179,6 +182,7 @@
     <Compile Include="GoogleCalendar.cs" />
     <Compile Include="DataService.cs" />
     <Compile Include="Modules\Help.cs" />
+    <Compile Include="Modules\Json\JsonServer.cs" />
     <Compile Include="Modules\Tools.cs" />
     <Compile Include="Modules\Information.cs" />
     <Compile Include="Modules\Json\JsonRoot.cs" />

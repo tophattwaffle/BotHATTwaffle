@@ -27,7 +27,7 @@ namespace BotHATTwaffle.Modules
         {
             _data = data;
         }
-#region VDC
+
         [Command("vdc")]
         [Summary("`>vdc [Search]` Quick link back to a VDC search")]
         [Remarks("Does a search on the VDC and gives you the link back. Try to use the proper full term, for instance: " +
@@ -87,8 +87,8 @@ namespace BotHATTwaffle.Modules
 
             await ReplyAsync("",false,builder);
         }
-        #endregion
-#region Search
+
+
         [Command("search")]
         [Summary("`>search [series] [SearchTerm]` searches a tutorial series.")]
         [Remarks("`>search [series] [SearchTerm]` searches our tutorial database for a result." +
@@ -107,7 +107,7 @@ namespace BotHATTwaffle.Modules
         public async Task SearchAsync(string series, [Remainder]string search)
         {
             bool isPrivate = false;
-
+            
             if (Context.IsPrivate)
                 isPrivate = true;
 
@@ -116,11 +116,13 @@ namespace BotHATTwaffle.Modules
 
             if (results.Count == 0)
             {
-                List<string> singleResult = new List<string>();
-                singleResult.Add("Try a different search term");
-                singleResult.Add("http://tophattwaffle.com/faq");
-                singleResult.Add("I could not locate anything for the search term you provided. Please try a different search term.");
-                singleResult.Add(null);
+                List<string> singleResult = new List<string>
+                {
+                    "Try a different search term",
+                    "http://tophattwaffle.com/faq",
+                    "I could not locate anything for the search term you provided. Please try a different search term.",
+                    null
+                };
                 results.Add(singleResult);
             }
 
@@ -157,8 +159,7 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("",false,builder);
             }
         }
-        #endregion
-#region Tutorials
+
         [Command("tutorials")]
         [Summary("`>tutorials [Optional series]` Displays links to tutorial series")]
         [Remarks("`>tutorials [Optional series]` Example: `>tutorials` `>tutorials v2`" +
@@ -298,8 +299,8 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("",false,builder);
 
         }
-        #endregion
-#region CatFact
+
+
         [Command("catFact")]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]
@@ -351,6 +352,6 @@ namespace BotHATTwaffle.Modules
         {
             await ReplyAsync("You cannot unsubscribe from cat facts...");
         }
-#endregion
+
     }
 }

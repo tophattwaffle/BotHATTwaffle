@@ -1,13 +1,19 @@
-﻿using Discord.WebSocket;
-using System.Collections.Generic;
+﻿#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+using Discord.WebSocket;
 using System.Threading.Tasks;
 using Discord;
 using System;
+using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BotHATTwaffle
 {
     class Eavesdropping
     {
+        private readonly Timer _timer;
+        int joinDelayRoleTime = 10;
+        public List<UserData> joinDelayList = new List<UserData>();
         string[] pakRatEavesDrop;
         string[] howToPackEavesDrop;
         string[] carveEavesDrop;
@@ -18,22 +24,22 @@ namespace BotHATTwaffle
         string[] agreeStrings;
         Random _random;
 
-        public Eavesdropping(Dictionary<string, string> config)
+        public Eavesdropping()
         {
-            if (config.ContainsKey("pakRatEavesDropCSV"))
-                pakRatEavesDrop = (config["pakRatEavesDropCSV"]).Split(',') ;
-            if (config.ContainsKey("howToPackEavesDropCSV"))
-                howToPackEavesDrop = (config["howToPackEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("carveEavesDropCSV"))
-                carveEavesDrop = (config["carveEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("propperEavesDropCSV"))
-                propperEavesDrop = (config["propperEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("vbEavesDropCSV"))
-                vbEavesDrop = (config["vbEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("yorkCSV"))
-                yorkEavesDrop = (config["yorkCSV"]).Split(',');
-            if (config.ContainsKey("agreeUserCSV"))
-                agreeEavesDrop = (config["agreeUserCSV"]).Split(',');
+            if (Program.config.ContainsKey("pakRatEavesDropCSV"))
+                pakRatEavesDrop = (Program.config["pakRatEavesDropCSV"]).Split(',') ;
+            if (Program.config.ContainsKey("howToPackEavesDropCSV"))
+                howToPackEavesDrop = (Program.config["howToPackEavesDropCSV"]).Split(',');
+            if (Program.config.ContainsKey("carveEavesDropCSV"))
+                carveEavesDrop = (Program.config["carveEavesDropCSV"]).Split(',');
+            if (Program.config.ContainsKey("propperEavesDropCSV"))
+                propperEavesDrop = (Program.config["propperEavesDropCSV"]).Split(',');
+            if (Program.config.ContainsKey("vbEavesDropCSV"))
+                vbEavesDrop = (Program.config["vbEavesDropCSV"]).Split(',');
+            if (Program.config.ContainsKey("yorkCSV"))
+                yorkEavesDrop = (Program.config["yorkCSV"]).Split(',');
+            if (Program.config.ContainsKey("agreeUserCSV"))
+                agreeEavesDrop = (Program.config["agreeUserCSV"]).Split(',');
 
             _random = new Random();
 
@@ -43,12 +49,42 @@ namespace BotHATTwaffle
                 "^^^ I agree with ^^^",
             };
 
+            _timer = new Timer(_ =>
+            {
+                foreach (UserData u in joinDelayList.ToList())
+                {
+                    if (u.CanRole())
+                    {
+                        u.user.AddRoleAsync(Program.playTesterRole);
+                        u.user.SendMessageAsync("", false, u.joinMessage);
+                        joinDelayList.Remove(u);
+                        Program.ChannelLog($"{u.user.Username} now has playtester role. Welcome DM was sent.");
+                        Task.Delay(1000);
+                    }
+                }
+            },
+            null,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(60));
         }
-#region UserJoin
+
+        public void AddNewUserJoin(SocketGuildUser inUser, DateTime inRoleTime, Embed message)
+        {
+            Program.ChannelLog($"USER JOINED {inUser.Username}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
+                $"\nCreated At: {inUser.CreatedAt}" +
+                $"\nJoined At: {inUser.JoinedAt}" +
+                $"\nUser ID: {inUser.Id}");
+            joinDelayList.Add(new UserData()
+            {
+                user = inUser,
+                joinRoleTime = inRoleTime,
+                joinMessage = message,
+            });
+        }
+
+
         async internal Task UserJoin(SocketUser user)
         {
-            await Program.ChannelLog($"userjoin", $"{user.Username} has joined the server. Apply roles and sending them a message.");
-
             var builder = new EmbedBuilder();
             var authBuilder = new EmbedAuthorBuilder();
             var footBuilder = new EmbedFooterBuilder();
@@ -76,7 +112,7 @@ namespace BotHATTwaffle
                 Color = new Color(243, 128, 72),
 
                 Description = $"Hi there! Thanks for joining the SourceEngine Discord server!\n" +
-                $"There are a few things to know before you are able to talk in the server. Feel free to ask a question in " +
+                $"Now that the {joinDelayRoleTime} minute verification has ended, there are a few things I wanted to tell you! Feel free to ask a question in " +
                 $"any of the relevant channels you see. Just try to keep things on topic. \n\nAdditionally, you've been given a role called" +
                 $" `Playtester`. This role is used to notify you when we have a playtest starting. You can remove yourself from the " +
                 $"notifications by typing: `>playtester`.\n\nIf you want to see any of my commands, type: `>help`. Thanks for reading," +
@@ -84,11 +120,12 @@ namespace BotHATTwaffle
                 $"\n\nThere are roles you can use to show what skills you have. To see what roles you can give yourself, type: `>roleme display`" +
                 $"\n\nGLHF"
             };
-            await (user as IGuildUser).AddRoleAsync(Program.playTesterRole);
-            await user.SendMessageAsync("",false,builder);
+
+            DateTime roleTime = DateTime.Now.AddMinutes(joinDelayRoleTime);
+            builder.Build();
+            AddNewUserJoin((SocketGuildUser)user, roleTime, builder.Build());
         }
-#endregion
-#region listen
+
         async internal Task Listen(SocketMessage message)
         {
             bool proceed = true;
@@ -99,18 +136,20 @@ namespace BotHATTwaffle
             //Let's check against the values defined in the settings file.
 
             if (proceed)
-                if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:"))
+                if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
                 {
                     var builder = new EmbedBuilder()
                     {
                         ImageUrl = "https://content.tophattwaffle.com/BotHATTwaffle/doit.jpg",
                     };
                     await message.Channel.SendMessageAsync("",false, builder);
-                 }
+                    proceed = false;
+                }
             if (proceed)
                 if (message.Content.ToLower().Equals("who is daddy") || message.Content.ToLower().Equals("who is tophattwaffle"))
                 {
                     await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
+                    proceed = false;
                 }
             if (proceed)
                 foreach (string s in agreeEavesDrop)
@@ -118,6 +157,7 @@ namespace BotHATTwaffle
                     if (message.Content.Equals("^") && message.Author.Username.Equals(s))
                     {
                             await message.Channel.SendMessageAsync(agreeStrings[_random.Next(0, agreeStrings.Length)]);
+                            proceed = false;
                             break;
                     }
                 }
@@ -182,8 +222,7 @@ namespace BotHATTwaffle
                     }
                 }
         }
-#endregion
-#region PakRat
+
         private static Task PakRat(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} was asking about PakRat in #{message.Channel}");
@@ -210,8 +249,7 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-        #endregion
-#region HowToPack
+
         private static Task HowToPack(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} was asking how to pack a level in #{message.Channel}");
@@ -239,8 +277,7 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-        #endregion
-#region Carve
+
         private static Task Carve(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} was asking how to carve in #{message.Channel}. You should probably kill them.");
@@ -267,8 +304,7 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-        #endregion
-#region Propper
+
         private static Task Propper(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} was asking about Propper in #{message.Channel}. You should go WWMT fanboy.");
@@ -298,8 +334,7 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-        #endregion
-#region VB
+
         private static Task VB(SocketMessage message)
         {
             Program.ChannelLog($"{message.Author} posted about Velocity Brawl #{message.Channel}. You should go kill them.");
@@ -325,8 +360,7 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-        #endregion
-#region deYork
+
         private static Task DeYork(SocketMessage message)
         {
             Random _rand = new Random();
@@ -365,6 +399,5 @@ namespace BotHATTwaffle
 
             return Task.CompletedTask;
         }
-#endregion
     }
 }

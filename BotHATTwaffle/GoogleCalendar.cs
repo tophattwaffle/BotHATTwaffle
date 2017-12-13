@@ -97,7 +97,7 @@ namespace BotHATTwaffle
                         finalEvent[10] = "This is a bunch : of dummy date to be stripped";
 
 
-                        finalEvent = finalEvent.Select((line, index) => line.Substring(line.IndexOf(':') >= 0 && index > 2 ? line.IndexOf(':') + 2 : 0)).ToArray();
+                        finalEvent = finalEvent.Select((line, index) => line.Substring(line.IndexOf(':') >= 0 && index > 2 ? line.IndexOf(':') + 2 : 0).Trim()).ToArray();
                         finalEvent[10] = eventItem.Location;
                     }
                     catch(Exception e)
