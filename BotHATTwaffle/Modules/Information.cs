@@ -92,7 +92,7 @@ namespace BotHATTwaffle.Modules
         [Command("search")]
         [Summary("`>search [series] [SearchTerm]` searches a tutorial series.")]
         [Remarks("`>search [series] [SearchTerm]` searches our tutorial database for a result." +
-            "\nThere are a few series you can searh from. You can use `>tutorial all [SearchTerm] to search them all. All does not search the FAQ or Legacy Series" +
+            "\nThere are a few series you can searh from. You can use `>tutorial all [SearchTerm]` to search them all. All does not search the FAQ or Legacy Series" +
             "\nExample:" +
             "\n `>search v2 displacements` or `>search f leak`" +
             "\n `1` `V2Series` `v2`" +
