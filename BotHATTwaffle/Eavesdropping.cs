@@ -70,7 +70,7 @@ namespace BotHATTwaffle
 
         public void AddNewUserJoin(SocketGuildUser inUser, DateTime inRoleTime, Embed message)
         {
-            Program.ChannelLog($"USER JOINED {inUser.Username}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
+            Program.ChannelLog($"USER JOINED {inUser.Username}#{inUser.Discriminator}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
                 $"\nCreated At: {inUser.CreatedAt}" +
                 $"\nJoined At: {inUser.JoinedAt}" +
                 $"\nUser ID: {inUser.Id}");
