@@ -126,8 +126,9 @@ namespace BotHATTwaffle.Modules
         }
         #endregion
         #region WallWorm
-        [Command("wwmt")]
+        [Command("wallworm")]
         [Summary("`>wwmt` Gives you a link to Wall Worm's site")]
+        [Alias("wwmt")]
         public async Task WallWormAsync()
         {
             var authBuilder = new EmbedAuthorBuilder()
