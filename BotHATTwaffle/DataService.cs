@@ -59,6 +59,7 @@ namespace BotHATTwaffle
             }
             var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password);
             string reply = await rcon.SendCommandAsync(command);
+            rcon.Dispose();
             return reply;
         }
 
