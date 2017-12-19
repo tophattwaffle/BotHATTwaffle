@@ -316,7 +316,7 @@ namespace BotHATTwaffle.Modules
                     //ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
                     Color = new Color(214, 91, 47),
 
-                    Description = $"Believe it or not, there aren't any tests scheduled. Click the link above to schedule your own playtest!**{announceDiag}**"
+                    Description = $"Believe it or not, there aren't any tests scheduled. Click the link above to schedule your own playtest! {announceDiag}"
                 };
             }
             return builder.Build();
