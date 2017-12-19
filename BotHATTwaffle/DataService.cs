@@ -48,6 +48,7 @@ namespace BotHATTwaffle
 
         async public Task<string> RconCommand(string command, JsonServer server)
         {
+            string botIP = new WebClient().DownloadString("http://icanhazip.com").Trim();
             IPHostEntry iPHostEntry = null;
             try
             {
@@ -59,7 +60,12 @@ namespace BotHATTwaffle
             }
             var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password);
             string reply = await rcon.SendCommandAsync(command);
+            reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
             rcon.Dispose();
+            Console.WriteLine(reply);
+            if (reply.Length > 300)
+                return reply.Substring(0,300) + "\n[OUTPUT OMITTED...]";
+
             return reply;
         }
 

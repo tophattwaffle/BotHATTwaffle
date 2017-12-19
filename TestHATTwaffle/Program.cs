@@ -12,20 +12,10 @@ namespace TestHATTwaffle
 {
     class Program
     {
-        private static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
-
-        public async Task StartAsync()
+        private static void Main(string[] args)
         {
-            while (true)
-            {
-                await Task.Delay(50);
-                Console.Write("CMD: ");
-                string cmd = Console.ReadLine();
-
-                string address = "https://steamcommunity.com/sharedfiles/filedetails/?id=906279156";
-                var result = Regex.Match(address, @"\d+$").Value;
-                Console.WriteLine(result);
-            }
+            string externalip = new WebClient().DownloadString("http://icanhazip.com");
+            Console.WriteLine(externalip);
         }
     }
 }

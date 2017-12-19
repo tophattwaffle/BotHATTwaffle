@@ -187,7 +187,8 @@ namespace BotHATTwaffle.Modules
                         //Display the map to be tested.
                         await Program.testingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(currentEventInfo, true));
                         await Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
-                        $"\n**Playtest starting now!** `connect {eventInfo[10]}`");
+                        $"\n**Playtest starting now!** `connect {eventInfo[10]}`" +
+                        $"\n*Type `>playtester` to unsubscribe*");
 
                         alertedStart = true;
 
@@ -218,7 +219,8 @@ namespace BotHATTwaffle.Modules
                     await Program.testingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(currentEventInfo, true));
 
                     await Program.testingChannel.SendMessageAsync($"{Program.playTesterRole.Mention}" +
-                            $"\n**Playtest starting in 1 hour**");
+                            $"\n**Playtest starting in 1 hour**" +
+                            $"\n*Type `>playtester` to unsubscribe*");
 
                     await Program.playTesterRole.ModifyAsync(x =>
                     {
