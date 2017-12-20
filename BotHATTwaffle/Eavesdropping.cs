@@ -146,7 +146,7 @@ namespace BotHATTwaffle
                     proceed = false;
                 }
             if (proceed)
-                if (message.Content.ToLower().Equals("who is daddy") || message.Content.ToLower().Equals("who is tophattwaffle"))
+                if (message.Content.ToLower().Contains("who is daddy") || message.Content.ToLower().Contains("who is tophattwaffle"))
                 {
                     await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
                     proceed = false;
