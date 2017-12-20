@@ -59,19 +59,16 @@ namespace BotHATTwaffle
             {
                 return "HOST_NOT_FOUND";
             }
-            try
-            {
-                var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password);
-                reply = await rcon.SendCommandAsync(command);
-                reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
-                rcon.Dispose();
-            }
-            catch(Exception e)
-            {
-                await Program.ChannelLog($"An error occured with something RCON related..." +
-                    $"\n{e}");
-                reply = "The command was sent, but an error occured. Check logs.";
-            }
+
+            //The object is in a using block because if it is not it will constantly spam the console of the sevrer with
+            //Messages to test if it is still connected. When loggin is enabled, this floods logs ands console.
+            //If multiple commmands were sent in a row with the default retry value of 30000 this would crash the bot. 
+            //For some reason using a delay of 1, and then ensuring that we dispose of the object fixes this crash.
+            using (var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password,1))
+            { reply = await rcon.SendCommandAsync(command); }
+
+            reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
+
             Console.WriteLine(reply);
             if (reply.Length > 300)
                 return reply.Substring(0,300) + "\n[OUTPUT OMITTED...]";
