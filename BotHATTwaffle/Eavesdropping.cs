@@ -152,7 +152,7 @@ namespace BotHATTwaffle
                     proceed = false;
                 }
             if (proceed)
-                if (message.Content.ToLower().Equals("execute order 66"))
+                if (message.Content.ToLower().Contains("execute order 66"))
                 {
                     await message.Channel.SendMessageAsync("Yes my lord.");
                     await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
