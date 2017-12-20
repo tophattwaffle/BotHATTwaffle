@@ -48,6 +48,7 @@ namespace BotHATTwaffle
 
         async public Task<string> RconCommand(string command, JsonServer server)
         {
+            string reply = null;
             string botIP = new WebClient().DownloadString("http://icanhazip.com").Trim();
             IPHostEntry iPHostEntry = null;
             try
@@ -58,10 +59,19 @@ namespace BotHATTwaffle
             {
                 return "HOST_NOT_FOUND";
             }
-            var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password);
-            string reply = await rcon.SendCommandAsync(command);
-            reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
-            rcon.Dispose();
+            try
+            {
+                var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password);
+                reply = await rcon.SendCommandAsync(command);
+                reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
+                rcon.Dispose();
+            }
+            catch(Exception e)
+            {
+                await Program.ChannelLog($"An error occured with something RCON related..." +
+                    $"\n{e}");
+                reply = "The command was sent, but an error occured. Check logs.";
+            }
             Console.WriteLine(reply);
             if (reply.Length > 300)
                 return reply.Substring(0,300) + "\n[OUTPUT OMITTED...]";
