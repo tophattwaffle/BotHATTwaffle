@@ -105,6 +105,7 @@ namespace BotHATTwaffle.Modules
             {
                 var result = Regex.Match(currentEventInfo[6], @"\d+$").Value;
                 await _dataServices.RconCommand($"host_workshop_map {result}", server);
+                await Program.ChannelLog("Changing Map on Test Server", $"'host_workshop_map {result}' on {server.Address}");
             }
             else //Set config and post about it
             {
@@ -132,6 +133,7 @@ namespace BotHATTwaffle.Modules
                     Description = $"**{server.Description}**\n\n{currentEventInfo[9]}"
                 };
                 await Program.testingChannel.SendMessageAsync("", false, builder);
+                await Program.ChannelLog("Setting postgame config", $"'exec postgame' on {server.Address}");
                 await _dataServices.RconCommand($"exec postgame", server);
             }
         }
