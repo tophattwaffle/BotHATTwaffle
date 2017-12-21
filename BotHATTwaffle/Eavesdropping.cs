@@ -332,7 +332,7 @@ namespace BotHATTwaffle
                 Color = new Color(243, 128, 72),
 
                 Description = $"I saw you were asking about propper. While Propper still works, it's advised to learn" +
-                $"a better modeling solution. The prefered method for Source Engine is using 3dsmax with WallWorm Model Tools" +
+                $"a better modeling solution. The preferred method for Source Engine is using 3dsmax with WallWorm Model Tools" +
                 $" If you don't want to learn 3dsmax and WWMT, you can learn to configure propper at the link below.: " + 
                 $"\n\nhttps://www.tophattwaffle.com/configuring-propper-for-steampipe/"
             };

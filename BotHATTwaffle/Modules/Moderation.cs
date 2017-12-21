@@ -148,7 +148,7 @@ namespace BotHATTwaffle.Modules
         [Summary("`>playtest [prestart/start/post] [Optional serverPrefix]` Playtest Functions")]
         [Remarks("`>playtest prestart` Sets the testing config then reloads the map to clear cheats." +
             "\n`>playtest start` Starts the playtest, starts a demo recording, then tells the server it is live." +
-            "\n`>playtest post` Starts postgame config. Gets the playtest demo and BSP file. Places it into the public dropbox folder." +
+            "\n`>playtest post` Starts postgame config. Gets the playtest demo and BSP file. Places it into the public DropBox folder." +
             "\nIf a server prefix is provided, commands will go to that server. If no server is provided, the event server will be used. `>p start eus`")]
         [Alias("p")]
         public async Task PlaytestAsync(string action, string serverStr = "nothing")

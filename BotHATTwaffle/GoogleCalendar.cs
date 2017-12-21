@@ -103,7 +103,7 @@ namespace BotHATTwaffle
                     catch(Exception e)
                     {
                         Program.ChannelLog($"There is an issue with the description on the next playtest event." +
-                            $"This is likely caused by HTML formatting on the descripiton. \n{e}");
+                            $"This is likely caused by HTML formatting on the description. \n{e}");
                         finalEvent[0] = "BAD_DESCRIPTION";
                         finalEvent[1] = null;
                         finalEvent[2] = null;

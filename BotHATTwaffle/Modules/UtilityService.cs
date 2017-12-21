@@ -53,8 +53,8 @@ namespace BotHATTwaffle.Modules
         [Command("roleme")]
         [Summary("`>roleme [rolename]` Toggles roles on a user")]
         [Remarks("This will let you add roles to yourself. Typically for saying you have a skill like 3D Modeling, or level design." +
-            "\n__Channel names are case sensative!!!__\n" +
-            "You can type `>roleme display` to show all roles avaiable")]
+            "\n__Channel names are case sensitive!!!__\n" +
+            "You can type `>roleme display` to show all roles available")]
         public async Task RolemeAsync([Remainder]string inRoleStr)
         {
             if (Context.IsPrivate)
@@ -94,7 +94,7 @@ namespace BotHATTwaffle.Modules
                     }
                     else
                     {
-                        await Program.ChannelLog($"{Context.User} has assigned themself the role of {inRoleStr}");
+                        await Program.ChannelLog($"{Context.User} has assigned themselves the role of {inRoleStr}");
                         await ReplyAsync($"{Context.User.Mention} now has the role **{inRoleStr}**. Enjoy the flair!");
                         await (user as IGuildUser).AddRoleAsync(inRole);
                     }
@@ -104,7 +104,7 @@ namespace BotHATTwaffle.Modules
                     await ReplyAsync($"{Context.User.Mention} you cannot assign yourself the role of **{inRoleStr}** because it does not exist, " +
                         $"or it is not allowed.");
                     await Program.ChannelLog($"{Context.User} attempted to roleMe the role of: {inRoleStr} and it failed. Either due to the " +
-                        $"role not existing, or they tried to use a role that isn't in the whitelist.");
+                        $"role not existing, or they tried to use a role that isn't in the white list.");
                 }
             }
         }
