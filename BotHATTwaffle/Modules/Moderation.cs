@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿#pragma warning disable CS4014 //I don't want to wait for the method to finish.
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Linq;
@@ -8,6 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using BotHATTwaffle.Modules.Json;
+using System.Text.RegularExpressions;
+
 namespace BotHATTwaffle.Modules
 {
     public class ModerationServices
@@ -17,9 +21,14 @@ namespace BotHATTwaffle.Modules
         SocketRole modRole;
         public string modRoleStr;
         public string mutedRoleNameStr;
+        LevelTesting _levelTesting;
+        public string[] TestInfo { get; set; }
 
-        public ModerationServices()
+        public ModerationServices(LevelTesting levelTesting)
         {
+            //testInfo = new string[11];
+
+            _levelTesting = levelTesting;
             if (Program.config.ContainsKey("moderatorRoleName"))
                 modRoleStr = (Program.config["moderatorRoleName"]);
             
@@ -77,15 +86,25 @@ namespace BotHATTwaffle.Modules
 
     public class ModerationModule : ModuleBase<SocketCommandContext>
     {
-        private readonly ModerationServices _mod;
-        private readonly LevelTesting _levelTesting;
-        private readonly DataServices _dataServices;
+        private ModerationServices _mod;
+        private LevelTesting _levelTesting;
+        private DataServices _dataServices;
+        private string casualConfig;
+        private string compConfig;
+        private string postConfig;
 
         public ModerationModule(ModerationServices mod, LevelTesting levelTesting, DataServices dataServices)
         {
             _dataServices = dataServices;
             _levelTesting = levelTesting;
             _mod = mod;
+
+            if (Program.config.ContainsKey("casualConfig"))
+                casualConfig = (Program.config["casualConfig"]);
+            if (Program.config.ContainsKey("compConfig"))
+                compConfig = (Program.config["compConfig"]);
+            if (Program.config.ContainsKey("postConfig"))
+                postConfig = (Program.config["postConfig"]);
         }
 
         [Command("rcon")]
@@ -99,6 +118,7 @@ namespace BotHATTwaffle.Modules
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
             {
                 var server = _dataServices.GetServer(serverString);
+                Console.WriteLine($"{server.FTPPass} {server.FTPPath} {server.FTPType} {server.FTPUser}");
                 string reply = null;
                 try
                 {
@@ -107,17 +127,148 @@ namespace BotHATTwaffle.Modules
                 }
                 catch { }
 
-                if(reply == "HOST_NOT_FOUND")
+                if (reply == "HOST_NOT_FOUND")
                     await ReplyAsync($"```Cannot send command because the servers IP address could not be found\nThis is a probably a DNS issue.```");
-                else if(server == null)
+                else if (server == null)
                     await ReplyAsync($"```Cannot send command because the server could not be found.\nIs it in the json?.```");
                 else
+                {
                     await ReplyAsync($"```Command Sent to {server.Name}\n{reply}```");
-                
+                    await Program.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
+                }
             }
             else
             {
-                await Program.ChannelLog($"{Context.User} is trying to rcon from the bot.");
+                await Program.ChannelLog($"{Context.User} is trying to rcon from the bot. They tried to send {serverString} {command}");
+                await ReplyAsync("You cannot use this command with your current permission level!");
+            }
+        }
+
+        [Command("playtest")]
+        [Summary("`>playtest [prestart/start/post]` Playtest Functions")]
+        [Remarks("`>playtest prestart` Sets the testing config then reloads the map to clear cheats." +
+            "\n`>playtest start` Starts the playtest, starts a demo recording, then tells the server it is live." +
+            "\n`>playtest post` Starts postgame config. Gets the playtest demo and BSP file. Places it into the public dropbox folder." +
+            "\nIf a server is provided commands will go to that server. If no server is provided, the event server will be used.")]
+        [Alias("p")]
+        public async Task PlaytestAsync(string action, string serverStr = "nothing")
+        {
+            _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
+            {
+                if(_levelTesting.currentEventInfo[0] == "NO_EVENT_FOUND")
+                {
+                    await ReplyAsync("```Cannot use this command unless a test is scheduled```");
+                    return;
+                }
+                string config = null;
+                JsonServer server = null;
+                //Get the right server. If null, use the server in the event info. Else we'll use what was provided.
+                if (serverStr == "nothing")
+                    server = _dataServices.GetServer(_levelTesting.currentEventInfo[10].Substring(0, 3));
+                else
+                    server = _dataServices.GetServer(serverStr);
+
+                if (_levelTesting.currentEventInfo[7].ToLower() == "competitive" || _levelTesting.currentEventInfo[7].ToLower() == "comp")
+                    config = compConfig;
+                else
+                    config = casualConfig; //If not comp, casual.
+
+                if (action.ToLower() == "prestart")
+                {
+                    _mod.TestInfo = _levelTesting.currentEventInfo; //Set the test info so we can use it when getting the demo back.
+                    await _dataServices.RconCommand($"exec {config}", server);
+                    await Task.Delay(1000);
+                    var result = Regex.Match(_levelTesting.currentEventInfo[6], @"\d+$").Value;
+                    await _dataServices.RconCommand($"host_workshop_map {result}", server);
+
+                    await ReplyAsync($"```Playtest Prestart on {server.Name}" +
+                        $"\nexec {config}" +
+                        $"\nhost_workshop_map {result} to {server.Name}```");
+
+                    await Program.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
+                        $"\nhost_workshop_map {result} to {server.Name}");
+                }
+                else if (action.ToLower() == "start")
+                {
+                    _mod.TestInfo = _levelTesting.currentEventInfo; //Set the test info so we can use it when getting the demo back.
+
+                    DateTime testTime = Convert.ToDateTime(_levelTesting.currentEventInfo[1]);
+                    string demoName = $"{testTime.ToString("MM_dd_yyyy")}_{_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))}_{_levelTesting.currentEventInfo[7]}";
+
+                    await _dataServices.RconCommand($"exec {config}", server);
+                    await Task.Delay(3250);
+                    await _dataServices.RconCommand($"tv_record {demoName}", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"say Demo started! {demoName}", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!", server);
+
+                    await Program.ChannelLog($"Playtest Start on {server.Name}", $"exec {config}" +
+                        $"\ntv_record {demoName}" +
+                        $"\nsay Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!");
+                }
+                else if (action.ToLower() == "post")
+                {
+                    var authBuilder = new EmbedAuthorBuilder()
+                    {
+                        Name = $"Download Playtest Demo for {_mod.TestInfo[2]}",
+                        IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
+                    };
+
+                    var builder = new EmbedBuilder()
+                    {
+                        Author = authBuilder,
+                        Url = "http://demos.tophattwaffle.com",
+                        ThumbnailUrl = _mod.TestInfo[4],
+                        Color = new Color(243, 128, 72),
+                        Description = $"You can get the demo for this playtest by clicking above! It can take a few minutes for demos to be uploaded depending on their size." +
+                        $"\n*Thanks for testing with us!*" +
+                        $"\n\n[Map Images]({_mod.TestInfo[5]}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)"
+
+                    };
+
+                    var splitUser = _mod.TestInfo[3].Split('#');
+                    try
+                    {
+                        await Program.testingChannel.SendMessageAsync($"{Program._client.GetUser(splitUser[0], splitUser[1]).Mention}", false, builder);
+                    }
+                    catch
+                    {
+                        await Program.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you.", false, builder);
+                    }
+                    var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
+                    await _dataServices.RconCommand($"host_workshop_map {result}", server);
+                    await Task.Delay(5000);
+                    _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
+                    await Task.Delay(5000);
+                    await _dataServices.RconCommand($"exec {postConfig}", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"sv_voiceenable 0", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+
+                    await Program.ChannelLog($"Playtest Post on {server.Name}", $"exec {postConfig}" +
+                        $"\nsv_voiceenable 0" +
+                        $"\nGetting Demo and BSP file and moving into DropBox");
+                }
+                else
+                {
+                    await ReplyAsync($"Bad input, please try `prestart` `start` or `post`");
+                }
+
+            }
+            else
+            {
+                await Program.ChannelLog($"{Context.User} is trying to use the playtest command.");
                 await ReplyAsync("You cannot use this command with your current permission level!");
             }
         }
