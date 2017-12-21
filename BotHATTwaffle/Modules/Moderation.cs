@@ -114,6 +114,12 @@ namespace BotHATTwaffle.Modules
         [Alias("r")]
         public async Task RconAsync(string serverString, [Remainder]string command)
         {
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("**This command can not be used in a DM**");
+                return;
+            }
+
             _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
             {
@@ -153,6 +159,12 @@ namespace BotHATTwaffle.Modules
         [Alias("p")]
         public async Task PlaytestAsync(string action, string serverStr = "nothing")
         {
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("**This command can not be used in a DM**");
+                return;
+            }
+
             _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
             {
@@ -284,6 +296,12 @@ namespace BotHATTwaffle.Modules
         [Remarks("Requirements: Moderator Role. `s` for shutdown `r` for restart")]
         public async Task ShutdownAsync(char type)
         {
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("**This command can not be used in a DM**");
+                return;
+            }
+
             _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
 
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
