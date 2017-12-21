@@ -187,7 +187,7 @@ namespace BotHATTwaffle.Modules
                         $"\nhost_workshop_map {result} to {server.Name}```");
 
                     await Program.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
-                        $"\nhost_workshop_map {result} to {server.Name}");
+                        $"\nhost_workshop_map {result}");
                 }
                 else if (action.ToLower() == "start")
                 {
@@ -196,17 +196,21 @@ namespace BotHATTwaffle.Modules
                     DateTime testTime = Convert.ToDateTime(_levelTesting.currentEventInfo[1]);
                     string demoName = $"{testTime.ToString("MM_dd_yyyy")}_{_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))}_{_levelTesting.currentEventInfo[7]}";
 
+                    await ReplyAsync($"```Playtest Start on {server.Name}" +
+                        $"\nexec {config}" +
+                        $"\ntv_record {demoName}```");
+
                     await _dataServices.RconCommand($"exec {config}", server);
                     await Task.Delay(3250);
                     await _dataServices.RconCommand($"tv_record {demoName}", server);
                     await Task.Delay(1000);
                     await _dataServices.RconCommand($"say Demo started! {demoName}", server);
                     await Task.Delay(1000);
-                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!", server);
+                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
                     await Task.Delay(1000);
-                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!", server);
+                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
                     await Task.Delay(1000);
-                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!", server);
+                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
 
                     await Program.ChannelLog($"Playtest Start on {server.Name}", $"exec {config}" +
                         $"\ntv_record {demoName}" +
@@ -231,16 +235,18 @@ namespace BotHATTwaffle.Modules
                         $"\n\n[Map Images]({_mod.TestInfo[5]}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)"
 
                     };
-
+                    
                     var splitUser = _mod.TestInfo[3].Split('#');
                     try
                     {
-                        await Program.testingChannel.SendMessageAsync($"{Program._client.GetUser(splitUser[0], splitUser[1]).Mention}", false, builder);
+                        await Program.testingChannel.SendMessageAsync($"{Program._client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
                     }
                     catch
                     {
-                        await Program.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you.", false, builder);
+                        await Program.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
                     }
+                    await Program.testingChannel.SendMessageAsync($"", false, builder);
+
                     var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
                     await _dataServices.RconCommand($"host_workshop_map {result}", server);
                     await Task.Delay(5000);
