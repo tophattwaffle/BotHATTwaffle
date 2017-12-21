@@ -25,7 +25,7 @@ namespace BotHATTwaffle.Modules
         {
 
         }
-        #region vtfedit
+
         [Command("VTFedit")]
         [Summary("`>VTFedit` Gives you a link to VTFEdit download")]
         [Alias("vtf")]
@@ -49,8 +49,7 @@ namespace BotHATTwaffle.Modules
             };
             await ReplyAsync("", false, builder.Build());
         }
-        #endregion
-        #region GCFScape
+
         [Command("GCFscape")]
         [Summary("`>GCFScape` Gives you a link to GCFScape download")]
         [Alias("gcf")]
@@ -74,8 +73,7 @@ namespace BotHATTwaffle.Modules
             };
             await ReplyAsync("", false, builder.Build());
         }
-        #endregion
-        #region VMTEditor
+
         [Command("VMTEditor")]
         [Summary("`>VMTeditor` Gives you a link to VMT Editor download")]
         [Alias("vmt")]
@@ -100,8 +98,7 @@ namespace BotHATTwaffle.Modules
             };
             await ReplyAsync("", false, builder.Build());
         }
-        #endregion
-        #region VIDE
+
         [Command("VIDE")]
         [Summary("`>VIDE` Gives you a link to VIDE download")]
         public async Task VIDEAsync()
@@ -124,8 +121,7 @@ namespace BotHATTwaffle.Modules
             };
             await ReplyAsync("", false, builder.Build());
         }
-        #endregion
-        #region WallWorm
+
         [Command("wallworm")]
         [Summary("`>wwmt` Gives you a link to Wall Worm's site")]
         [Alias("wwmt")]
@@ -149,12 +145,11 @@ namespace BotHATTwaffle.Modules
             };
             await ReplyAsync("", false, builder.Build());
         }
-        #endregion
-        #region bspsource
+
         [Command("bspsource")]
         [Summary("`>bspsource` Gives you a link to Wall Worm's site")]
         [Alias("bsp")]
-        public async Task bspsourceAsync()
+        public async Task BSPSourceAsync()
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -174,6 +169,29 @@ namespace BotHATTwaffle.Modules
             };
             await ReplyAsync("", false, builder.Build());
         }
-        #endregion
+
+        [Command("log")]
+        [Summary("`>log` Gives you a link to Interlopers Compile Log Checker")]
+        [Alias("l")]
+        public async Task LogCheckAsync()
+        {
+            var authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = "Interlopers Compile Log Checker",
+                IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
+            };
+
+            var builder = new EmbedBuilder()
+            {
+                Author = authBuilder,
+                Url = "http://www.interlopers.net/errors",
+                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/12/selectall.jpg",
+                Color = new Color(84, 137, 71),
+                Description = "Interlopers has a wonderful tool that you can paste your compile log in that explains common errors." +
+                "Just copy and paste your entire log, or a section containing and error, and you will typically get a fix for it!"
+
+            };
+            await ReplyAsync("", false, builder.Build());
+        }
     }
 }
