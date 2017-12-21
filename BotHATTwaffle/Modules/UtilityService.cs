@@ -38,7 +38,6 @@ namespace BotHATTwaffle.Modules
         [Command("ping")]
         [Summary("`>ping` Replies with a message")]
         [Remarks("It's a ping command.")]
-        [Alias("p")]
         public async Task PingAsync()
         {
             var replyTime = Program._client.Latency;
