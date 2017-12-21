@@ -17,10 +17,12 @@ namespace BotHATTwaffle.Modules
     public class ModerationServices
     {
         public List<UserData> muteList = new List<UserData>();
-        SocketRole muteRole;
-        SocketRole modRole;
+        public SocketRole MuteRole { get; set; }
+        public SocketRole RconRole { get; set; }
+        public SocketRole ModRole { get; set; }
         public string modRoleStr;
         public string mutedRoleNameStr;
+        public string rconRoleNameStr;
         LevelTesting _levelTesting;
         public string[] TestInfo { get; set; }
 
@@ -34,6 +36,9 @@ namespace BotHATTwaffle.Modules
             
             if (Program.config.ContainsKey("mutedRoleName"))
                 mutedRoleNameStr = (Program.config["mutedRoleName"]);
+
+            if (Program.config.ContainsKey("rconRoleName"))
+                rconRoleNameStr = (Program.config["rconRoleName"]);
         }
 
         public void Cycle()
@@ -43,7 +48,7 @@ namespace BotHATTwaffle.Modules
             {
                 if(u.CanUnmute())
                 {
-                    u.user.RemoveRoleAsync(muteRole);
+                    u.user.RemoveRoleAsync(MuteRole);
                     u.user.SendMessageAsync("You have been unmuted!");
                     muteList.Remove(u);
                     Program.ChannelLog($"{u.user.Username} Has been unmuted.");
@@ -59,28 +64,6 @@ namespace BotHATTwaffle.Modules
                 user = inUser,
                 unmuteTime = inUnmuteTime
             });
-        }
-
-
-        //TODO: Rewrite these are the settings module is rewritten. Get the values from there instead of from the mute command.
-        public void SetMuteRole(SocketRole inMuteRole)
-        {
-            muteRole = inMuteRole;
-        }
-
-        public SocketRole GetMuteRole()
-        {
-            return muteRole;
-        }
-
-        public void SetModRole(SocketRole inModRole)
-        {
-            modRole = inModRole;
-        }
-
-        public SocketRole GetModRole()
-        {
-            return modRole;
         }
     }
 
@@ -120,8 +103,10 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
+            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
+            _mod.RconRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.rconRoleNameStr);
+
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_mod.RconRole))
             {
                 var server = _dataServices.GetServer(serverString);
                 Console.WriteLine($"{server.FTPPass} {server.FTPPath} {server.FTPType} {server.FTPUser}");
@@ -139,8 +124,17 @@ namespace BotHATTwaffle.Modules
                     await ReplyAsync($"```Cannot send command because the server could not be found.\nIs it in the json?.```");
                 else
                 {
-                    await ReplyAsync($"```Command Sent to {server.Name}\n{reply}```");
-                    await Program.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
+                    if (!command.Contains("sv_password"))
+                    {
+                        await ReplyAsync($"```Command Sent to {server.Name}\n{reply}```");
+                        await Program.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
+                    }
+                    else
+                    {
+                        Context.Message.DeleteAsync(); //Message was setting password, delete it.
+                        await ReplyAsync($"```Command Sent to {server.Name}\nA password was set on the server.```");
+                        await Program.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
+                    }
                 }
             }
             else
@@ -165,8 +159,8 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
+            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
             {
                 if(_levelTesting.currentEventInfo[0] == "NO_EVENT_FOUND")
                 {
@@ -302,9 +296,9 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
+            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
 
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
             {
                 await Context.Message.DeleteAsync();
                 await _levelTesting.announceMessage.DeleteAsync();
@@ -348,15 +342,15 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("***This command can not be used in a DM***");
                 return;
             }
-            _mod.SetMuteRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.mutedRoleNameStr));
-            _mod.SetModRole(Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr));
+            _mod.MuteRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.mutedRoleNameStr);
+            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
 
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.GetModRole()))
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
             {
                 DateTime unmuteTime = DateTime.Now.AddMinutes(durationInMinutes);
                 _mod.AddMute(user, unmuteTime);
                 await Program.ChannelLog($"{Context.User} muted {user}", $"They were muted for {durationInMinutes} minutes because:\n{reason}.");
-                await user.AddRoleAsync(_mod.GetMuteRole());
+                await user.AddRoleAsync(_mod.MuteRole);
                 await user.SendMessageAsync($"You were muted for {durationInMinutes} minutes because:\n{reason}.\n");
             }
             else

@@ -255,6 +255,7 @@ public class Program
         mainConfig.AddKeyIfMissing("roleMeWhiteListCSV", "Programmer,Level_Designer,3D_Modeler,Texture_Artist,Blender,Maya,3dsmax");
         mainConfig.AddKeyIfMissing("moderatorRoleName", "Moderators");
         mainConfig.AddKeyIfMissing("mutedRoleName", "Muted");
+        mainConfig.AddKeyIfMissing("rconRoleName", "RconAccess");
         #endregion
 
         #region  Shitpost vars
