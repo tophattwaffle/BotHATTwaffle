@@ -112,7 +112,7 @@ public class Program
             if (s.Name == testingChannelStr)
             {
                 testingChannel = s;
-                Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {announcementChannel}");
+                Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {testingChannel}");
 
             }
         }
@@ -236,6 +236,10 @@ public class Program
         mainConfig.AddKeyIfMissing("testCalID", "Replace My Buddy");
         mainConfig.AddKeyIfMissing("playTesterRole", "Playtester");
         mainConfig.AddKeyIfMissing("testingChannel", "csgo_level_testing");
+        mainConfig.AddKeyIfMissing("demoPath", $"X:\\Playtesting Demos");
+        mainConfig.AddKeyIfMissing("casualConfig", $"thw");
+        mainConfig.AddKeyIfMissing("compConfig", $"thw");
+        mainConfig.AddKeyIfMissing("postConfig", $"postame");
         #endregion
 
         #region Eavesdropping vars
