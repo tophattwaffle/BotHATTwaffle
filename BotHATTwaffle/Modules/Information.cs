@@ -346,7 +346,7 @@ namespace BotHATTwaffle.Modules
         }
 
         [Command("unsubscribe")]
-        [Summary("`>unsubscribe` Unsubscribes your from cat facts")]
+        [Summary("`>unsubscribe` Unsubscribes you from cat facts")]
         [Remarks("Takes you off the cat fact list.")]
         public async Task CatFactUnsubAsync()
         {
