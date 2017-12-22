@@ -295,14 +295,18 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("**This command can not be used in a DM**");
                 return;
             }
-
+            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
             _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
 
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
             {
                 await Context.Message.DeleteAsync();
-                await _levelTesting.announceMessage.DeleteAsync();
-                
+                try
+                {
+                    await _levelTesting.announceMessage.DeleteAsync();
+                }
+                catch
+                { }//No playtest announcement found. Someone must have deleted it manually.
 
                 if(type == 's')
                 {

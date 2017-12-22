@@ -99,6 +99,9 @@ namespace BotHATTwaffle
 
                         finalEvent = finalEvent.Select((line, index) => line.Substring(line.IndexOf(':') >= 0 && index > 2 ? line.IndexOf(':') + 2 : 0).Trim()).ToArray();
                         finalEvent[10] = eventItem.Location;
+
+                        if (finalEvent[10] == null)
+                            finalEvent[10] = "No Server Set";
                     }
                     catch(Exception e)
                     {
