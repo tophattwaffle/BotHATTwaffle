@@ -40,6 +40,7 @@ namespace BotHATTwaffle.Modules
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
+                Title = "Click Here",
                 Url = "https://www.tophattwaffle.com/downloads/vtfedit/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vtfedit.png",
                 Color = new Color(255, 206, 199),
@@ -64,6 +65,7 @@ namespace BotHATTwaffle.Modules
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
+                Title = "Click Here",
                 Url = "https://www.tophattwaffle.com/downloads/gcfscape/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/gcfscape.png",
                 Color = new Color(63, 56, 156),
@@ -88,6 +90,7 @@ namespace BotHATTwaffle.Modules
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
+                Title = "Click Here",
                 Url = "https://gira-x.github.io/VMT-Editor/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vmteditor.png",
                 Color = new Color(50, 50, 50),
@@ -112,6 +115,7 @@ namespace BotHATTwaffle.Modules
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
+                Title = "Click Here",
                 Url = "https://www.tophattwaffle.com/downloads/vide/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vide.png",
                 Color = new Color(50, 50, 50),
@@ -136,6 +140,7 @@ namespace BotHATTwaffle.Modules
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
+                Title = "Click Here",
                 Url = "https://dev.wallworm.com/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/worm_logo.png",
                 Color = new Color(21, 21, 21),
@@ -160,6 +165,7 @@ namespace BotHATTwaffle.Modules
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
+                Title = "Click Here",
                 Url = "https://www.tophattwaffle.com/downloads/bspsource/",
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/BSPSource_icon.png",
                 Color = new Color(84,137,71),
@@ -184,6 +190,7 @@ namespace BotHATTwaffle.Modules
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
+                Title = "Click Here",
                 Url = "http://www.interlopers.net/errors",
                 ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/12/selectall.jpg",
                 Color = new Color(84, 137, 71),
