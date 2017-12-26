@@ -124,20 +124,20 @@ namespace BotHATTwaffle
                     foundTutorials.AddRange(series[3].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
-            //hammer troubleshooting 4
+            //legacy 5
             if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5")
             {
                 foreach (string s in searchTermArray)
                 {
-                    foundTutorials.AddRange(series[4].tutorial.FindAll(x => x.tags.Contains(s)));
+                    foundTutorials.AddRange(series[5].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
-            //legacy 5
+            //troubleshooting 4
             if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "all")
             {
                 foreach (string s in searchTermArray)
                 {
-                    foundTutorials.AddRange(series[5].tutorial.FindAll(x => x.tags.Contains(s)));
+                    foundTutorials.AddRange(series[4].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
 
