@@ -46,7 +46,7 @@ namespace BotHATTwaffle
                     "user",
                     CancellationToken.None,
                     new FileDataStore(credPath, true)).Result;
-                Console.WriteLine("Credential file saved to: " + credPath);
+                //Console.WriteLine("Credential file saved to: " + credPath);
             }
 
             // Create Google Calendar API service.
@@ -123,7 +123,7 @@ namespace BotHATTwaffle
             }
             else
             {
-                Console.WriteLine("NO_EVENT_FOUND");
+                //Console.WriteLine("NO_EVENT_FOUND");
                 finalEvent[0] = "NO_EVENT_FOUND";
             }
             //Console.WriteLine($"\n\nI found the following playtest:");

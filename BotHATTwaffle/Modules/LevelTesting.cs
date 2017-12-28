@@ -65,6 +65,7 @@ namespace BotHATTwaffle.Modules
         private async Task PostAnnounce(Embed embed)
         {
             announceMessage = await Program.announcementChannel.SendMessageAsync("",false,embed);
+            await Program.ChannelLog("Posting Playtest Announcement", $"Posting Playtest for {currentEventInfo[2]}");
             lastEventInfo = currentEventInfo;
         }
 
@@ -80,7 +81,7 @@ namespace BotHATTwaffle.Modules
 
         private async Task RebuildAnnounce()
         {
-            await Program.ChannelLog("Scrubbing Announcement","Playtest is different from the last one. This is probably because" +
+            await Program.ChannelLog("Scrubbing Playtest Announcement", "Playtest is different from the last one. This is probably because" +
                 "the last playtest is past. Let's tear it down and get the next test.");
             await announceMessage.DeleteAsync();
             announceMessage = null;
