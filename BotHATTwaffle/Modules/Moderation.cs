@@ -108,6 +108,12 @@ namespace BotHATTwaffle.Modules
 
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_mod.RconRole))
             {
+                //Return if we use these commands.
+                if (command.Contains("rcon_password"))
+                {
+                    return;
+                }
+
                 var server = _dataServices.GetServer(serverString);
                 Console.WriteLine($"{server.FTPPass} {server.FTPPath} {server.FTPType} {server.FTPUser}");
                 string reply = null;
@@ -115,6 +121,10 @@ namespace BotHATTwaffle.Modules
                 {
                     if (server != null)
                         reply = await _dataServices.RconCommand(command, server);
+                    Console.WriteLine(reply);
+
+                    if (reply.Length > 1900)
+                        reply = reply.Substring(0, 1900) + "\n[OUTPUT OMITTED...]";
                 }
                 catch { }
 
@@ -124,15 +134,15 @@ namespace BotHATTwaffle.Modules
                     await ReplyAsync($"```Cannot send command because the server could not be found.\nIs it in the json?.```");
                 else
                 {
-                    if (!command.Contains("sv_password"))
+                    if (command.Contains("sv_password"))
                     {
-                        await ReplyAsync($"```Command Sent to {server.Name}\n{reply}```");
+                        Context.Message.DeleteAsync(); //Message was setting password, delete it.
+                        await ReplyAsync($"```Command Sent to {server.Name}\nA password was set on the server.```");
                         await Program.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
                     }
                     else
                     {
-                        Context.Message.DeleteAsync(); //Message was setting password, delete it.
-                        await ReplyAsync($"```Command Sent to {server.Name}\nA password was set on the server.```");
+                        await ReplyAsync($"```Command Sent to {server.Name}\n{reply}```");
                         await Program.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
                     }
                 }

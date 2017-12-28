@@ -76,10 +76,6 @@ namespace BotHATTwaffle
 
             reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
 
-            Console.WriteLine(reply);
-            if (reply.Length > 300)
-                return reply.Substring(0,300) + "\n[OUTPUT OMITTED...]";
-
             return reply;
         }
 
