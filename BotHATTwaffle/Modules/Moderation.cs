@@ -156,8 +156,8 @@ namespace BotHATTwaffle.Modules
         }
 
         [Command("playtest")]
-        [Summary("`>playtest [prestart/start/post] [Optional serverPrefix]` Playtest Functions")]
-        [Remarks("`>playtest prestart` Sets the testing config then reloads the map to clear cheats." +
+        [Summary("`>playtest [pre/start/post] [Optional serverPrefix]` Playtest Functions")]
+        [Remarks("`>playtest pre` Sets the testing config then reloads the map to clear cheats." +
             "\n`>playtest start` Starts the playtest, starts a demo recording, then tells the server it is live." +
             "\n`>playtest post` Starts postgame config. Gets the playtest demo and BSP file. Places it into the public DropBox folder." +
             "\nIf a server prefix is provided, commands will go to that server. If no server is provided, the event server will be used. `>p start eus`")]
@@ -191,20 +191,20 @@ namespace BotHATTwaffle.Modules
                 else
                     config = casualConfig; //If not comp, casual.
 
-                if (action.ToLower() == "prestart")
+                if (action.ToLower() == "pre")
                 {
                     _mod.TestInfo = _levelTesting.currentEventInfo; //Set the test info so we can use it when getting the demo back.
-                    await _dataServices.RconCommand($"exec {config}", server);
-                    await Task.Delay(1000);
                     var result = Regex.Match(_levelTesting.currentEventInfo[6], @"\d+$").Value;
-                    await _dataServices.RconCommand($"host_workshop_map {result}", server);
-
-                    await ReplyAsync($"```Playtest Prestart on {server.Name}" +
-                        $"\nexec {config}" +
-                        $"\nhost_workshop_map {result}```");
 
                     await Program.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
                         $"\nhost_workshop_map {result}");
+
+                    await _dataServices.RconCommand($"exec {config}", server);
+                    await Task.Delay(1000);
+                    await _dataServices.RconCommand($"host_workshop_map {result}", server);
+                    await ReplyAsync($"```Playtest Prestart on {server.Name}" +
+                        $"\nexec {config}" +
+                        $"\nhost_workshop_map {result}```");
                 }
                 else if (action.ToLower() == "start")
                 {
@@ -212,6 +212,10 @@ namespace BotHATTwaffle.Modules
 
                     DateTime testTime = Convert.ToDateTime(_levelTesting.currentEventInfo[1]);
                     string demoName = $"{testTime.ToString("MM_dd_yyyy")}_{_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))}_{_levelTesting.currentEventInfo[7]}";
+
+                    await Program.ChannelLog($"Playtest Start on {server.Name}", $"exec {config}" +
+                        $"\ntv_record {demoName}" +
+                        $"\nsay Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!");
 
                     await ReplyAsync($"```Playtest Start on {server.Name}" +
                         $"\nexec {config}" +
@@ -227,14 +231,14 @@ namespace BotHATTwaffle.Modules
                     await Task.Delay(1000);
                     await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
                     await Task.Delay(1000);
-                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
-
-                    await Program.ChannelLog($"Playtest Start on {server.Name}", $"exec {config}" +
-                        $"\ntv_record {demoName}" +
-                        $"\nsay Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!");
+                    await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);   
                 }
                 else if (action.ToLower() == "post")
                 {
+                    await Program.ChannelLog($"Playtest Post on {server.Name}", $"exec {postConfig}" +
+                        $"\nsv_voiceenable 0" +
+                        $"\nGetting Demo and BSP file and moving into DropBox");
+
                     var authBuilder = new EmbedAuthorBuilder()
                     {
                         Name = $"Download Playtest Demo for {_mod.TestInfo[2]}",
@@ -245,14 +249,30 @@ namespace BotHATTwaffle.Modules
                     {
                         Author = authBuilder,
                         Url = "http://demos.tophattwaffle.com",
+                        Title = "Download Here",
                         ThumbnailUrl = _mod.TestInfo[4],
                         Color = new Color(243, 128, 72),
-                        Description = $"You can get the demo for this playtest by clicking above! It can take a few minutes for demos to be uploaded depending on their size." +
+                        Description = $"You can get the demo for this playtest by clicking above!" +
                         $"\n*Thanks for testing with us!*" +
                         $"\n\n[Map Images]({_mod.TestInfo[5]}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)"
 
                     };
                     
+                    var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
+                    await _dataServices.RconCommand($"host_workshop_map {result}", server);
+                    await Task.Delay(10000);
+                    await _dataServices.RconCommand($"exec {postConfig}", server);
+                    await Task.Delay(3000);
+                    await _dataServices.RconCommand($"sv_voiceenable 0", server);
+                    await Task.Delay(3000);
+                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+                    await Task.Delay(3000);
+                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+                    await Task.Delay(3000);
+                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+
+                    //Download demo and alert the creator.
+                    await _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
                     var splitUser = _mod.TestInfo[3].Split('#');
                     try
                     {
@@ -263,29 +283,10 @@ namespace BotHATTwaffle.Modules
                         await Program.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
                     }
                     await Program.testingChannel.SendMessageAsync($"", false, builder);
-
-                    var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
-                    await _dataServices.RconCommand($"host_workshop_map {result}", server);
-                    await Task.Delay(5000);
-                    _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
-                    await Task.Delay(5000);
-                    await _dataServices.RconCommand($"exec {postConfig}", server);
-                    await Task.Delay(1000);
-                    await _dataServices.RconCommand($"sv_voiceenable 0", server);
-                    await Task.Delay(1000);
-                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
-                    await Task.Delay(1000);
-                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
-                    await Task.Delay(1000);
-                    await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
-
-                    await Program.ChannelLog($"Playtest Post on {server.Name}", $"exec {postConfig}" +
-                        $"\nsv_voiceenable 0" +
-                        $"\nGetting Demo and BSP file and moving into DropBox");
                 }
                 else
                 {
-                    await ReplyAsync($"Bad input, please try `prestart` `start` or `post`");
+                    await ReplyAsync($"Bad input, please try `pre` `start` or `post`");
                 }
 
             }
