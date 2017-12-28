@@ -190,7 +190,7 @@ namespace BotHATTwaffle.Modules
 
                     await ReplyAsync($"```Playtest Prestart on {server.Name}" +
                         $"\nexec {config}" +
-                        $"\nhost_workshop_map {result} to {server.Name}```");
+                        $"\nhost_workshop_map {result}```");
 
                     await Program.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
                         $"\nhost_workshop_map {result}");
