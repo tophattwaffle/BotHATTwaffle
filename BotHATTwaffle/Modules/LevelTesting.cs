@@ -119,7 +119,7 @@ namespace BotHATTwaffle.Modules
                     IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
                 };
 
-                fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"connect {currentEventInfo[10]}", IsInline = false });
+                fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {currentEventInfo[10]}`", IsInline = false });
 
                 builder = new EmbedBuilder()
                 {
