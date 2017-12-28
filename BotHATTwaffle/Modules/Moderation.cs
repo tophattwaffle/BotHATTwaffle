@@ -109,8 +109,9 @@ namespace BotHATTwaffle.Modules
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_mod.RconRole))
             {
                 //Return if we use these commands.
-                if (command.Contains("rcon_password"))
+                if (command.ToLower().Contains("rcon_password") || command.ToLower().Contains("exit"))
                 {
+                    await ReplyAsync("This command cannot be run from here. Ask TopHATTwaffle to do it.");
                     return;
                 }
 
