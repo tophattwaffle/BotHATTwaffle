@@ -267,7 +267,7 @@ namespace BotHATTwaffle.Modules
 
                 footBuilder = new EmbedFooterBuilder()
                 {
-                    Text = $"Level will be live on server 15 minutes before test starts!",
+                    Text = $"connect {eventInfo[10]}",
                     IconUrl = Program._client.CurrentUser.GetAvatarUrl()
                 };
 
@@ -277,13 +277,13 @@ namespace BotHATTwaffle.Modules
                     Footer = footBuilder,
                     Fields = fieldBuilder,
 
-                    Title = $"--Workshop Link--",
+                    Title = $"Workshop Link",
                     Url = eventInfo[6],
                     ImageUrl = eventInfo[4],
                     ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
                     Color = new Color(71, 126, 159),
 
-                    Description = eventInfo[9]
+                    Description = $"{eventInfo[9]}\n*level is loaded on the server 15 minutes before the start time.*"
                 };
             }
             else
