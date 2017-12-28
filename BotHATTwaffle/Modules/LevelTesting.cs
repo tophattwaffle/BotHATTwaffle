@@ -260,7 +260,7 @@ namespace BotHATTwaffle.Modules
 
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "Time Until Test", Value = timeLeftStr, IsInline = true });
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "Creator", Value = eventInfo[3], IsInline = true });
-                fieldBuilder.Add(new EmbedFieldBuilder { Name = "Where?", Value = eventInfo[10], IsInline = true });
+                fieldBuilder.Add(new EmbedFieldBuilder { Name = "Where?", Value = $"`{eventInfo[10]}`", IsInline = true });
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "Moderator", Value = eventInfo[8], IsInline = true });
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "Links", Value = $"[Map Images]({eventInfo[5]}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)", IsInline = false });
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = "When?", Value = postTime, IsInline = false });
