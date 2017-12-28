@@ -253,7 +253,7 @@ namespace BotHATTwaffle.Modules
                         ThumbnailUrl = _mod.TestInfo[4],
                         Color = new Color(243, 128, 72),
                         Description = $"You can get the demo for this playtest by clicking above!" +
-                        $"\n*Thanks for testing with us!*" +
+                        $"\n\n*Thanks for testing with us!*" +
                         $"\n\n[Map Images]({_mod.TestInfo[5]}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)"
 
                     };
