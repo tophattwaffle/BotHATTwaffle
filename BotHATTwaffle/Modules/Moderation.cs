@@ -99,7 +99,8 @@ namespace BotHATTwaffle.Modules
         {
             if (Context.IsPrivate)
             {
-                await ReplyAsync("**This command can not be used in a DM**");
+                await ReplyAsync("```This command can not be used in a DM```");
+                await Program.ChannelLog($"{Context.User} was trying to rcon from DM.", $"{command} was trying to be sent to {serverString}");
                 return;
             }
 
@@ -111,7 +112,8 @@ namespace BotHATTwaffle.Modules
                 //Return if we use these commands.
                 if (command.ToLower().Contains("rcon_password") || command.ToLower().Contains("exit"))
                 {
-                    await ReplyAsync("This command cannot be run from here. Ask TopHATTwaffle to do it.");
+                    await ReplyAsync("```This command cannot be run from here. Ask TopHATTwaffle to do it.```");
+                    await Program.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverString}");
                     return;
                 }
 
@@ -131,7 +133,7 @@ namespace BotHATTwaffle.Modules
                     StringSplitOptions.None
                     );
                     reply = string.Join("\n", replyArray.Where(x => !x.Trim().StartsWith("L")));
-                    reply = reply.Replace("discord.gg", "discord,gg");
+                    reply = reply.Replace("discord.gg", "discord,gg").Replace(server.Password,"[PASSWORD HIDDEN]");
                 }
                 catch { }
 
