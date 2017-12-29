@@ -107,7 +107,7 @@ namespace BotHATTwaffle.Modules
             List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
             fieldBuilder.Add(new EmbedFieldBuilder { Name = "Written by", Value = "[TopHATTwaffle](https://github.com/tophattwaffle)", IsInline = true });
             fieldBuilder.Add(new EmbedFieldBuilder { Name = "With Help From", Value = "[BenBlodgi](https://github.com/BenVlodgi)\n[Mark](https://github.com/MarkKoz)", IsInline = true });
-            fieldBuilder.Add(new EmbedFieldBuilder { Name = "Build Date", Value = $"{buildDate} [Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)", IsInline = true });
+            fieldBuilder.Add(new EmbedFieldBuilder { Name = "Build Date", Value = $"{buildDate}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)", IsInline = true });
             fieldBuilder.Add(new EmbedFieldBuilder { Name = "Built With", Value = $"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)", IsInline = true });
 
 
