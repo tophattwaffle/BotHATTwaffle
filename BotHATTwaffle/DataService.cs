@@ -71,11 +71,18 @@ namespace BotHATTwaffle
             //Messages to test if it is still connected. When loggin is enabled, this floods logs ands console.
             //If multiple commmands were sent in a row with the default retry value of 30000 this would crash the bot. 
             //For some reason using a delay of 1, and then ensuring that we dispose of the object fixes this crash.
-            using (var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password,1))
-            { reply = await rcon.SendCommandAsync(command); }
+            try
+            {
+                using (var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password, 1))
+                { reply = await rcon.SendCommandAsync(command); }
 
-            reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
-
+                reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
+            }
+            catch
+            {
+                reply = $"The RCON command encountered an error. This is likely due to shotty programming work on TopHATTwaffle's end." +
+                    $"Wait a few seconds and try again.";
+            }
             return reply;
         }
 

@@ -159,7 +159,7 @@ namespace BotHATTwaffle.Modules
             else
             {
                 await Program.ChannelLog($"{Context.User} is trying to rcon from the bot. They tried to send {serverString} {command}");
-                await ReplyAsync("You cannot use this command with your current permission level!");
+                await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }
 
