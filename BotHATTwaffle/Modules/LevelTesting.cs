@@ -126,7 +126,7 @@ namespace BotHATTwaffle.Modules
                 {
                     Author = authBuilder,
                     Fields = fieldBuilder,
-                    Title = $"--Workshop Link--",
+                    Title = $"Workshop Link",
                     Url = currentEventInfo[6],
                     ThumbnailUrl = currentEventInfo[4],
                     Color = new Color(71, 126, 159),
