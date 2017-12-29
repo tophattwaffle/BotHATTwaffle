@@ -128,106 +128,86 @@ namespace BotHATTwaffle
 
         async internal Task Listen(SocketMessage message)
         {
-            bool proceed = true;
-            //If the message is from a bot, just break.
+            //If the message is from a bot, just return.
             if (message.Author.IsBot)
                 return;
 
-            //Let's check against the values defined in the settings file.
-
-            if (proceed)
-                if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
+            if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
+            {
+                var builder = new EmbedBuilder()
                 {
-                    var builder = new EmbedBuilder()
-                    {
-                        ImageUrl = "https://content.tophattwaffle.com/BotHATTwaffle/doit.jpg",
-                    };
-                    await message.Channel.SendMessageAsync("",false, builder);
-                    proceed = false;
-                }
-            if (proceed)
-                if (message.Content.ToLower().Contains("who is daddy") || message.Content.ToLower().Contains("who is tophattwaffle"))
+                    ImageUrl = "https://content.tophattwaffle.com/BotHATTwaffle/doit.jpg",
+                };
+                await message.Channel.SendMessageAsync("",false, builder);
+                return;
+            }
+            if (message.Content.ToLower().Contains("who is daddy") || message.Content.ToLower().Contains("who is tophattwaffle"))
+            {
+                await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
+                return;
+            }
+            if (message.Content.ToLower().Contains("execute order 66"))
+            {
+                await message.Channel.SendMessageAsync("Yes my lord.");
+                await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
+                return;
+            }
+            foreach (string s in agreeEavesDrop)
+            {
+                if (message.Content.Equals("^") && message.Author.Username.Equals(s))
                 {
-                    await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
-                    proceed = false;
+                        await message.Channel.SendMessageAsync(agreeStrings[_random.Next(0, agreeStrings.Length)]);
+                        return;
                 }
-            if (proceed)
-                if (message.Content.ToLower().Contains("execute order 66"))
+            }
+            foreach (string s in pakRatEavesDrop)
+            {
+                if(message.Content.ToLower().Contains(s))
                 {
-                    await message.Channel.SendMessageAsync("Yes my lord.");
-                    await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
-                    proceed = false;
+                    await PakRat(message);
+                        return;
                 }
-            if (proceed)
-                foreach (string s in agreeEavesDrop)
+            }
+            foreach (string s in howToPackEavesDrop)
+            {
+                if (message.Content.ToLower().Contains(s))
                 {
-                    if (message.Content.Equals("^") && message.Author.Username.Equals(s))
-                    {
-                            await message.Channel.SendMessageAsync(agreeStrings[_random.Next(0, agreeStrings.Length)]);
-                            proceed = false;
-                            break;
-                    }
+                    await HowToPack(message);
+                    return;
                 }
-            if (proceed)
-                foreach (string s in pakRatEavesDrop)
+            }
+            foreach (string s in carveEavesDrop)
+            {
+                if (message.Content.ToLower().Contains(s))
                 {
-                    if(message.Content.ToLower().Contains(s))
-                    {
-                        await PakRat(message);
-                            proceed = false;
-                        break;
-                    }
+                    await Carve(message);
+                    return;
                 }
-            if(proceed)
-                foreach (string s in howToPackEavesDrop)
+            }
+            foreach (string s in propperEavesDrop)
+            {
+                if (message.Content.ToLower().Contains(s))
                 {
-                    if (message.Content.ToLower().Contains(s))
-                    {
-                        await HowToPack(message);
-                        proceed = false;
-                        break;
-                    }
+                    await Propper(message);
+                    return;
                 }
-            if (proceed)
-                foreach (string s in carveEavesDrop)
+            }
+            foreach (string s in vbEavesDrop)
+            {
+                if (message.Content.ToLower().Contains(s))
                 {
-                    if (message.Content.ToLower().Contains(s))
-                    {
-                        await Carve(message);
-                        proceed = false;
-                        break;
-                    }
+                    await VB(message);
+                    return;
                 }
-            if (proceed)
-                foreach (string s in propperEavesDrop)
+            }
+            foreach (string s in yorkEavesDrop)
+            {
+                if (message.Content.ToLower().Contains(s))
                 {
-                    if (message.Content.ToLower().Contains(s))
-                    {
-                        await Propper(message);
-                        proceed = false;
-                        break;
-                    }
+                    await DeYork(message);
+                    return;
                 }
-            if (proceed)
-                foreach (string s in vbEavesDrop)
-                {
-                    if (message.Content.ToLower().Contains(s))
-                    {
-                        await VB(message);
-                        proceed = false;
-                        break;
-                    }
-                }
-            if (proceed)
-                foreach (string s in yorkEavesDrop)
-                {
-                    if (message.Content.ToLower().Contains(s))
-                    {
-                        await DeYork(message);
-                        proceed = false;
-                        break;
-                    }
-                }
+            }
         }
 
         private static Task PakRat(SocketMessage message)
