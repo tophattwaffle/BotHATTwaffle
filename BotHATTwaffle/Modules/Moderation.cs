@@ -116,16 +116,22 @@ namespace BotHATTwaffle.Modules
                 }
 
                 var server = _dataServices.GetServer(serverString);
-                Console.WriteLine($"{server.FTPPass} {server.FTPPath} {server.FTPType} {server.FTPUser}");
                 string reply = null;
                 try
                 {
                     if (server != null)
                         reply = await _dataServices.RconCommand(command, server);
-                    Console.WriteLine(reply);
 
-                    if (reply.Length > 1900)
-                        reply = reply.Substring(0, 1900) + "\n[OUTPUT OMITTED...]";
+                    if (reply.Length > 1880)
+                        reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED...]";
+
+                    //Remove log messages from log
+                    string[] replyArray = reply.Split(
+                    new[] { "\r\n", "\r", "\n" },
+                    StringSplitOptions.None
+                    );
+                    reply = string.Join("\n", replyArray.Where(x => !x.Trim().StartsWith("L")));
+                    reply = reply.Replace("discord.gg", "discord,gg");
                 }
                 catch { }
 
@@ -143,7 +149,7 @@ namespace BotHATTwaffle.Modules
                     }
                     else
                     {
-                        await ReplyAsync($"```Command Sent to {server.Name}\n{reply}```");
+                        await ReplyAsync($"```{command} sent to {server.Name}\n{reply}```");
                         await Program.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
                     }
                 }
