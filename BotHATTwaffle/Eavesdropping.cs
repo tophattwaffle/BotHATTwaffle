@@ -300,11 +300,11 @@ namespace BotHATTwaffle
                 Author = authBuilder,
 
                 Title = $"DO NOT USE CARVE",
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                //ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
                 Color = new Color(243, 128, 72),
 
                 Description = $"I was minding my own damn business when you come around asking how to carve." +
-                $"\n\n\n**__DON'T__**"
+                $"\n**__DON'T__**"
             };
 
             message.Channel.SendMessageAsync("", false, builder);
@@ -357,7 +357,7 @@ namespace BotHATTwaffle
                 Author = authBuilder,
 
                 Title = $"Please no...",
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                //ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
                 Color = new Color(243, 128, 72),
 
                 Description = $"I saw you posted about Velocity Brawl. How about we do not do that."
