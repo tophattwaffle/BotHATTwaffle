@@ -45,7 +45,7 @@ namespace BotHATTwaffle.Modules
             {
                 Color = new Color(47, 111, 146),
                 Description = $"*Do you like waffles?*" +
-                $"\nIt took me **{replyTime}ms** to get back to you."
+                $"\nIt took me **{replyTime}ms** to reach the Discord API."
             };
             await ReplyAsync("", false, builder);
         }

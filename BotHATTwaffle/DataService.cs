@@ -53,6 +53,7 @@ namespace BotHATTwaffle
             return servers.Find(x => x.Name == serverStr);
         }
 
+
         async public Task<string> RconCommand(string command, JsonServer server)
         {
             string reply = null;
@@ -67,22 +68,19 @@ namespace BotHATTwaffle
                 return "HOST_NOT_FOUND";
             }
 
-            //The object is in a using block because if it is not it will constantly spam the console of the sevrer with
-            //Messages to test if it is still connected. When loggin is enabled, this floods logs ands console.
-            //If multiple commmands were sent in a row with the default retry value of 30000 this would crash the bot. 
-            //For some reason using a delay of 1, and then ensuring that we dispose of the object fixes this crash.
-            try
-            {
-                using (var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password, 1))
-                { reply = await rcon.SendCommandAsync(command); }
+            var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password,1000);
+            
+                reply = await rcon.SendCommandAsync(command);
+            
+#pragma warning disable CS4014 //If you re-set the rcon_password all RCON connections are closed.
+            //By not awaiting this, we are able to set the rcon password back to the samve value closing the connection.
+            //This will automatically timeout and dispose of the rcon connection when it tries to conncect again.
+            rcon.SendCommandAsync($"rcon_password {server.Password}");
+#pragma warning restore CS4014
 
-                reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
-            }
-            catch
-            {
-                reply = $"The RCON command encountered an error. This is likely due to shotty programming work on TopHATTwaffle's end." +
-                    $"Wait a few seconds and try again.";
-            }
+
+            reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
+
             return reply;
         }
 
