@@ -149,7 +149,7 @@ namespace BotHATTwaffle
                 }
             }
             //legacy 5
-            if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5")
+            if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5" || searchSeries.ToLower() == "all")
             {
                 foreach (string s in searchTermArray)
                 {
