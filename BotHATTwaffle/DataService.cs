@@ -107,7 +107,7 @@ namespace BotHATTwaffle
             return reply;
         }
 
-        public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
+        async public Task<List<List<string>>> Search(string searchSeries, string searchTerm, bool isPrivate)
         {
             List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
             List<List<string>> listResults = new List<List<string>>();
@@ -115,6 +115,9 @@ namespace BotHATTwaffle
 
             if(searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
                 return SearchFAQ(searchTerm, isPrivate);
+
+            if (searchTerm.ToLower() == "dump" || searchTerm.ToLower() == "all")
+                return DumpSearch(searchSeries);
 
             //V2 0
             if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
@@ -222,6 +225,67 @@ namespace BotHATTwaffle
                 singleResult.Add(finalImg);
                 listResults.Add(singleResult);
             }
+            return listResults;
+        }
+
+        public List<List<string>> DumpSearch(string searchSeries)
+        {
+            List<List<string>> listResults = new List<List<string>>();
+            List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
+
+            //V2 0
+            if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
+            {
+                foundTutorials.AddRange(series[0].tutorial);
+            }
+            //Bootcamp 1
+            if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2" || searchSeries.ToLower() == "all")
+            {
+                foundTutorials.AddRange(series[1].tutorial);
+            }
+            //3dsmax 2
+            if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3" || searchSeries.ToLower() == "all")
+            {
+                foundTutorials.AddRange(series[2].tutorial);
+            }
+            //Writtentutorials 3
+            if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4" || searchSeries.ToLower() == "all")
+            {
+                foundTutorials.AddRange(series[3].tutorial);
+            }
+            //legacy 5
+            if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5" || searchSeries.ToLower() == "all")
+            { 
+               foundTutorials.AddRange(series[5].tutorial);
+
+            }
+            //troubleshooting 4
+            if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "all")
+            {
+                foundTutorials.AddRange(series[4].tutorial);
+            }
+
+            foreach (var result in foundTutorials)
+            {
+                List<string> singleResult = new List<string>();
+
+                //Doing a web request times the bot out at times. Not worth it.
+                /*
+                HtmlWeb htmlWeb = new HtmlWeb();
+                HtmlDocument htmlDocument = htmlWeb.Load(result.url);
+
+                string title = (from x in htmlDocument.DocumentNode.Descendants()
+                                where x.Name.ToLower() == "title"
+                                select x.InnerText).FirstOrDefault();
+                title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+                */
+
+                singleResult.Add(result.url.Replace("https://www.tophattwaffle.com/","").Replace("/",""));
+                singleResult.Add(result.url);
+                singleResult.Add(string.Join(", ", result.tags));
+                listResults.Add(singleResult);
+            }
+
             return listResults;
         }
 
