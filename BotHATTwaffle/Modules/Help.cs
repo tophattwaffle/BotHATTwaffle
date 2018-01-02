@@ -20,7 +20,7 @@ namespace BotHATTwaffle.Modules
             _service = service;
             //_config = config;
         }
-        #region help
+
         [Command("help")]
         [Summary("`>help` Displays this message")]
         [Alias("h")]
@@ -56,7 +56,15 @@ namespace BotHATTwaffle.Modules
                 }
             }
 
-            await Context.User.SendMessageAsync("", false, builder.Build());
+            try
+            {
+                await Context.User.SendMessageAsync("", false, builder.Build());
+            }
+            catch
+            {
+                await ReplyAsync("", false, builder.Build());
+            }
+            
         }
 
         [Command("help")]
@@ -94,10 +102,16 @@ namespace BotHATTwaffle.Modules
                 });
             }
 
-            await Context.User.SendMessageAsync("", false, builder.Build());
+            try
+            {
+                await Context.User.SendMessageAsync("", false, builder.Build());
+            }
+            catch
+            {
+                await ReplyAsync("", false, builder.Build());
+            }
         }
-        #endregion
-        #region About
+
         [Command("about")]
         [Summary("`>about` Displays information about the bot")]
         public async Task AboutAsync()
@@ -130,7 +144,7 @@ namespace BotHATTwaffle.Modules
                 "\n\nPlease let me know if you have any suggests or find bugs!"
             };
             await ReplyAsync("", false, builder.Build());
-            #endregion
+
         }
     }
 }
