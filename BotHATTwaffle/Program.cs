@@ -17,15 +17,20 @@ public class Program
     public static DiscordSocketClient _client;
     private IServiceProvider _services;
     public static Dictionary<string, string> config;
+
+    //Channels and Role vars
     string logChannelStr;
     string playTesterRoleStr;
     string announcementChannelStr;
     string testingChannelStr;
+    string modRoleStr;
+    string mutedRoleStr;
+    string rconRoleStr;
+    string ActiveRoleStr;
     public static SocketTextChannel logChannel = null;
     public static SocketTextChannel announcementChannel = null;
     public static SocketTextChannel testingChannel = null;
     public static SocketRole playTesterRole = null;
-    public static string serverIconURL = null;
 
     private static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
 
@@ -56,9 +61,17 @@ public class Program
         if (config.ContainsKey("playTesterRole"))
             playTesterRoleStr = (config["playTesterRole"]);
 
-        //_utility = new UtilityServices();
-        //_mod = new ModerationServices();
-        //_testing = new LevelTesting();
+        if (config.ContainsKey("moderatorRoleName"))
+            modRoleStr = (config["moderatorRoleName"]);
+
+        if (config.ContainsKey("mutedRoleName"))
+            mutedRoleStr = (config["mutedRoleName"]);
+
+        if (config.ContainsKey("rconRoleName"))
+            rconRoleStr = (config["rconRoleName"]);
+
+        if (config.ContainsKey("activeMemberRole"))
+            ActiveRoleStr = (config["activeMemberRole"]);
 
         _client = new DiscordSocketClient();
         _commands = new CommandService();
@@ -102,17 +115,17 @@ public class Program
             if (s.Name == logChannelStr)
             {
                 logChannel = s;
-                Console.WriteLine($"\nLog Channel Found! Logging to: {logChannel}");
+                Console.WriteLine($"\nLog Channel Found! Logging to: {s.Name}");
             }
             if (s.Name == announcementChannelStr)
             {
                 announcementChannel = s;
-                Console.WriteLine($"\nAnnouncement Channel Found! Announcing to: {announcementChannel}");
+                Console.WriteLine($"\nAnnouncement Channel Found! Announcing to: {s.Name}");
             }
             if (s.Name == testingChannelStr)
             {
                 testingChannel = s;
-                Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {testingChannel}");
+                Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {s.Name}");
 
             }
         }
@@ -122,9 +135,30 @@ public class Program
             if (r.Name == playTesterRoleStr)
             {
                 playTesterRole = r;
-                Console.WriteLine($"\nPlaytester role found!: {playTesterRole}\n");
+                Console.WriteLine($"\nPlaytester role found!: {r.Name}");
+            }
+            if(r.Name == modRoleStr)
+            {
+                _services.GetService<ModerationServices>().ModRole = r;
+                Console.WriteLine($"\nModerator role found!: {r.Name}");
+            }
+            if (r.Name == rconRoleStr)
+            {
+                _services.GetService<ModerationServices>().RconRole = r;
+                Console.WriteLine($"\nRCON role found!: {r.Name}");
+            }
+            if (r.Name == mutedRoleStr)
+            {
+                _services.GetService<ModerationServices>().MuteRole = r;
+                Console.WriteLine($"\nMuted role found!: {r.Name}");
+            }
+            if (r.Name == ActiveRoleStr)
+            {
+                _services.GetService<LevelTesting>().ActiveRole = r;
+                Console.WriteLine($"\nActive Memeber role found!: {r.Name}");
             }
         }
+
         Console.ResetColor();
 
         return Task.CompletedTask;
@@ -235,6 +269,7 @@ public class Program
         #region Playtesting vars
         mainConfig.AddKeyIfMissing("testCalID", "Replace My Buddy");
         mainConfig.AddKeyIfMissing("playTesterRole", "Playtester");
+        mainConfig.AddKeyIfMissing("activeMemberRole", "Active Member");
         mainConfig.AddKeyIfMissing("testingChannel", "csgo_level_testing");
         mainConfig.AddKeyIfMissing("demoPath", $"X:\\Playtesting Demos");
         mainConfig.AddKeyIfMissing("casualConfig", $"thw");
@@ -256,6 +291,7 @@ public class Program
         mainConfig.AddKeyIfMissing("moderatorRoleName", "Moderators");
         mainConfig.AddKeyIfMissing("mutedRoleName", "Muted");
         mainConfig.AddKeyIfMissing("rconRoleName", "RconAccess");
+        mainConfig.AddKeyIfMissing("publicCommandWhiteListCSV", "[CONFIGME]");
         #endregion
 
         #region  Shitpost vars
