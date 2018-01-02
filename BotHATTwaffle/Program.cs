@@ -167,23 +167,20 @@ public class Program
     private Task Log(LogMessage arg)
     {
         Console.WriteLine(arg);
-
         return Task.CompletedTask;
     }
 
     public static Task ChannelLog(string message)
     {
         logChannel.SendMessageAsync($"```{DateTime.Now}\n{message}```");
-        Console.WriteLine($"{DateTime.Now}: {message}");
-
+        Console.WriteLine($"{DateTime.Now}: {message}\n");
         return Task.CompletedTask;
     }
 
     public static Task ChannelLog(string title, string message)
     {
         logChannel.SendMessageAsync($"```{DateTime.Now}\n{title}\n{message}```");
-        Console.WriteLine($"{DateTime.Now}: {title}\n{message}");
-
+        Console.WriteLine($"{DateTime.Now}: {title}\n{message}\n");
         return Task.CompletedTask;
     }
 
