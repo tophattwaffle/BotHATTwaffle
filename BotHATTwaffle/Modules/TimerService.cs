@@ -42,6 +42,7 @@ namespace BotHATTwaffle.Modules
             _timer = new Timer(_ =>
             {
                 _levelTesting.Announce();
+                _levelTesting.CheckServerReservations();
                 _mod.Cycle();
                 ChangePlaying();
             },
