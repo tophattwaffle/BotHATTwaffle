@@ -20,25 +20,11 @@ namespace BotHATTwaffle.Modules
         public SocketRole MuteRole { get; set; }
         public SocketRole RconRole { get; set; }
         public SocketRole ModRole { get; set; }
-        public string modRoleStr;
-        public string mutedRoleNameStr;
-        public string rconRoleNameStr;
-        LevelTesting _levelTesting;
         public string[] TestInfo { get; set; }
 
-        public ModerationServices(LevelTesting levelTesting)
+        public ModerationServices()
         {
-            //testInfo = new string[11];
 
-            _levelTesting = levelTesting;
-            if (Program.config.ContainsKey("moderatorRoleName"))
-                modRoleStr = (Program.config["moderatorRoleName"]);
-            
-            if (Program.config.ContainsKey("mutedRoleName"))
-                mutedRoleNameStr = (Program.config["mutedRoleName"]);
-
-            if (Program.config.ContainsKey("rconRoleName"))
-                rconRoleNameStr = (Program.config["rconRoleName"]);
         }
 
         public void Cycle()
@@ -48,10 +34,10 @@ namespace BotHATTwaffle.Modules
             {
                 if(u.CanUnmute())
                 {
-                    u.user.RemoveRoleAsync(MuteRole);
-                    u.user.SendMessageAsync("You have been unmuted!");
+                    u.User.RemoveRoleAsync(MuteRole);
+                    u.User.SendMessageAsync("You have been unmuted!");
                     muteList.Remove(u);
-                    Program.ChannelLog($"{u.user.Username} Has been unmuted.");
+                    Program.ChannelLog($"{u.User.Username} Has been unmuted.");
                     Task.Delay(1000);
                 }
             }
@@ -61,8 +47,8 @@ namespace BotHATTwaffle.Modules
         {
             Console.WriteLine($"ADD MUTE {inUser.Username} {inUnmuteTime}");
             muteList.Add(new UserData() {
-                user = inUser,
-                unmuteTime = inUnmuteTime
+                User = inUser,
+                UnmuteTime = inUnmuteTime
             });
         }
     }
@@ -72,9 +58,9 @@ namespace BotHATTwaffle.Modules
         private ModerationServices _mod;
         private LevelTesting _levelTesting;
         private DataServices _dataServices;
-        private string casualConfig;
-        private string compConfig;
-        private string postConfig;
+        public string casualConfig;
+        public string compConfig;
+        public string postConfig;
 
         public ModerationModule(ModerationServices mod, LevelTesting levelTesting, DataServices dataServices)
         {
@@ -95,7 +81,7 @@ namespace BotHATTwaffle.Modules
         [Remarks("Requirements: Moderator Role. Sends rcon command to the desired server. Use the server 3 letter code (eus) to pick the server. If " +
             "the command returns output it will be displayed. Some commands do not have output.")]
         [Alias("r")]
-        public async Task RconAsync(string serverString, [Remainder]string command)
+        public async Task RconAsync(string serverString = null, [Remainder]string command = null)
         {
             if (Context.IsPrivate)
             {
@@ -104,11 +90,15 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
-            _mod.RconRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.rconRoleNameStr);
-
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_mod.RconRole))
             {
+                //Display list of servers
+                if (serverString == null && command == null)
+                {
+                    await ReplyAsync("",false, _dataServices.GetAllServers());
+                    return;
+                }
+
                 //Return if we use these commands.
                 if (command.ToLower().Contains("rcon_password") || command.ToLower().Contains("exit"))
                 {
@@ -183,7 +173,6 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
             {
                 if(_levelTesting.currentEventInfo[0] == "NO_EVENT_FOUND")
@@ -283,7 +272,7 @@ namespace BotHATTwaffle.Modules
             else
             {
                 await Program.ChannelLog($"{Context.User} is trying to use the playtest command.");
-                await ReplyAsync("You cannot use this command with your current permission level!");
+                await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }
 
@@ -351,15 +340,13 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("**This command can not be used in a DM**");
                 return;
             }
-            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
-            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
 
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
             {
                 await Context.Message.DeleteAsync();
                 try
                 {
-                    await _levelTesting.announceMessage.DeleteAsync();
+                    await _levelTesting.AnnounceMessage.DeleteAsync();
                 }
                 catch
                 { }//No playtest announcement found. Someone must have deleted it manually.
@@ -381,7 +368,7 @@ namespace BotHATTwaffle.Modules
             else
             {
                 await Program.ChannelLog($"{Context.User} is trying to shutdown the bot.");
-                await ReplyAsync("You cannot use this command with your current permission level!");
+                await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }
 
@@ -402,8 +389,6 @@ namespace BotHATTwaffle.Modules
                 await ReplyAsync("***This command can not be used in a DM***");
                 return;
             }
-            _mod.MuteRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.mutedRoleNameStr);
-            _mod.ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == _mod.modRoleStr);
 
             if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
             {
@@ -416,7 +401,58 @@ namespace BotHATTwaffle.Modules
             else
             {
                 await Program.ChannelLog($"{Context.User} is trying to mute {user} without the right permissions!");
-                await ReplyAsync("You cannot use this command with your current permission level!");
+                await ReplyAsync("```You cannot use this command with your current permission level!```");
+            }
+        }
+
+        [Command("ClearReservations")]
+        [Summary("`>cr` Clears all server reservations")]
+        [Remarks("Requirements: Moderator Role")]
+        [Alias("cr")]
+        public async Task ClearReservationsAsync(string serverStr = null)
+        {
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("***This command can not be used in a DM***");
+                return;
+            }
+
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
+            {
+                if(serverStr == null)
+                    await _levelTesting.ClearServerReservations();
+                else
+                    await _levelTesting.ClearServerReservations(serverStr);
+
+                await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
+            }
+            else
+            {
+                await Program.ChannelLog($"{Context.User} is trying to clear reservations without the right permissions!");
+                await ReplyAsync("```You cannot use this command with your current permission level!```");
+            }
+        }
+
+        [Command("ShowReservations")]
+        [Summary("`>sr` Shows all server reservations")]
+        [Remarks("Requirements: Moderator Role")]
+        [Alias("sr")]
+        public async Task ShowReservationsAsync(string serverStr = null)
+        {
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("***This command can not be used in a DM***");
+                return;
+            }
+
+            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
+            {
+                await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
+            }
+            else
+            {
+                await Program.ChannelLog($"{Context.User} is trying to clear reservations without the right permissions!");
+                await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }
     }
