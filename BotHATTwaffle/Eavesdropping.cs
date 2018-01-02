@@ -55,10 +55,10 @@ namespace BotHATTwaffle
                 {
                     if (u.CanRole())
                     {
-                        u.user.AddRoleAsync(Program.playTesterRole);
-                        u.user.SendMessageAsync("", false, u.joinMessage);
+                        u.User.AddRoleAsync(Program.playTesterRole);
+                        u.User.SendMessageAsync("", false, u.JoinMessage);
                         joinDelayList.Remove(u);
-                        Program.ChannelLog($"{u.user.Username} now has playtester role. Welcome DM was sent.");
+                        Program.ChannelLog($"{u.User.Username} now has playtester role. Welcome DM was sent.");
                         Task.Delay(1000);
                     }
                 }
@@ -76,9 +76,9 @@ namespace BotHATTwaffle
                 $"\nUser ID: {inUser.Id}");
             joinDelayList.Add(new UserData()
             {
-                user = inUser,
-                joinRoleTime = inRoleTime,
-                joinMessage = message,
+                User = inUser,
+                JoinRoleTime = inRoleTime,
+                JoinMessage = message,
             });
         }
 

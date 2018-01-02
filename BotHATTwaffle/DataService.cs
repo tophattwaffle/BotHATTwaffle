@@ -13,6 +13,7 @@ using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using Renci.SshNet;
 using Renci.SshNet.Sftp;
+using Discord;
 
 namespace BotHATTwaffle
 {
@@ -28,15 +29,6 @@ namespace BotHATTwaffle
 
         public DataServices(Random random)
         {
-            Start();
-            _random = random;
-
-            if (Program.config.ContainsKey("demoPath"))
-                demoPath = (Program.config["demoPath"]);
-        }
-
-        private void Start()
-        {
             string searchDataPath = "searchData.json";
             searchData = JObject.Parse(File.ReadAllText(searchDataPath));
             root = searchData.ToObject<JsonRoot>();
@@ -46,11 +38,42 @@ namespace BotHATTwaffle
             serverData = JObject.Parse(File.ReadAllText(serverDataPath));
             root = serverData.ToObject<JsonRoot>();
             servers = root.servers;
+
+            _random = random;
+
+            if (Program.config.ContainsKey("demoPath"))
+                demoPath = (Program.config["demoPath"]);
         }
 
         public JsonServer GetServer(string serverStr)
         {
-            return servers.Find(x => x.Name == serverStr);
+            return servers.Find(x => x.Name == serverStr.ToLower());
+        }
+
+        public Embed GetAllServers()
+        {
+            var authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = $"Server List",
+                IconUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+            };
+
+            List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
+            foreach (var s in servers)
+            {
+                fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{s.Address}", Value = $"Prefix: `{s.Name}`\n{s.Description}", IsInline = false });
+            }
+
+            var builder = new EmbedBuilder()
+            {
+                Fields = fieldBuilder,
+                Author = authBuilder,
+                Color = new Color(243, 128, 72),
+
+                Description = $""
+            };
+
+            return builder;
         }
 
 
@@ -155,7 +178,7 @@ namespace BotHATTwaffle
                     singleResult.Clear();
                     singleResult.Add(@"View All Tutorials");
                     singleResult.Add("https://www.tophattwaffle.com/tutorials/");
-                    singleResult.Add(@"There are more results than I can display without flooding chat. Consider viewing all tutorials, or do a search without `all`. If you DM me your search the results won't be limited.");
+                    singleResult.Add(@"There are more results than I can display without flooding chat. [Consider viewing all tutorials](https://www.tophattwaffle.com/tutorials/), or do a search without `all`. If you DM me your search the results won't be limited.");
                     singleResult.Add(null);
                     listResults.Add(singleResult);
                     break;
