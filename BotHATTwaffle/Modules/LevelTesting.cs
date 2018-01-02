@@ -609,7 +609,7 @@ namespace BotHATTwaffle.Modules
                         Description = $"For the next 2 hours you can use:" +
                         $"\n`>PublicCommand [command]` or `>pc [command]`" +
                         $"\nTo send commands to the server. Example: `>pc mp_restartgame 1`" +
-                        $"\nTo see a lost of the commands you can use, type `>pc`" +
+                        $"\nTo see a list of the commands you can use, type `>pc`" +
                         $"\nOnce the 2 hours has ended you won't have control of the server any more." +
                         $"\n\n*If you cannot connect to the reserved server for any reason, please let TopHATTwaffle know!*"
                     };
