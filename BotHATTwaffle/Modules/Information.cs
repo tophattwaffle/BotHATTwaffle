@@ -102,7 +102,7 @@ namespace BotHATTwaffle.Modules
             "\n `5` `LegacySeries` `v1` `lg`" +
             "\n `6` `HammerTroubleshooting` `ht`" +
             "\n `7` `FAQ` `f`" +
-            "\n\n `>s [series] [dump/all] Will display ALL tutorials in that series. It can be slow to respond, so please wait!" +
+            "\n\n `>s [series] [dump/all]` Exmaple: `>s v2 all` Will display ALL tutorials in that series. It can be slow to respond, so please wait!" +
             "\nReally big thanks to Mark for helping make the JSON searching work!")]
         [Alias("s")]
         public async Task SearchAsync(string series, [Remainder]string search)
