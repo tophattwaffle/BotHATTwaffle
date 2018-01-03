@@ -113,7 +113,7 @@ namespace BotHATTwaffle.Modules
             if (Context.IsPrivate)
                 isPrivate = true;
 
-            List<List<string>> results = await _data.Search(series, search, isPrivate);
+            List<List<string>> results = _data.Search(series, search, isPrivate);
 
             if (search.ToLower() == "dump" || search.ToLower() == "all")
             {
@@ -338,7 +338,7 @@ namespace BotHATTwaffle.Modules
         [Command("catFact")]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]
-        [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact")]
+        [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "catfacts", "cat facts")]
         public async Task CatFactAsync()
         {
             Random _rand = new Random();
@@ -387,5 +387,48 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("You cannot unsubscribe from cat facts...");
         }
 
+        [Command("PenguinFact")]
+        [Summary("`>PenguinFact` Gives you a Penguin fact!")]
+        [Remarks("Ever want to know more about Penguin? Now you can.")]
+        [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact", "penguinfacts", "penguin facts")]
+        public async Task PenguinFactAsync()
+        {
+            Random _rand = new Random();
+            string path = null;
+            if (Program.config.ContainsKey("catFactPath"))
+                path = (Program.config["catFactPath"]);
+
+            string catFact = "Did you know cats have big bushy tails?";
+            if (File.Exists(path))
+            {
+                var allLines = File.ReadAllLines(path);
+                var lineNumber = _rand.Next(0, allLines.Length);
+                catFact = allLines[lineNumber];
+            }
+
+            var authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = $"PENGUIN FACTS!",
+                IconUrl = Context.Message.Author.GetAvatarUrl(),
+            };
+
+            var footBuilder = new EmbedFooterBuilder()
+            {
+                Text = "This was penguin facts, you cannot unsubscribe."
+            };
+            catFact = catFact.Replace("cat", "penguin").Replace("Cat", "Penguin");
+            var builder = new EmbedBuilder()
+            {
+                Author = authBuilder,
+                Footer = footBuilder,
+
+                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                Color = new Color(230, 235, 240),
+
+                Description = catFact
+            };
+            await Program.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
+            await ReplyAsync("", false, builder.Build());
+        }
     }
 }
