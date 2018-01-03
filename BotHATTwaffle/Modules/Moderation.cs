@@ -432,27 +432,5 @@ namespace BotHATTwaffle.Modules
             }
         }
 
-        [Command("ShowReservations")]
-        [Summary("`>sr` Shows all server reservations")]
-        [Remarks("Requirements: Moderator Role")]
-        [Alias("sr")]
-        public async Task ShowReservationsAsync(string serverStr = null)
-        {
-            if (Context.IsPrivate)
-            {
-                await ReplyAsync("***This command can not be used in a DM***");
-                return;
-            }
-
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
-            {
-                await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
-            }
-            else
-            {
-                await Program.ChannelLog($"{Context.User} is trying to clear reservations without the right permissions!");
-                await ReplyAsync("```You cannot use this command with your current permission level!```");
-            }
-        }
     }
 }
