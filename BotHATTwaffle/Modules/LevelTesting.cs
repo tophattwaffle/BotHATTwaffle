@@ -546,7 +546,7 @@ namespace BotHATTwaffle.Modules
         }
 
         [Command("PublicServer")]
-        [Summary("Reserves a public server for your own testing use.")]
+        [Summary("`>PublicServer [serverPrefix]` Reserves a public server for your own testing use.")]
         [Remarks("`>ps eus` Reserves a server for 2 hours for you to use for testing purposes." +
             "\nYou can also include a Workshop ID to load that map automatically. `>ps eus 123456789`." +
             "\nTo see a list of servers use `>ps`")]
@@ -685,7 +685,7 @@ namespace BotHATTwaffle.Modules
         }
 
         [Command("PublicCommand")]
-        [Summary("Sends command to your reserved test server")]
+        [Summary("`>PublicCommand [command]` Sends command to your reserved test server")]
         [Remarks("`>pc [command]` Sends a command to your reserved server." +
             "\nExample: `>pc sv_cheats 1`" +
             "\nYou must have a server already reserved to use this command." +
@@ -806,7 +806,7 @@ namespace BotHATTwaffle.Modules
         }
 
         [Command("ReleaseServer")]
-        [Summary("Releases your reservation on the public server.")]
+        [Summary("`>ReleaseServer` Releases your reservation on the public server.")]
         [Remarks("`>ReleaseServer` or `>rs` releases the reservation you have on a server.")]
         [Alias("rs")]
         public async Task ReleasePublicTestCommandAsync([Remainder]string command = null)
