@@ -102,17 +102,60 @@ namespace BotHATTwaffle.Modules
             "\n `5` `LegacySeries` `v1` `lg`" +
             "\n `6` `HammerTroubleshooting` `ht`" +
             "\n `7` `FAQ` `f`" +
+            "\n\n `>s [series] [dump/all] Will display ALL tutorials in that series. It can be slow to respond, so please wait!" +
             "\nReally big thanks to Mark for helping make the JSON searching work!")]
         [Alias("s")]
         public async Task SearchAsync(string series, [Remainder]string search)
         {
+            await Program.ChannelLog($"{Context.User.Username} ran a search",$"Series: {series}\nSearch Term: {search}");
             bool isPrivate = false;
             
             if (Context.IsPrivate)
                 isPrivate = true;
 
-            await Context.Channel.TriggerTypingAsync();
-            var results = _data.Search(series, search, isPrivate);
+            List<List<string>> results = await _data.Search(series, search, isPrivate);
+
+            if (search.ToLower() == "dump" || search.ToLower() == "all")
+            {
+                //[0]title
+                //[1]url
+                //[2]tags
+                List<string> reply = new List<string>();
+                string text = null;
+                foreach (var r in results)
+                {
+                    text += $"[{r[0]}]({r[1]})\nTags: {r[2]}\n\n";
+                    
+                    if(text.Length > 1800)
+                    {
+                        reply.Add(text);
+                        text = null;
+                    }
+                }
+
+                if (text != null && text.Length != 0)
+                    reply.Add(text);
+
+                try //If we cannot send a DM to the user, let them know.
+                {
+                    foreach (var s in reply)
+                    {
+                        var builder = new EmbedBuilder()
+                        {
+                            Color = new Color(243, 128, 72),
+
+                            Description = s
+                        };
+                        await Context.User.SendMessageAsync("",false,builder);
+                    }
+                }
+                catch
+                {
+                    await ReplyAsync("```\"dump\" and \"all\" search terms can ONLY send replies in a DM. This is to prevent flooding chat." +
+                        " You got this message because you do not accept DMs from non-friends.```");
+                }
+                return;
+            }
 
             if (results.Count == 0)
             {
@@ -130,28 +173,19 @@ namespace BotHATTwaffle.Modules
             {
                 var builder = new EmbedBuilder();
                 var authBuilder = new EmbedAuthorBuilder();
-                var footBuilder = new EmbedFooterBuilder();
                 authBuilder = new EmbedAuthorBuilder()
                 {
                     Name = r[0],
                     IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
                 };
 
-                footBuilder = new EmbedFooterBuilder()
-                {
-                    Text = "Thanks for using search!",
-                    IconUrl = Program._client.CurrentUser.GetAvatarUrl()
-                };
-
                 builder = new EmbedBuilder()
                 {
                     Author = authBuilder,
-                    //Footer = footBuilder,
 
-                    //Title = $"**Search Results**",
+                    Title = $"Click Here",
                     Url = r[1],
-                    //ImageUrl = ,
-                    ThumbnailUrl = r[3],//"https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                    ThumbnailUrl = r[3],
                     Color = new Color(243,128,72),
 
                     Description = r[2]
