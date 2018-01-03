@@ -741,7 +741,7 @@ namespace BotHATTwaffle.Modules
                     foreach (string s in publicCommandWhiteList)
                     {
                         
-                        if (command.Contains(s))
+                        if (command.ToLower().Contains(s))
                         {
                             valid = true;
                             string reply = await _dataServices.RconCommand(command, server);

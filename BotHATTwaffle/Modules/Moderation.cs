@@ -160,8 +160,8 @@ namespace BotHATTwaffle.Modules
             "\n`>playtest start` Starts the playtest, starts a demo recording, then tells the server it is live." +
             "\n`>playtest post` Starts postgame config. Gets the playtest demo and BSP file. Places it into the public DropBox folder." +
             "\n`>playtest scramble` or `>p s` Scrambles teams." +
-            "\n`>playtest pause` Pauses playtest." +
-            "\n`>playtest unpause` Unpauses playtest." +
+            "\n`>playtest pause` or `>p p` Pauses playtest." +
+            "\n`>playtest unpause` or `>p u` Unpauses playtest." +
             "\nIf a server prefix is provided, commands will go to that server. If no server is provided, the event server will be used. `>p start eus`")]
         [Alias("p")]
         public async Task PlaytestAsync(string action, string serverStr = "nothing")
@@ -248,11 +248,11 @@ namespace BotHATTwaffle.Modules
                 {
                     await _dataServices.RconCommand($"mp_scrambleteams 1", server);
                 }
-                else if (action.ToLower() == "pause")
+                else if (action.ToLower() == "pause" || action.ToLower() == "p")
                 {
                     await _dataServices.RconCommand(@"mp_pause_match; say Pausing Match", server); 
                 }
-                else if (action.ToLower() == "unpause")
+                else if (action.ToLower() == "unpause" || action.ToLower() == "u")
                 {
                     await _dataServices.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
                 }
@@ -263,8 +263,8 @@ namespace BotHATTwaffle.Modules
                         $"\n`start`" +
                         $"\n`post`" +
                         $"\n`scramble` or `s`" +
-                        $"\n`pause`" +
-                        $"\n`unpause`");
+                        $"\n`pause` or `p`" +
+                        $"\n`unpause` or `u`");
                 }
 
             }
