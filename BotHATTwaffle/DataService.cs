@@ -93,27 +93,30 @@ namespace BotHATTwaffle
 
             var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password,1000);
             
-                reply = await rcon.SendCommandAsync(command);
-            
+            reply = await rcon.SendCommandAsync(command);
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"RCON COMMAND: {server.Address}\nCommand: {command}\n");
+            Console.ResetColor();
+
 #pragma warning disable CS4014 //If you re-set the rcon_password all RCON connections are closed.
             //By not awaiting this, we are able to set the rcon password back to the samve value closing the connection.
             //This will automatically timeout and dispose of the rcon connection when it tries to conncect again.
             rcon.SendCommandAsync($"rcon_password {server.Password}");
 #pragma warning restore CS4014
 
-
             reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
 
             return reply;
         }
 
-        async public Task<List<List<string>>> Search(string searchSeries, string searchTerm, bool isPrivate)
+        public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
         {
             List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
             List<List<string>> listResults = new List<List<string>>();
             string[] searchTermArray = searchTerm.Split(' ');
 
-            if(searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
+            if (searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
                 return SearchFAQ(searchTerm, isPrivate);
 
             if (searchTerm.ToLower() == "dump" || searchTerm.ToLower() == "all")
@@ -122,7 +125,7 @@ namespace BotHATTwaffle
             //V2 0
             if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
             {
-                foreach(string s in searchTermArray)
+                foreach (string s in searchTermArray)
                 {
                     foundTutorials.AddRange(series[0].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
@@ -186,7 +189,7 @@ namespace BotHATTwaffle
                     listResults.Add(singleResult);
                     break;
                 }
-                
+
                 HtmlWeb htmlWeb = new HtmlWeb();
                 HtmlDocument htmlDocument = htmlWeb.Load(result.url);
 
