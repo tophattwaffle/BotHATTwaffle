@@ -113,8 +113,6 @@ namespace BotHATTwaffle.Modules
                     if (server != null)
                         reply = await _dataServices.RconCommand(command, server);
 
-                    Console.WriteLine($"RCON:\n{reply}");
-
                     if (reply.Length > 1880)
                         reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED...]";
                     
@@ -236,25 +234,36 @@ namespace BotHATTwaffle.Modules
                 }
                 else if (action.ToLower() == "post")
                 {
+#pragma warning disable CS4014 //Lets do all of the post game tasks and not wait. This is so the bot won't skip a heartbeat.
+                    PostTasks(server);
+
+                    _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
+#pragma warning restore CS4014
+
                     await Program.ChannelLog($"Playtest Post on {server.Name}", $"exec {postConfig}" +
                         $"\nsv_voiceenable 0" +
                         $"\nGetting Demo and BSP file and moving into DropBox");
-
-#pragma warning disable CS4014 //Lets do all of the post game tasks and not wait. This is so the bot won't skip a heartbeat.
-                    PostTasks(server);
-#pragma warning restore CS4014
                 }
                 else if(action.ToLower() == "scramble" || action.ToLower() == "s")
                 {
                     await _dataServices.RconCommand($"mp_scrambleteams 1", server);
+                    await ReplyAsync($"```Playtest Scramble on {server.Name}" +
+                        $"\nmp_scrambleteams 1```");
+                    await Program.ChannelLog($"Playtest Scramble on {server.Name}", $"mp_scrambleteams 1");
                 }
                 else if (action.ToLower() == "pause" || action.ToLower() == "p")
                 {
-                    await _dataServices.RconCommand(@"mp_pause_match; say Pausing Match", server); 
+                    await _dataServices.RconCommand(@"mp_pause_match; say Pausing Match", server);
+                    await ReplyAsync($"```Playtest Scramble on {server.Name}" +
+                        $"\nmp_pause_match```");
+                    await Program.ChannelLog($"Playtest Pause on {server.Name}", $"mp_pause_match");
                 }
                 else if (action.ToLower() == "unpause" || action.ToLower() == "u")
                 {
                     await _dataServices.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
+                    await ReplyAsync($"```Playtest Unpause on {server.Name}" +
+                        $"\nmp_unpause_match```");
+                    await Program.ChannelLog($"Playtest Unpause on {server.Name}", $"mp_unpause_match");
                 }
                 else
                 {
@@ -298,13 +307,7 @@ namespace BotHATTwaffle.Modules
 
             var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
             await _dataServices.RconCommand($"host_workshop_map {result}", server);
-            await Task.Delay(5000);
-
-#pragma warning disable CS4014 //Get the demo and don't wait for it to complete.
-            _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
-#pragma warning restore CS4014
-
-            await Task.Delay(5000);
+            await Task.Delay(10000);
             await _dataServices.RconCommand($"exec {postConfig}", server);
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
@@ -318,13 +321,24 @@ namespace BotHATTwaffle.Modules
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
             var splitUser = _mod.TestInfo[3].Split('#');
+
             try
             {
-                await Program.testingChannel.SendMessageAsync($"{Program._client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
+                //Try to DM them the information to get their demos.
+                await Program._client.GetUser(splitUser[0], splitUser[1]).SendMessageAsync("", false, builder);
             }
             catch
             {
-                await Program.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
+                try
+                {
+                    //If they don't accepts DMs, tag them in level testing.
+                    await Program.testingChannel.SendMessageAsync($"{Program._client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
+                }
+                catch
+                {
+                    //If it cannot get the name from the event info, nag them in level testing.
+                    await Program.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
+                }
             }
             await Program.testingChannel.SendMessageAsync($"", false, builder);
         }
