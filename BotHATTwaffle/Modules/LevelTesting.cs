@@ -360,7 +360,16 @@ namespace BotHATTwaffle.Modules
 
                         Description = $"Your reservation on {u.Server.Description} has ended! You can stay on the server but you cannot send any more commands to it."
                     };
-                    await u.User.SendMessageAsync("", false, builder);
+
+                    try //If we cannot send a DM to the user, just dump it into the testing channel and tag them.
+                    {
+                        await u.User.SendMessageAsync("", false, builder);
+                    }
+                    catch
+                    {
+                        await Program.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
+                    }
+
                     await Program.ChannelLog($"{u.User.Username}'s reservation on {u.Server.Address} has ended.");
                     await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.Server);
                     userData.Remove(u);
@@ -407,7 +416,16 @@ namespace BotHATTwaffle.Modules
                     Description = $"Your reservation on server {u.Server.Description} has expired because all reservations were cleared." +
                     $"This is likely due to a playtest starting soon, or a moderator cleared all reservations."
                 };
-                await u.User.SendMessageAsync("", false, builder);
+
+                try
+                {
+                    await u.User.SendMessageAsync("", false, builder);
+                }
+                catch
+                {
+                    await Program.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
+                }
+
                 await Program.ChannelLog($"{u.User.Username}'s reservation on {u.Server.Address} has ended.");
                 await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.Server);
                 userData.Remove(u);
@@ -448,7 +466,16 @@ namespace BotHATTwaffle.Modules
                         Description = $"Your reservation on server {u.Server.Description} has expired because the reservation was cleared." +
                         $"This is likely due to a playtest starting soon, a moderator cleared the reservation, or you released the reservation."
                     };
-                    await u.User.SendMessageAsync("", false, builder);
+
+                    try
+                    {
+                        await u.User.SendMessageAsync("", false, builder);
+                    }
+                    catch
+                    {
+                        await Program.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
+                    }
+
                     await Program.ChannelLog($"{u.User.Username}'s reservation on {u.Server.Address} has ended.");
                     await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.Server);
                     userData.Remove(u);
@@ -537,7 +564,8 @@ namespace BotHATTwaffle.Modules
                 if (!_levelTesting.canReserve)
                 {
                     await ReplyAsync($"```Servers cannot be reserved at this time." +
-                        $"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+                        $"\nServer reservation is blocked 1 hour before a scheduled test, and resumes once the calendar event has passed.```");
+                    return;
                 }
 
                 foreach (UserData u in _levelTesting.userData)
@@ -630,7 +658,23 @@ namespace BotHATTwaffle.Modules
                             time = u.ServerReleaseTime;
                     }
                     TimeSpan timeLeft = time.Subtract(DateTime.Now);
-                    await ReplyAsync($"```You cannot reserve the server {server.Name} because someone else is using it. Their reservation ends in {timeLeft.ToString("h'H 'm'M'")}```");
+
+                    var authBuilder = new EmbedAuthorBuilder()
+                    {
+                        Name = $"Unable to Reserver Server for {Context.Message.Author.Username}!",
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                    };
+
+                    var builder = new EmbedBuilder()
+                    {
+                        Author = authBuilder,
+                        ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                        Color = new Color(243, 128, 72),
+
+                        Description = $"You cannot reserve the server {server.Name} because someone else is using it. Their reservation ends in {timeLeft.ToString("h'H 'm'M'")}" +
+                        $"\nYou can use `>sr` to see all current server reservations."
+                    };
+                    await ReplyAsync("", false, builder);
                 }
             }
             else
@@ -663,6 +707,7 @@ namespace BotHATTwaffle.Modules
                 {
                     await ReplyAsync($"```Servers cannot be reserved at this time." +
                         $"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+                    return;
                 }
 
                 if (command == null)
@@ -780,6 +825,7 @@ namespace BotHATTwaffle.Modules
                 {
                     await ReplyAsync($"```Servers cannot be reserved at this time." +
                         $"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+                    return;
                 }
                 Boolean hasServer = false;
                 foreach (UserData u in _levelTesting.userData)
@@ -805,6 +851,22 @@ namespace BotHATTwaffle.Modules
                 await Program.ChannelLog($"{Context.User} is trying to use public playtest commands without permission.");
                 await ReplyAsync($"```You cannot use this command with your current permission level! You need {_levelTesting.ActiveRole.Name} role.```");
             }
+        }
+
+        [Command("ShowReservations")]
+        [Summary("`>sr` Shows all server reservations")]
+        [Remarks("Shows all current server reservations.")]
+        [Alias("sr")]
+        public async Task ShowReservationsAsync(string serverStr = null)
+        {
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("***This command can not be used in a DM***");
+                return;
+            }
+
+            await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
+
         }
 
         [Command("playtester")]
@@ -834,7 +896,7 @@ namespace BotHATTwaffle.Modules
             }
             else
             {
-                await Program.ChannelLog($"{Context.User} has subscribed from playtest notifications!");
+                await Program.ChannelLog($"{Context.User} has subscribed to playtest notifications!");
                 await ReplyAsync($"Thanks for subscribing to playtest notifications {Context.User.Mention}!");
                 await (user as IGuildUser).AddRoleAsync(playtesterRole);
             }
