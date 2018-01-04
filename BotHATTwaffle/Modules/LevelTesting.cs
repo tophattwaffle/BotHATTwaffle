@@ -16,7 +16,7 @@ namespace BotHATTwaffle.Modules
     {
         public List<UserData> userData = new List<UserData>();
         private readonly DataServices _dataServices;
-        public RestUserMessage AnnounceMessage { get; set; }
+        public IUserMessage  AnnounceMessage { get; set; }
         public SocketRole ActiveRole { get; set; }
         public GoogleCalendar _googleCalendar;
         public string[] lastEventInfo;
@@ -28,6 +28,9 @@ namespace BotHATTwaffle.Modules
         public Boolean canReserve = true;
         int calUpdateTicks = 2;
         int caltick = 0;
+        string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+        string announcePath = "announcement_id.txt";
+        Boolean firstRun = true;
 
         public LevelTesting(DataServices dataServices)
         {
@@ -36,14 +39,66 @@ namespace BotHATTwaffle.Modules
             {
                 Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {calUpdateTicks}.");
             }
+
             calUpdateTicks = calUpdateTicks - 1; //This is so the if statement does not add 1.
             _googleCalendar = new GoogleCalendar();
             currentEventInfo = _googleCalendar.GetEvents(); //Initial get of playtest.
             lastEventInfo = currentEventInfo; //Make sure array is same size for doing compares later.
         }
 
+        //Thanks to TimeForANinja for figuring this out!
+        async private void GetPreviousAnnounceAsync()
+        {
+            string[] announceData = File.ReadAllLines(announcePath);
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"Announcement Message File Found!\n{announceData[0]}\n{announceData[1]}");
+
+            var announceID = Convert.ToUInt64(announceData[1]);
+
+            if (announceData[0] == currentEventInfo[2]) //If saved title == current title
+            {
+                Console.WriteLine("Titles match! Attempting to reattach!");
+                try
+                {
+                    AnnounceMessage = await Program.announcementChannel.GetMessageAsync(announceID) as IUserMessage;
+                    Console.WriteLine("SUCCESS!");
+                }
+                catch (Exception)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Unable to load previous announcement message");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Titles do not match. Attempting to delete old message!");
+                try
+                {
+                    AnnounceMessage = await Program.announcementChannel.GetMessageAsync(announceID) as IUserMessage;
+                    await AnnounceMessage.DeleteAsync();
+                    AnnounceMessage = null;
+                    Console.WriteLine("Old message Deleted!");
+                }
+                catch
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Could not delete old message. Was it already deleted?");
+                }
+            }
+
+            Console.ResetColor();
+        }
+
         public async Task Announce()
         {
+            //First program run and an announce file exists.
+            if (firstRun && File.Exists(announcePath))
+            {
+                firstRun = false;
+                GetPreviousAnnounceAsync();
+            }
+
             caltick++;
             if (calUpdateTicks < caltick)
             {
@@ -68,19 +123,45 @@ namespace BotHATTwaffle.Modules
 
         private async Task PostAnnounce(Embed embed)
         {
-            AnnounceMessage = await Program.announcementChannel.SendMessageAsync("",false,embed);
+            AnnounceMessage = await Program.announcementChannel.SendMessageAsync("",false,embed) as IUserMessage;
+
+            //If the file exists, just delete it so it can be remade with the new test info.
+            if (File.Exists(announcePath))
+            {
+                File.Delete(announcePath);
+            }
+
+                //Create the text file containing the announce message
+            if (!File.Exists(announcePath))
+            {
+                using (StreamWriter sw = File.CreateText(announcePath))
+                {
+                    sw.WriteLine(currentEventInfo[2]);
+                    sw.WriteLine(AnnounceMessage.Id);
+                }
+            }
+
             await Program.ChannelLog("Posting Playtest Announcement", $"Posting Playtest for {currentEventInfo[2]}");
             lastEventInfo = currentEventInfo;
         }
 
         private async Task UpdateAnnounce(Embed embed)
         {
-            await AnnounceMessage.ModifyAsync(x =>
+            try
             {
-                x.Content = "";
-                x.Embed = embed;
-            });
-            lastEventInfo = currentEventInfo;
+                await AnnounceMessage.ModifyAsync(x =>
+                {
+                    x.Content = "";
+                    x.Embed = embed;
+                });
+                lastEventInfo = currentEventInfo;
+            }
+            catch
+            {
+                await Program.ChannelLog("Attempted to modify announcement message, but I could not find it. Did someone delete it? Recreating a new message.");
+                AnnounceMessage = null;
+                await Announce();
+            }
         }
 
         private async Task RebuildAnnounce()
@@ -370,7 +451,7 @@ namespace BotHATTwaffle.Modules
                         await Program.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
                     }
 
-                    await Program.ChannelLog($"{u.User.Username}'s reservation on {u.Server.Address} has ended.");
+                    await Program.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
                     await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.Server);
                     userData.Remove(u);
                     await Task.Delay(1000);
@@ -380,7 +461,7 @@ namespace BotHATTwaffle.Modules
 
         async public Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, Json.JsonServer server)
         {
-            await Program.ChannelLog($"{inUser.Username}#{inUser.Discriminator} reservation on {server.Address} has started.", $"Reservation expires at {inServerReleaseTime}");
+            await Program.ChannelLog($"{inUser} reservation on {server.Address} has started.", $"Reservation expires at {inServerReleaseTime}");
             await _dataServices.RconCommand($"say Hey everyone! {inUser.Username} has reserved this server!", server);
             userData.Add(new UserData()
             {
@@ -426,7 +507,7 @@ namespace BotHATTwaffle.Modules
                     await Program.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
                 }
 
-                await Program.ChannelLog($"{u.User.Username}'s reservation on {u.Server.Address} has ended.");
+                await Program.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
                 await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.Server);
                 userData.Remove(u);
                 await Task.Delay(1000);
@@ -476,7 +557,7 @@ namespace BotHATTwaffle.Modules
                         await Program.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
                     }
 
-                    await Program.ChannelLog($"{u.User.Username}'s reservation on {u.Server.Address} has ended.");
+                    await Program.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
                     await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.Server);
                     userData.Remove(u);
                     await Task.Delay(1000);
