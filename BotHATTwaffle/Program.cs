@@ -49,15 +49,20 @@ public class Program
         _client.Log += Log;
         _client.UserJoined += _eavesdrop.UserJoin;
         _client.MessageReceived += _eavesdrop.Listen;
+        _client.GuildAvailable += Client_GuildAvailable;
 
         await InstallCommandsAsync();
 
         await _client.LoginAsync(TokenType.Bot, botToken);
         await _client.StartAsync();
 
-        await Task.Delay(3000); //Wait for the bot to connect before moving forward. Needs to be connected to read channel settings.
-        _services.GetRequiredService<DataServices>().ReadData(); //Load the rest of our settings
         await Task.Delay(-1);
+    }
+
+    private Task Client_GuildAvailable(SocketGuild arg)
+    {
+        _services.GetRequiredService<DataServices>().ReadData();
+        return Task.CompletedTask;
     }
 
     private Task Log(LogMessage arg)
