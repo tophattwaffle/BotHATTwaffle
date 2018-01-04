@@ -14,36 +14,15 @@ namespace BotHATTwaffle
         private readonly Timer _timer;
         int joinDelayRoleTime = 10;
         public List<UserData> joinDelayList = new List<UserData>();
-        string[] pakRatEavesDrop;
-        string[] howToPackEavesDrop;
-        string[] carveEavesDrop;
-        string[] propperEavesDrop;
-        string[] vbEavesDrop;
-        string[] yorkEavesDrop;
-        string[] agreeEavesDrop;
-        string[] agreeStrings;
         Random _random;
+        DataServices _dataServices;
 
-        public Eavesdropping()
+        public Eavesdropping(DataServices dataService)
         {
-            if (Program.config.ContainsKey("pakRatEavesDropCSV"))
-                pakRatEavesDrop = (Program.config["pakRatEavesDropCSV"]).Split(',') ;
-            if (Program.config.ContainsKey("howToPackEavesDropCSV"))
-                howToPackEavesDrop = (Program.config["howToPackEavesDropCSV"]).Split(',');
-            if (Program.config.ContainsKey("carveEavesDropCSV"))
-                carveEavesDrop = (Program.config["carveEavesDropCSV"]).Split(',');
-            if (Program.config.ContainsKey("propperEavesDropCSV"))
-                propperEavesDrop = (Program.config["propperEavesDropCSV"]).Split(',');
-            if (Program.config.ContainsKey("vbEavesDropCSV"))
-                vbEavesDrop = (Program.config["vbEavesDropCSV"]).Split(',');
-            if (Program.config.ContainsKey("yorkCSV"))
-                yorkEavesDrop = (Program.config["yorkCSV"]).Split(',');
-            if (Program.config.ContainsKey("agreeUserCSV"))
-                agreeEavesDrop = (Program.config["agreeUserCSV"]).Split(',');
-
+            _dataServices = dataService;
             _random = new Random();
 
-            agreeStrings = new string[]{
+            _dataServices.agreeStrings = new string[]{
                 "^",
                 "^^^",
                 "^^^ I agree with ^^^",
@@ -55,10 +34,10 @@ namespace BotHATTwaffle
                 {
                     if (u.CanRole())
                     {
-                        u.User.AddRoleAsync(Program.playTesterRole);
+                        u.User.AddRoleAsync(_dataServices.playTesterRole);
                         u.User.SendMessageAsync("", false, u.JoinMessage);
                         joinDelayList.Remove(u);
-                        Program.ChannelLog($"{u.User} now has playtester role. Welcome DM was sent.");
+                        _dataServices.ChannelLog($"{u.User} now has playtester role. Welcome DM was sent.");
                         Task.Delay(1000);
                     }
                 }
@@ -70,7 +49,7 @@ namespace BotHATTwaffle
 
         public void AddNewUserJoin(SocketGuildUser inUser, DateTime inRoleTime, Embed message)
         {
-            Program.ChannelLog($"USER JOINED {inUser}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
+            _dataServices.ChannelLog($"USER JOINED {inUser}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
                 $"\nCreated At: {inUser.CreatedAt}" +
                 $"\nJoined At: {inUser.JoinedAt}" +
                 $"\nUser ID: {inUser.Id}");
@@ -152,15 +131,15 @@ namespace BotHATTwaffle
                 await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
                 return;
             }
-            foreach (string s in agreeEavesDrop)
+            foreach (string s in _dataServices.agreeEavesDrop)
             {
                 if (message.Content.Equals("^") && message.Author.Username.Equals(s))
                 {
-                        await message.Channel.SendMessageAsync(agreeStrings[_random.Next(0, agreeStrings.Length)]);
+                        await message.Channel.SendMessageAsync(_dataServices.agreeStrings[_random.Next(0, _dataServices.agreeStrings.Length)]);
                         return;
                 }
             }
-            foreach (string s in pakRatEavesDrop)
+            foreach (string s in _dataServices.pakRatEavesDrop)
             {
                 if(message.Content.ToLower().Contains(s))
                 {
@@ -168,7 +147,7 @@ namespace BotHATTwaffle
                         return;
                 }
             }
-            foreach (string s in howToPackEavesDrop)
+            foreach (string s in _dataServices.howToPackEavesDrop)
             {
                 if (message.Content.ToLower().Contains(s))
                 {
@@ -176,7 +155,7 @@ namespace BotHATTwaffle
                     return;
                 }
             }
-            foreach (string s in carveEavesDrop)
+            foreach (string s in _dataServices.carveEavesDrop)
             {
                 if (message.Content.ToLower().Contains(s))
                 {
@@ -184,7 +163,7 @@ namespace BotHATTwaffle
                     return;
                 }
             }
-            foreach (string s in propperEavesDrop)
+            foreach (string s in _dataServices.propperEavesDrop)
             {
                 if (message.Content.ToLower().Contains(s))
                 {
@@ -192,7 +171,7 @@ namespace BotHATTwaffle
                     return;
                 }
             }
-            foreach (string s in vbEavesDrop)
+            foreach (string s in _dataServices.vbEavesDrop)
             {
                 if (message.Content.ToLower().Contains(s))
                 {
@@ -200,7 +179,7 @@ namespace BotHATTwaffle
                     return;
                 }
             }
-            foreach (string s in yorkEavesDrop)
+            foreach (string s in _dataServices.yorkEavesDrop)
             {
                 if (message.Content.ToLower().Contains(s))
                 {
@@ -210,9 +189,9 @@ namespace BotHATTwaffle
             }
         }
 
-        private static Task PakRat(SocketMessage message)
+        private Task PakRat(SocketMessage message)
         {
-            Program.ChannelLog($"{message.Author} was asking about PakRat in #{message.Channel}");
+            _dataServices.ChannelLog($"{message.Author} was asking about PakRat in #{message.Channel}");
 
             var authBuilder = new EmbedAuthorBuilder() {
                 Name = $"Hey there {message.Author.Username}!",
@@ -237,9 +216,9 @@ namespace BotHATTwaffle
             return Task.CompletedTask;
         }
 
-        private static Task HowToPack(SocketMessage message)
+        private Task HowToPack(SocketMessage message)
         {
-            Program.ChannelLog($"{message.Author} was asking how to pack a level in #{message.Channel}");
+            _dataServices.ChannelLog($"{message.Author} was asking how to pack a level in #{message.Channel}");
 
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -265,9 +244,9 @@ namespace BotHATTwaffle
             return Task.CompletedTask;
         }
 
-        private static Task Carve(SocketMessage message)
+        private Task Carve(SocketMessage message)
         {
-            Program.ChannelLog($"{message.Author} was asking how to carve in #{message.Channel}. You should probably kill them.");
+            _dataServices.ChannelLog($"{message.Author} was asking how to carve in #{message.Channel}. You should probably kill them.");
 
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -292,9 +271,9 @@ namespace BotHATTwaffle
             return Task.CompletedTask;
         }
 
-        private static Task Propper(SocketMessage message)
+        private Task Propper(SocketMessage message)
         {
-            Program.ChannelLog($"{message.Author} was asking about Propper in #{message.Channel}. You should go WWMT fanboy.");
+            _dataServices.ChannelLog($"{message.Author} was asking about Propper in #{message.Channel}. You should go WWMT fanboy.");
 
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -322,9 +301,9 @@ namespace BotHATTwaffle
             return Task.CompletedTask;
         }
 
-        private static Task VB(SocketMessage message)
+        private Task VB(SocketMessage message)
         {
-            Program.ChannelLog($"{message.Author} posted about Velocity Brawl #{message.Channel}. You should go kill them.");
+            _dataServices.ChannelLog($"{message.Author} posted about Velocity Brawl #{message.Channel}. You should go kill them.");
             message.DeleteAsync(); //Delete their message about shit game
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -348,7 +327,7 @@ namespace BotHATTwaffle
             return Task.CompletedTask;
         }
 
-        private static Task DeYork(SocketMessage message)
+        private Task DeYork(SocketMessage message)
         {
             Random _rand = new Random();
             string[] yorkUrls = new string[]{
@@ -364,7 +343,7 @@ namespace BotHATTwaffle
                 "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231204_1.jpg",
             };
 
-            Program.ChannelLog($"{message.Author} posted about de_york #{message.Channel}. You should go meme them.");
+            _dataServices.ChannelLog($"{message.Author} posted about de_york #{message.Channel}. You should go meme them.");
             var authBuilder = new EmbedAuthorBuilder()
             {
                 Name = $"Hey there {message.Author.Username}!",

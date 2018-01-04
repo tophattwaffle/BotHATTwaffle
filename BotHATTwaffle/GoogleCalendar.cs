@@ -19,12 +19,15 @@ namespace BotHATTwaffle
         static string[] Scopes = { CalendarService.Scope.CalendarReadonly };
         static string ApplicationName = "Google Calendar API .NET Quickstart";
         static string calID;
+        DataServices _dataServices;
 
-        public GoogleCalendar()
+        public GoogleCalendar(DataServices dataServices)
         {
+            _dataServices = dataServices;
+
             calID = null;
-            if (Program.config.ContainsKey("testCalID"))
-                calID = (Program.config["testCalID"]);
+            if (_dataServices.config.ContainsKey("testCalID"))
+                calID = (_dataServices.config["testCalID"]);
         }
 
 
@@ -105,7 +108,7 @@ namespace BotHATTwaffle
                     }
                     catch(Exception e)
                     {
-                        Program.ChannelLog($"There is an issue with the description on the next playtest event." +
+                        _dataServices.ChannelLog($"There is an issue with the description on the next playtest event." +
                             $"This is likely caused by HTML formatting on the description. \n{e}");
                         finalEvent[0] = "BAD_DESCRIPTION";
                         finalEvent[1] = null;

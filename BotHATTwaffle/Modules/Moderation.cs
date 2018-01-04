@@ -16,14 +16,12 @@ namespace BotHATTwaffle.Modules
     public class ModerationServices
     {
         public List<UserData> muteList = new List<UserData>();
-        public SocketRole MuteRole { get; set; }
-        public SocketRole RconRole { get; set; }
-        public SocketRole ModRole { get; set; }
         public string[] TestInfo { get; set; }
+        DataServices _dataServices;
 
-        public ModerationServices()
+        public ModerationServices(DataServices dataServices)
         {
-
+            _dataServices = dataServices;
         }
 
         public void Cycle()
@@ -33,10 +31,10 @@ namespace BotHATTwaffle.Modules
             {
                 if(u.CanUnmute())
                 {
-                    u.User.RemoveRoleAsync(MuteRole);
+                    u.User.RemoveRoleAsync(_dataServices.MuteRole);
                     u.User.SendMessageAsync("You have been unmuted!");
                     muteList.Remove(u);
-                    Program.ChannelLog($"{u.User.Username} Has been unmuted.");
+                    _dataServices.ChannelLog($"{u.User} Has been unmuted.");
                     Task.Delay(1000);
                 }
             }
@@ -44,7 +42,7 @@ namespace BotHATTwaffle.Modules
 
         public void AddMute(SocketGuildUser inUser, DateTime inUnmuteTime)
         {
-            Console.WriteLine($"ADD MUTE {inUser.Username} {inUnmuteTime}");
+            Console.WriteLine($"ADD MUTE {inUser} {inUnmuteTime}");
             muteList.Add(new UserData() {
                 User = inUser,
                 UnmuteTime = inUnmuteTime
@@ -57,22 +55,12 @@ namespace BotHATTwaffle.Modules
         private ModerationServices _mod;
         private LevelTesting _levelTesting;
         private DataServices _dataServices;
-        public string casualConfig;
-        public string compConfig;
-        public string postConfig;
 
         public ModerationModule(ModerationServices mod, LevelTesting levelTesting, DataServices dataServices)
         {
             _dataServices = dataServices;
             _levelTesting = levelTesting;
             _mod = mod;
-
-            if (Program.config.ContainsKey("casualConfig"))
-                casualConfig = (Program.config["casualConfig"]);
-            if (Program.config.ContainsKey("compConfig"))
-                compConfig = (Program.config["compConfig"]);
-            if (Program.config.ContainsKey("postConfig"))
-                postConfig = (Program.config["postConfig"]);
         }
 
         [Command("rcon")]
@@ -85,11 +73,11 @@ namespace BotHATTwaffle.Modules
             if (Context.IsPrivate)
             {
                 await ReplyAsync("```This command can not be used in a DM```");
-                await Program.ChannelLog($"{Context.User} was trying to rcon from DM.", $"{command} was trying to be sent to {serverString}");
+                await _dataServices.ChannelLog($"{Context.User} was trying to rcon from DM.", $"{command} was trying to be sent to {serverString}");
                 return;
             }
 
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_mod.RconRole))
+            if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_dataServices.RconRole))
             {
                 //Display list of servers
                 if (serverString == null && command == null)
@@ -102,7 +90,7 @@ namespace BotHATTwaffle.Modules
                 if (command.ToLower().Contains("rcon_password") || command.ToLower().Contains("exit"))
                 {
                     await ReplyAsync("```This command cannot be run from here. Ask TopHATTwaffle to do it.```");
-                    await Program.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverString}");
+                    await _dataServices.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverString}");
                     return;
                 }
 
@@ -136,18 +124,18 @@ namespace BotHATTwaffle.Modules
                     {
                         await Context.Message.DeleteAsync(); //Message was setting password, delete it.
                         await ReplyAsync($"```Command Sent to {server.Name}\nA password was set on the server.```");
-                        await Program.ChannelLog($"{Context.User} Sent RCON command", $"A password command was sent to: {server.Address}");
+                        await _dataServices.ChannelLog($"{Context.User} Sent RCON command", $"A password command was sent to: {server.Address}");
                     }
                     else
                     {
                         await ReplyAsync($"```{command} sent to {server.Name}\n{reply}```");
-                        await Program.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
+                        await _dataServices.ChannelLog($"{Context.User} Sent RCON command", $"{command} was sent to: {server.Address}\n{reply}");
                     }
                 }
             }
             else
             {
-                await Program.ChannelLog($"{Context.User} is trying to rcon from the bot. They tried to send {serverString} {command}");
+                await _dataServices.ChannelLog($"{Context.User} is trying to rcon from the bot. They tried to send {serverString} {command}");
                 await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }
@@ -170,7 +158,7 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
+            if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
             {
                 if(_levelTesting.currentEventInfo[0] == "NO_EVENT_FOUND")
                 {
@@ -186,16 +174,16 @@ namespace BotHATTwaffle.Modules
                     server = _dataServices.GetServer(serverStr);
 
                 if (_levelTesting.currentEventInfo[7].ToLower() == "competitive" || _levelTesting.currentEventInfo[7].ToLower() == "comp")
-                    config = compConfig;
+                    config = _dataServices.compConfig;
                 else
-                    config = casualConfig; //If not comp, casual.
+                    config = _dataServices.casualConfig; //If not comp, casual.
 
                 if (action.ToLower() == "pre")
                 {
                     _mod.TestInfo = _levelTesting.currentEventInfo; //Set the test info so we can use it when getting the demo back.
                     var result = Regex.Match(_levelTesting.currentEventInfo[6], @"\d+$").Value;
 
-                    await Program.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
+                    await _dataServices.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
                         $"\nhost_workshop_map {result}");
 
                     await _dataServices.RconCommand($"exec {config}", server);
@@ -212,7 +200,7 @@ namespace BotHATTwaffle.Modules
                     DateTime testTime = Convert.ToDateTime(_levelTesting.currentEventInfo[1]);
                     string demoName = $"{testTime.ToString("MM_dd_yyyy")}_{_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))}_{_levelTesting.currentEventInfo[7]}";
 
-                    await Program.ChannelLog($"Playtest Start on {server.Name}", $"exec {config}" +
+                    await _dataServices.ChannelLog($"Playtest Start on {server.Name}", $"exec {config}" +
                         $"\ntv_record {demoName}" +
                         $"\nsay Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!");
 
@@ -240,7 +228,7 @@ namespace BotHATTwaffle.Modules
                     _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
 #pragma warning restore CS4014
 
-                    await Program.ChannelLog($"Playtest Post on {server.Name}", $"exec {postConfig}" +
+                    await _dataServices.ChannelLog($"Playtest Post on {server.Name}", $"exec {_dataServices.postConfig}" +
                         $"\nsv_voiceenable 0" +
                         $"\nGetting Demo and BSP file and moving into DropBox");
                 }
@@ -249,21 +237,21 @@ namespace BotHATTwaffle.Modules
                     await _dataServices.RconCommand($"mp_scrambleteams 1", server);
                     await ReplyAsync($"```Playtest Scramble on {server.Name}" +
                         $"\nmp_scrambleteams 1```");
-                    await Program.ChannelLog($"Playtest Scramble on {server.Name}", $"mp_scrambleteams 1");
+                    await _dataServices.ChannelLog($"Playtest Scramble on {server.Name}", $"mp_scrambleteams 1");
                 }
                 else if (action.ToLower() == "pause" || action.ToLower() == "p")
                 {
                     await _dataServices.RconCommand(@"mp_pause_match; say Pausing Match", server);
                     await ReplyAsync($"```Playtest Scramble on {server.Name}" +
                         $"\nmp_pause_match```");
-                    await Program.ChannelLog($"Playtest Pause on {server.Name}", $"mp_pause_match");
+                    await _dataServices.ChannelLog($"Playtest Pause on {server.Name}", $"mp_pause_match");
                 }
                 else if (action.ToLower() == "unpause" || action.ToLower() == "u")
                 {
                     await _dataServices.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
                     await ReplyAsync($"```Playtest Unpause on {server.Name}" +
                         $"\nmp_unpause_match```");
-                    await Program.ChannelLog($"Playtest Unpause on {server.Name}", $"mp_unpause_match");
+                    await _dataServices.ChannelLog($"Playtest Unpause on {server.Name}", $"mp_unpause_match");
                 }
                 else
                 {
@@ -279,7 +267,7 @@ namespace BotHATTwaffle.Modules
             }
             else
             {
-                await Program.ChannelLog($"{Context.User} is trying to use the playtest command.");
+                await _dataServices.ChannelLog($"{Context.User} is trying to use the playtest command.");
                 await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }
@@ -308,7 +296,7 @@ namespace BotHATTwaffle.Modules
             var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
             await _dataServices.RconCommand($"host_workshop_map {result}", server);
             await Task.Delay(10000);
-            await _dataServices.RconCommand($"exec {postConfig}", server);
+            await _dataServices.RconCommand($"exec {_dataServices.postConfig}", server);
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
@@ -332,15 +320,15 @@ namespace BotHATTwaffle.Modules
                 try
                 {
                     //If they don't accepts DMs, tag them in level testing.
-                    await Program.testingChannel.SendMessageAsync($"{Program._client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
+                    await _dataServices.testingChannel.SendMessageAsync($"{Program._client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
                 }
                 catch
                 {
                     //If it cannot get the name from the event info, nag them in level testing.
-                    await Program.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
+                    await _dataServices.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
                 }
             }
-            await Program.testingChannel.SendMessageAsync($"", false, builder);
+            await _dataServices.testingChannel.SendMessageAsync($"", false, builder);
         }
 
         [Command("shutdown")]
@@ -354,24 +342,19 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
+            if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
             {
                 await Context.Message.DeleteAsync();
-                try
-                {
-                    await _levelTesting.AnnounceMessage.DeleteAsync();
-                }
-                catch
-                { }//No playtest announcement found. Someone must have deleted it manually.
-
                 if(type == 's')
                 {
-                    await Program.ChannelLog($"Shutting down! Invoked by {Context.Message.Author.Username}");
+                    await _dataServices.ChannelLog($"Shutting down! Invoked by {Context.Message.Author}");
+                    await Task.Delay(1000);
                     Environment.Exit(0);
                 }
                 if(type == 'r')
                 {
-                    await Program.ChannelLog($"Restarting! Invoked by {Context.Message.Author.Username}");
+                    await _dataServices.ChannelLog($"Restarting! Invoked by {Context.Message.Author}");
+                    await Task.Delay(1000);
                     Process secondProc = new Process();
                     secondProc.StartInfo.FileName = "BotHATTwaffle.exe";
                     secondProc.Start();
@@ -380,7 +363,46 @@ namespace BotHATTwaffle.Modules
             }
             else
             {
-                await Program.ChannelLog($"{Context.User} is trying to shutdown the bot.");
+                await _dataServices.ChannelLog($"{Context.User} is trying to shutdown the bot.");
+                await ReplyAsync("```You cannot use this command with your current permission level!```");
+            }
+        }
+
+        [Command("reload")]
+        [Summary("`>reload]` Reloads data from settings files.")]
+        [Remarks("Requirements: Moderator Role.")]
+        public async Task ReloadAsync(string arg = null)
+        {
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("**This command can not be used in a DM**");
+                return;
+            }
+
+            if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
+            {
+                if (arg == "dump")
+                {
+                    await Context.Message.DeleteAsync();
+                    var lines = _dataServices.config.Select(kvp => kvp.Key + ": " + kvp.Value.ToString());
+                    var reply = string.Join(Environment.NewLine, lines);
+                    reply = reply.Replace((_dataServices.config["botToken"]), "[TOKEN HIDDEN]");
+                    try
+                    {
+                        await Context.Message.Author.SendMessageAsync($"```{reply}```");
+                    }
+                    catch { }//Do nothing if we can't DM.
+                }
+                else
+                {
+                    await ReplyAsync("```Reloading Data!```");
+                    await _dataServices.ChannelLog($"{Context.User} reloaded bot data!");
+                    _dataServices.ReadData();
+                }
+            }
+            else
+            {
+                await _dataServices.ChannelLog($"{Context.User} is trying to shutdown the bot.");
                 await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }
@@ -403,17 +425,17 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
+            if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
             {
                 DateTime unmuteTime = DateTime.Now.AddMinutes(durationInMinutes);
                 _mod.AddMute(user, unmuteTime);
-                await Program.ChannelLog($"{Context.User} muted {user}", $"They were muted for {durationInMinutes} minutes because:\n{reason}.");
-                await user.AddRoleAsync(_mod.MuteRole);
+                await _dataServices.ChannelLog($"{Context.User} muted {user}", $"They were muted for {durationInMinutes} minutes because:\n{reason}.");
+                await user.AddRoleAsync(_dataServices.MuteRole);
                 await user.SendMessageAsync($"You were muted for {durationInMinutes} minutes because:\n{reason}.\n");
             }
             else
             {
-                await Program.ChannelLog($"{Context.User} is trying to mute {user} without the right permissions!");
+                await _dataServices.ChannelLog($"{Context.User} is trying to mute {user} without the right permissions!");
                 await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }
@@ -430,7 +452,7 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
-            if ((Context.User as SocketGuildUser).Roles.Contains(_mod.ModRole))
+            if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
             {
                 if(serverStr == null)
                     await _levelTesting.ClearServerReservations();
@@ -441,7 +463,7 @@ namespace BotHATTwaffle.Modules
             }
             else
             {
-                await Program.ChannelLog($"{Context.User} is trying to clear reservations without the right permissions!");
+                await _dataServices.ChannelLog($"{Context.User} is trying to clear reservations without the right permissions!");
                 await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
         }

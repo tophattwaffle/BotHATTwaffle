@@ -8,35 +8,23 @@ namespace BotHATTwaffle.Modules
 {
     public class TimerService
     {
-        int startDelay = 10;
-        int updateInterval = 60;
+        
         private readonly Timer _timer;
         private LevelTesting _levelTesting;
         private UtilityService _utility;
         private ModerationServices _mod;
         private DiscordSocketClient _client;
         private Random _random;
-        string[] playingStrings;
+        DataServices _dataServices;
 
-        public TimerService(DiscordSocketClient client, ModerationServices mod, UtilityService utility, LevelTesting levelTesting, Random rand)
+        public TimerService(DiscordSocketClient client, ModerationServices mod, UtilityService utility, LevelTesting levelTesting, Random rand, DataServices dataServices)
         {
+            _dataServices = dataServices;
             _client = client;
             _mod = mod;
             _utility = utility;
             _levelTesting = levelTesting;
             _random = rand;
-
-            if ((Program.config.ContainsKey("startDelay") && !int.TryParse(Program.config["startDelay"], out startDelay)))
-            {
-                Console.WriteLine($"Key \"startDelay\" not found or valid. Using default {startDelay}.");
-            }
-            if ((Program.config.ContainsKey("updateInterval") && !int.TryParse(Program.config["updateInterval"], out updateInterval)))
-            {
-                Console.WriteLine($"Key \"updateInterval\" not found or valid. Using default {updateInterval}.");
-            }
-
-            if (Program.config.ContainsKey("playingStringsCSV"))
-                playingStrings = (Program.config["playingStringsCSV"]).Split(',');
 
             //Code inside this will fire ever {updateInterval} seconds
             _timer = new Timer(_ =>
@@ -47,8 +35,8 @@ namespace BotHATTwaffle.Modules
                 ChangePlaying();
             },
             null,
-            TimeSpan.FromSeconds(startDelay),  // Time that message should fire after bot has started
-            TimeSpan.FromSeconds(updateInterval)); // Time after which message should repeat (`Timeout.Infinite` for no repeat)
+            TimeSpan.FromSeconds(_dataServices.startDelay),  // Time that message should fire after bot has started
+            TimeSpan.FromSeconds(_dataServices.updateInterval)); // Time after which message should repeat (`Timeout.Infinite` for no repeat)
         }
 
         public void Stop()
@@ -58,12 +46,12 @@ namespace BotHATTwaffle.Modules
 
         public void Restart()
         {
-            _timer.Change(TimeSpan.FromSeconds(startDelay), TimeSpan.FromSeconds(updateInterval));
+            _timer.Change(TimeSpan.FromSeconds(_dataServices.startDelay), TimeSpan.FromSeconds(_dataServices.updateInterval));
         }
 
         public void ChangePlaying()
         {
-            _client.SetGameAsync(playingStrings[_random.Next(0, playingStrings.Length)]);
+            _client.SetGameAsync(_dataServices.playingStrings[_random.Next(0, _dataServices.playingStrings.Length)]);
         }
     }
 

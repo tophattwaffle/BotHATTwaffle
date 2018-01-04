@@ -25,14 +25,13 @@ namespace BotHATTwaffle.Modules
     public class UtilityModule : ModuleBase<SocketCommandContext>
     {
         private readonly UtilityService _utility;
+        DataServices _dataServices;
 
-        string[] roleMeWhiteList;
-
-        public UtilityModule(UtilityService utility)
+        public UtilityModule(UtilityService utility, DataServices dataServices)
         {
+            _dataServices = dataServices;
             _utility = utility;
-            if (Program.config.ContainsKey("roleMeWhiteListCSV"))
-                roleMeWhiteList = (Program.config["roleMeWhiteListCSV"]).Split(',');
+            
         }
 
         [Command("ping")]
@@ -69,13 +68,13 @@ namespace BotHATTwaffle.Modules
             //Display roles, or modify role state
             if (inRoleStr == "display")
             {
-                await ReplyAsync($"*Remember roles are case sensitive.* Valid roles are:```\n{string.Join("\n", roleMeWhiteList)}```");
+                await ReplyAsync($"*Remember roles are case sensitive.* Valid roles are:```\n{string.Join("\n", _dataServices.roleMeWhiteList)}```");
             }
             else
             {
                 //Validate that we can apply the role
                 Boolean valid = false;
-                foreach (string s in roleMeWhiteList)
+                foreach (string s in _dataServices.roleMeWhiteList)
                 {
                     if (inRoleStr.Contains(s))
                     {
@@ -88,13 +87,13 @@ namespace BotHATTwaffle.Modules
                 {
                     if (user.Roles.Contains(inRole))
                     {
-                        await Program.ChannelLog($"{Context.User} has removed {inRoleStr} role from themselves.");
+                        await _dataServices.ChannelLog($"{Context.User} has removed {inRoleStr} role from themselves.");
                         await ReplyAsync($"{Context.User.Mention} lost the **{inRoleStr}** role.");
                         await (user as IGuildUser).RemoveRoleAsync(inRole);
                     }
                     else
                     {
-                        await Program.ChannelLog($"{Context.User} has assigned themselves the role of {inRoleStr}");
+                        await _dataServices.ChannelLog($"{Context.User} has assigned themselves the role of {inRoleStr}");
                         await ReplyAsync($"{Context.User.Mention} now has the role **{inRoleStr}**. Enjoy the flair!");
                         await (user as IGuildUser).AddRoleAsync(inRole);
                     }
@@ -103,7 +102,7 @@ namespace BotHATTwaffle.Modules
                 {
                     await ReplyAsync($"{Context.User.Mention} you cannot assign yourself the role of **{inRoleStr}** because it does not exist, " +
                         $"or it is not allowed.");
-                    await Program.ChannelLog($"{Context.User} attempted to roleMe the role of: {inRoleStr} and it failed. Either due to the " +
+                    await _dataServices.ChannelLog($"{Context.User} attempted to roleMe the role of: {inRoleStr} and it failed. Either due to the " +
                         $"role not existing, or they tried to use a role that isn't in the white list.");
                 }
             }

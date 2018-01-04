@@ -21,11 +21,11 @@ namespace BotHATTwaffle.Modules
 
     public class InformationModule : ModuleBase<SocketCommandContext>
     {
-        private readonly DataServices _data;
+        private readonly DataServices _dataServices;
 
         public InformationModule(DataServices data)
         {
-            _data = data;
+            _dataServices = data;
         }
 
         [Command("vdc")]
@@ -107,13 +107,13 @@ namespace BotHATTwaffle.Modules
         [Alias("s")]
         public async Task SearchAsync(string series, [Remainder]string search)
         {
-            await Program.ChannelLog($"{Context.User} ran a search",$"Series: {series}\nSearch Term: {search}");
+            await _dataServices.ChannelLog($"{Context.User} ran a search",$"Series: {series}\nSearch Term: {search}");
             bool isPrivate = false;
             
             if (Context.IsPrivate)
                 isPrivate = true;
 
-            List<List<string>> results = _data.Search(series, search, isPrivate);
+            List<List<string>> results = _dataServices.Search(series, search, isPrivate);
 
             if (search.ToLower() == "dump" || search.ToLower() == "all")
             {
@@ -341,15 +341,12 @@ namespace BotHATTwaffle.Modules
         [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "catfacts", "cat facts")]
         public async Task CatFactAsync()
         {
-            Random _rand = new Random();
-            string path = null;
-            if (Program.config.ContainsKey("catFactPath"))
-                path = (Program.config["catFactPath"]);
+            Random _rand = new Random();            
 
             string catFact = "Did you know cats have big bushy tails?";
-            if (File.Exists(path))
+            if (File.Exists(_dataServices.catFactPath))
             {
-                var allLines = File.ReadAllLines(path);
+                var allLines = File.ReadAllLines(_dataServices.catFactPath);
                 var lineNumber = _rand.Next(0, allLines.Length);
                 catFact = allLines[lineNumber];
             }
@@ -375,7 +372,7 @@ namespace BotHATTwaffle.Modules
 
                 Description = catFact
             };
-            await Program.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A CAT FACT");
+            await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A CAT FACT");
             await ReplyAsync("", false, builder.Build());
         }
 
@@ -394,14 +391,11 @@ namespace BotHATTwaffle.Modules
         public async Task PenguinFactAsync()
         {
             Random _rand = new Random();
-            string path = null;
-            if (Program.config.ContainsKey("catFactPath"))
-                path = (Program.config["catFactPath"]);
 
             string catFact = "Did you know cats have big bushy tails?";
-            if (File.Exists(path))
+            if (File.Exists(_dataServices.catFactPath))
             {
-                var allLines = File.ReadAllLines(path);
+                var allLines = File.ReadAllLines(_dataServices.catFactPath);
                 var lineNumber = _rand.Next(0, allLines.Length);
                 catFact = allLines[lineNumber];
             }
@@ -427,7 +421,7 @@ namespace BotHATTwaffle.Modules
 
                 Description = catFact
             };
-            await Program.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A ~~CAT~~ PENGUIN FACT");
+            await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A ~~CAT~~ PENGUIN FACT");
             await ReplyAsync("", false, builder.Build());
         }
     }

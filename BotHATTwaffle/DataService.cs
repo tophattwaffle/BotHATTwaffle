@@ -14,11 +14,17 @@ using System.Text.RegularExpressions;
 using Renci.SshNet;
 using Renci.SshNet.Sftp;
 using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
+using BotHATTwaffle.Modules;
+using System.Threading;
 
 namespace BotHATTwaffle
 {
     public class DataServices
     {
+        public Dictionary<string, string> config;
+        
         JObject searchData;
         JObject serverData;
         JsonRoot root;
@@ -27,8 +33,61 @@ namespace BotHATTwaffle
         Random _random;
         private string demoPath;
 
+        //Channels and Role vars
+        string logChannelStr;
+        string playTesterRoleStr;
+        string announcementChannelStr;
+        string testingChannelStr;
+        string modRoleStr;
+        string mutedRoleStr;
+        string rconRoleStr;
+        string ActiveRoleStr;
+        public SocketTextChannel logChannel { get; set; }
+        public SocketTextChannel announcementChannel  { get; set; }
+        public SocketTextChannel testingChannel  { get; set; }
+        public SocketRole playTesterRole { get; set; }
+        public SocketRole MuteRole { get; set; }
+        public SocketRole RconRole { get; set; }
+        public SocketRole ModRole { get; set; }
+        public SocketRole ActiveRole { get; set; }
+
+        //Misc setting vars
+        public string[] pakRatEavesDrop;
+        public string[] howToPackEavesDrop;
+        public string[] carveEavesDrop;
+        public string[] propperEavesDrop;
+        public string[] vbEavesDrop;
+        public string[] yorkEavesDrop;
+        public string[] agreeEavesDrop;
+        public string[] agreeStrings;
+        public string[] roleMeWhiteList;
+        public string catFactPath;
+
+        //TimerService Vars
+        public int startDelay = 10;
+        public int updateInterval = 60;
+        public string[] playingStrings;
+
+        //Moderation Vars
+        public string casualConfig;
+        public string compConfig;
+        public string postConfig;
+
+        //LevelTesting Vars
+        public string[] publicCommandWhiteList;
+        public int calUpdateTicks = 2;
+
         public DataServices(Random random)
         {
+            config = ReadSettings(); //Needed when the data is first DI'd
+            _random = random;
+        }
+
+        public void ReadData()
+        {
+            config = ReadSettings();
+            RoleChannelAssignments();
+            VariableAssignment();
             string searchDataPath = "searchData.json";
             searchData = JObject.Parse(File.ReadAllText(searchDataPath));
             root = searchData.ToObject<JsonRoot>();
@@ -39,10 +98,232 @@ namespace BotHATTwaffle
             root = serverData.ToObject<JsonRoot>();
             servers = root.servers;
 
-            _random = random;
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
+            Console.ResetColor();
+        }
 
-            if (Program.config.ContainsKey("demoPath"))
-                demoPath = (Program.config["demoPath"]);
+        private Dictionary<string, string> ReadSettings()
+        {
+            string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+            Dictionary<string, string> mainConfig;
+            string configPath = "settings.ini";
+            if (File.Exists(configPath))
+            {
+                mainConfig = File.ReadAllLines(configPath).ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
+            }
+            else
+            {
+                // Config doesn't exist, so we'll make it
+                mainConfig = new Dictionary<string, string>();
+
+                //Get INT
+                //if (config.ContainsKey("clockDelay"))
+                //int.TryParse(config["clockDelay"], out clockDelay);
+
+                //Get String
+                //if (config.ContainsKey("botToken"))
+                //botToken = (config["botToken"]);
+
+
+                //Get Char
+                //if (config.ContainsKey("prefixChar"))
+                //prefixChar = config["prefixChar"][0];
+            }
+
+            #region Add existing settings at their default
+            #region General or global
+            mainConfig.AddKeyIfMissing("botToken", "NEEDS_TO_BE_REPLACED");
+            mainConfig.AddKeyIfMissing("startDelay", "10");
+            mainConfig.AddKeyIfMissing("updateInterval", "60");
+            mainConfig.AddKeyIfMissing("calUpdateTicks", "1");
+            mainConfig.AddKeyIfMissing("logChannel", "bothattwaffle_logs");
+            mainConfig.AddKeyIfMissing("announcementChannel", "announcements");
+            mainConfig.AddKeyIfMissing("playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
+            mainConfig.AddKeyIfMissing("agreeUserCSV", "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
+            #endregion
+
+            #region Playtesting vars
+            mainConfig.AddKeyIfMissing("testCalID", "Replace My Buddy");
+            mainConfig.AddKeyIfMissing("playTesterRole", "Playtester");
+            mainConfig.AddKeyIfMissing("activeMemberRole", "Active Member");
+            mainConfig.AddKeyIfMissing("testingChannel", "csgo_level_testing");
+            mainConfig.AddKeyIfMissing("demoPath", $"X:\\Playtesting Demos");
+            mainConfig.AddKeyIfMissing("casualConfig", $"thw");
+            mainConfig.AddKeyIfMissing("compConfig", $"thw");
+            mainConfig.AddKeyIfMissing("postConfig", $"postame");
+            #endregion
+
+            #region Eavesdropping vars
+            mainConfig.AddKeyIfMissing("pakRatEavesDropCSV", "use pakrat,download pakrat,get pakrat,use packrat");
+            mainConfig.AddKeyIfMissing("howToPackEavesDropCSV", "how do i pack,how can i pack,how to pack,how to use vide,help me pack");
+            mainConfig.AddKeyIfMissing("carveEavesDropCSV", "carve");
+            mainConfig.AddKeyIfMissing("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
+            mainConfig.AddKeyIfMissing("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
+            mainConfig.AddKeyIfMissing("yorkCSV", "de_york,de york");
+            #endregion
+
+            #region Command Dependent
+            mainConfig.AddKeyIfMissing("roleMeWhiteListCSV", "Programmer,Level_Designer,3D_Modeler,Texture_Artist,Blender,Maya,3dsmax");
+            mainConfig.AddKeyIfMissing("moderatorRoleName", "Moderators");
+            mainConfig.AddKeyIfMissing("mutedRoleName", "Muted");
+            mainConfig.AddKeyIfMissing("rconRoleName", "RconAccess");
+            mainConfig.AddKeyIfMissing("publicCommandWhiteListCSV", "[CONFIGME]");
+            #endregion
+
+            #region  Shitpost vars
+            mainConfig.AddKeyIfMissing("catFactPath", $"X:\\Scripts\\catfacts.txt");
+            #endregion
+
+            #endregion
+
+            // Save new config file
+            File.WriteAllLines(configPath, mainConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}").ToArray());
+
+            return mainConfig;
+        }
+
+        private void VariableAssignment()
+        {
+            if (config.ContainsKey("demoPath"))
+                demoPath = (config["demoPath"]);
+            if (config.ContainsKey("pakRatEavesDropCSV"))
+                pakRatEavesDrop = (config["pakRatEavesDropCSV"]).Split(',');
+            if (config.ContainsKey("howToPackEavesDropCSV"))
+                howToPackEavesDrop = (config["howToPackEavesDropCSV"]).Split(',');
+            if (config.ContainsKey("carveEavesDropCSV"))
+                carveEavesDrop = (config["carveEavesDropCSV"]).Split(',');
+            if (config.ContainsKey("propperEavesDropCSV"))
+                propperEavesDrop = (config["propperEavesDropCSV"]).Split(',');
+            if (config.ContainsKey("vbEavesDropCSV"))
+                vbEavesDrop = (config["vbEavesDropCSV"]).Split(',');
+            if (config.ContainsKey("yorkCSV"))
+                yorkEavesDrop = (config["yorkCSV"]).Split(',');
+            if (config.ContainsKey("agreeUserCSV"))
+                agreeEavesDrop = (config["agreeUserCSV"]).Split(',');
+            if (config.ContainsKey("roleMeWhiteListCSV"))
+                roleMeWhiteList = (config["roleMeWhiteListCSV"]).Split(',');
+            if ((config.ContainsKey("startDelay") && !int.TryParse(config["startDelay"], out startDelay)))
+            {
+                Console.WriteLine($"Key \"startDelay\" not found or valid. Using default {startDelay}.");
+            }
+            if ((config.ContainsKey("updateInterval") && !int.TryParse(config["updateInterval"], out updateInterval)))
+            {
+                Console.WriteLine($"Key \"updateInterval\" not found or valid. Using default {updateInterval}.");
+            }
+            if (config.ContainsKey("casualConfig"))
+                casualConfig = (config["casualConfig"]);
+            if (config.ContainsKey("compConfig"))
+                compConfig = (config["compConfig"]);
+            if (config.ContainsKey("postConfig"))
+                postConfig = (config["postConfig"]);
+            if (config.ContainsKey("publicCommandWhiteListCSV"))
+                publicCommandWhiteList = (config["publicCommandWhiteListCSV"]).Split(',');
+            if (config.ContainsKey("catFactPath"))
+                catFactPath = (config["catFactPath"]);
+            if ((config.ContainsKey("calUpdateTicks") && !int.TryParse(config["calUpdateTicks"], out calUpdateTicks)))
+            {
+                Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {calUpdateTicks}.");
+            }
+            if (config.ContainsKey("playingStringsCSV"))
+                playingStrings = (config["playingStringsCSV"]).Split(',');
+        }
+
+        private void RoleChannelAssignments()
+        {
+            if (config.ContainsKey("announcementChannel"))
+                announcementChannelStr = (config["announcementChannel"]);
+
+            if (config.ContainsKey("logChannel"))
+                logChannelStr = (config["logChannel"]);
+
+            if (config.ContainsKey("testingChannel"))
+                testingChannelStr = (config["testingChannel"]);
+
+            if (config.ContainsKey("playTesterRole"))
+                playTesterRoleStr = (config["playTesterRole"]);
+
+            if (config.ContainsKey("moderatorRoleName"))
+                modRoleStr = (config["moderatorRoleName"]);
+
+            if (config.ContainsKey("mutedRoleName"))
+                mutedRoleStr = (config["mutedRoleName"]);
+
+            if (config.ContainsKey("rconRoleName"))
+                rconRoleStr = (config["rconRoleName"]);
+
+            if (config.ContainsKey("activeMemberRole"))
+                ActiveRoleStr = (config["activeMemberRole"]);
+
+            var arg = Program._client.Guilds.FirstOrDefault();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            //Iterate all channels
+            foreach (SocketTextChannel s in arg.TextChannels)
+            {
+                if (s.Name == logChannelStr)
+                {
+                    logChannel = s;
+                    Console.WriteLine($"\nLog Channel Found! Logging to: {s.Name}");
+                }
+                if (s.Name == announcementChannelStr)
+                {
+                    announcementChannel = s;
+                    Console.WriteLine($"\nAnnouncement Channel Found! Announcing to: {s.Name}");
+                }
+                if (s.Name == testingChannelStr)
+                {
+                    testingChannel = s;
+                    Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {s.Name}");
+
+                }
+            }
+
+            foreach (SocketRole r in arg.Roles)
+            {
+                if (r.Name == playTesterRoleStr)
+                {
+                    playTesterRole = r;
+                    Console.WriteLine($"\nPlaytester role found!: {r.Name}");
+                }
+                if (r.Name == modRoleStr)
+                {
+
+                    ModRole = r;
+                    Console.WriteLine($"\nModerator role found!: {r.Name}");
+                }
+                if (r.Name == rconRoleStr)
+                {
+                    RconRole = r;
+                    Console.WriteLine($"\nRCON role found!: {r.Name}");
+                }
+                if (r.Name == mutedRoleStr)
+                {
+                    MuteRole = r;
+                    Console.WriteLine($"\nMuted role found!: {r.Name}");
+                }
+                if (r.Name == ActiveRoleStr)
+                {
+                    ActiveRole = r;
+                    Console.WriteLine($"\nActive Memeber role found!: {r.Name}");
+                }
+            }
+            Console.WriteLine();
+            Console.ResetColor();
+        }
+
+        public Task ChannelLog(string message)
+        {
+            logChannel.SendMessageAsync($"```{DateTime.Now}\n{message}```");
+            Console.WriteLine($"{DateTime.Now}: {message}\n");
+            return Task.CompletedTask;
+        }
+
+        public Task ChannelLog(string title, string message)
+        {
+            logChannel.SendMessageAsync($"```{DateTime.Now}\n{title}\n{message}```");
+            Console.WriteLine($"{DateTime.Now}: {title}\n{message}\n");
+            return Task.CompletedTask;
         }
 
         public JsonServer GetServer(string serverStr)
