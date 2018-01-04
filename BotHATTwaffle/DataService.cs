@@ -15,9 +15,6 @@ using Renci.SshNet;
 using Renci.SshNet.Sftp;
 using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
-using BotHATTwaffle.Modules;
-using System.Threading;
 
 namespace BotHATTwaffle
 {
