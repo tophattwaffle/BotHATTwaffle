@@ -107,7 +107,7 @@ namespace BotHATTwaffle.Modules
         [Alias("s")]
         public async Task SearchAsync(string series, [Remainder]string search)
         {
-            await Program.ChannelLog($"{Context.User.Username} ran a search",$"Series: {series}\nSearch Term: {search}");
+            await Program.ChannelLog($"{Context.User} ran a search",$"Series: {series}\nSearch Term: {search}");
             bool isPrivate = false;
             
             if (Context.IsPrivate)
@@ -416,7 +416,7 @@ namespace BotHATTwaffle.Modules
             {
                 Text = "This was penguin facts, you cannot unsubscribe."
             };
-            catFact = catFact.Replace("cat", "penguin").Replace("Cat", "Penguin");
+            catFact = catFact.Replace("cat", "penguin").Replace("Cat", "Penguin").Replace("kitten","penguin").Replace("Kitten", "Penguin");
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
@@ -427,7 +427,7 @@ namespace BotHATTwaffle.Modules
 
                 Description = catFact
             };
-            await Program.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
+            await Program.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A ~~CAT~~ PENGUIN FACT");
             await ReplyAsync("", false, builder.Build());
         }
     }

@@ -58,7 +58,7 @@ namespace BotHATTwaffle
                         u.User.AddRoleAsync(Program.playTesterRole);
                         u.User.SendMessageAsync("", false, u.JoinMessage);
                         joinDelayList.Remove(u);
-                        Program.ChannelLog($"{u.User.Username} now has playtester role. Welcome DM was sent.");
+                        Program.ChannelLog($"{u.User} now has playtester role. Welcome DM was sent.");
                         Task.Delay(1000);
                     }
                 }
@@ -70,7 +70,7 @@ namespace BotHATTwaffle
 
         public void AddNewUserJoin(SocketGuildUser inUser, DateTime inRoleTime, Embed message)
         {
-            Program.ChannelLog($"USER JOINED {inUser.Username}#{inUser.Discriminator}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
+            Program.ChannelLog($"USER JOINED {inUser}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
                 $"\nCreated At: {inUser.CreatedAt}" +
                 $"\nJoined At: {inUser.JoinedAt}" +
                 $"\nUser ID: {inUser.Id}");
