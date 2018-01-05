@@ -122,7 +122,12 @@ namespace BotHATTwaffle.Modules
             fieldBuilder.Add(new EmbedFieldBuilder { Name = "Written by", Value = "[TopHATTwaffle](https://github.com/tophattwaffle)", IsInline = true });
             fieldBuilder.Add(new EmbedFieldBuilder { Name = "With Help From", Value = "[BenBlodgi](https://github.com/BenVlodgi)\n[Mark](https://github.com/MarkKoz)", IsInline = true });
             fieldBuilder.Add(new EmbedFieldBuilder { Name = "Build Date", Value = $"{buildDate}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)", IsInline = true });
-            fieldBuilder.Add(new EmbedFieldBuilder { Name = "Built With", Value = $"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)", IsInline = true });
+            fieldBuilder.Add(new EmbedFieldBuilder { Name = "Built With", Value = $"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)" +
+                $"\n[CoreRCON](https://github.com/ScottKaye/CoreRCON)" +
+                $"\n[Html Agility Pack](http://html-agility-pack.net/)" +
+                $"\n[Newtonsoft Json.NET](https://www.newtonsoft.com/json)" +
+                $"\n[SSH.NET](https://github.com/sshnet/SSH.NET/)" +
+                $"\n[FluentFTP](https://github.com/robinrodricks/FluentFTP)", IsInline = true });
 
 
             //string prefix = _config["prefix"];

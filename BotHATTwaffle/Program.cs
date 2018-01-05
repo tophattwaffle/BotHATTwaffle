@@ -97,7 +97,7 @@ public class Program
         var result = await _commands.ExecuteAsync(context, argPos, _services);
         if (!result.IsSuccess)
         {
-            Console.WriteLine($"Error Reason: {result.ErrorReason}\nError Message: {context.Message}");
+            Console.WriteLine($"Command: {context.Message}\nError Reason: {result.ErrorReason}\n");
             if (result.ErrorReason != "Unknown command.")
                 await context.Channel.SendMessageAsync(result.ErrorReason);
         }
