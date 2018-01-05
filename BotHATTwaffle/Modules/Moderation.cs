@@ -29,8 +29,14 @@ namespace BotHATTwaffle.Modules
             //Check for unmutes
             foreach (UserData u in muteList.ToList())
             {
-                if(u.CanUnmute())
+                if (!(u.User).Roles.Contains(_dataServices.MuteRole))
                 {
+                    _dataServices.ChannelLog($"{u.User} was manually unmuted from someone removing the role.","Removing them from the mute list.");
+                    muteList.Remove(u);
+                }
+                if (u.CanUnmute())
+                {
+                    
                     u.User.RemoveRoleAsync(_dataServices.MuteRole);
                     u.User.SendMessageAsync("You have been unmuted!");
                     muteList.Remove(u);
@@ -222,6 +228,8 @@ namespace BotHATTwaffle.Modules
                 }
                 else if (action.ToLower() == "post")
                 {
+                    await ReplyAsync($"```Playtest post started. Begin feedback!```");
+
 #pragma warning disable CS4014 //Lets do all of the post game tasks and not wait. This is so the bot won't skip a heartbeat.
                     PostTasks(server);
 
@@ -295,18 +303,16 @@ namespace BotHATTwaffle.Modules
 
             var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
             await _dataServices.RconCommand($"host_workshop_map {result}", server);
-            await Task.Delay(10000);
-            await _dataServices.RconCommand($"exec {_dataServices.postConfig}", server);
+            await Task.Delay(15000);
+            await _dataServices.RconCommand($"exec {_dataServices.postConfig}; say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
-            await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+            await _dataServices.RconCommand($"exec {_dataServices.postConfig}; say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
-            await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
-            await Task.Delay(3000);
-            await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+            await _dataServices.RconCommand($"exec {_dataServices.postConfig}; say Please join the Level Testing voice channel for feedback!", server);
 
             var splitUser = _mod.TestInfo[3].Split('#');
 
@@ -414,8 +420,9 @@ namespace BotHATTwaffle.Modules
         //Have a time limit on the module so it can auto remove after X amount of time.
 
         [Command("mute")]
-        [Summary("`>mute [@user]` Mutes someone.")]
-        [Remarks("Requirements: Moderator Role")]
+        [Summary("`>mute [@user] [duration] [Optional Reason]` Mutes someone.")]
+        [Remarks("Requirements: Moderator Role" +
+            "\n`>mute @person 15 Being a mean person` will mute them for 15 minutes, with the reason \"Being a mean person\"")]
         [Alias("m")]
         public async Task MuteAsync(SocketGuildUser user, int durationInMinutes = 5, [Remainder]string reason = "No reason provided")
         {
