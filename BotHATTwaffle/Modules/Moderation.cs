@@ -232,8 +232,6 @@ namespace BotHATTwaffle.Modules
 
 #pragma warning disable CS4014 //Lets do all of the post game tasks and not wait. This is so the bot won't skip a heartbeat.
                     PostTasks(server);
-
-                    _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
 #pragma warning restore CS4014
 
                     await _dataServices.ChannelLog($"Playtest Post on {server.Name}", $"exec {_dataServices.postConfig}" +
@@ -313,6 +311,10 @@ namespace BotHATTwaffle.Modules
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+
+#pragma warning disable CS4014 // Program can hang if we await this while downloading the files. So just don't wait.
+            _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
+#pragma warning restore CS4014
 
             var splitUser = _mod.TestInfo[3].Split('#');
 
