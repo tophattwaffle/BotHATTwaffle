@@ -53,8 +53,8 @@ namespace BotHATTwaffle.Modules
         [Summary("`>roleme [rolename]` Toggles roles on a user")]
         [Remarks("This will let you add roles to yourself. Typically for saying you have a skill like 3D Modeling, or level design." +
             "\n__Channel names are case sensitive!!!__\n" +
-            "You can type `>roleme display` to show all roles available")]
-        public async Task RolemeAsync([Remainder]string inRoleStr)
+            "You can type `>roleme` to show all roles available")]
+        public async Task RolemeAsync([Remainder]string inRoleStr = null)
         {
             if (Context.IsPrivate)
             {
@@ -66,7 +66,7 @@ namespace BotHATTwaffle.Modules
             var inRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == inRoleStr);
 
             //Display roles, or modify role state
-            if (inRoleStr == "display")
+            if (inRoleStr == null)
             {
                 await ReplyAsync($"*Remember roles are case sensitive.* Valid roles are:```\n{string.Join("\n", _dataServices.roleMeWhiteList)}```");
             }
