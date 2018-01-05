@@ -308,11 +308,11 @@ namespace BotHATTwaffle.Modules
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
-            await _dataServices.RconCommand($"exec {_dataServices.postConfig}; say Please join the Level Testing voice channel for feedback!", server);
+            await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
-            await _dataServices.RconCommand($"exec {_dataServices.postConfig}; say Please join the Level Testing voice channel for feedback!", server);
+            await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
             var splitUser = _mod.TestInfo[3].Split('#');
 
