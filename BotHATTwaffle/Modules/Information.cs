@@ -367,7 +367,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/cat.png",
                 Color = new Color(230, 235, 240),
 
                 Description = catFact
@@ -392,12 +392,12 @@ namespace BotHATTwaffle.Modules
         {
             Random _rand = new Random();
 
-            string catFact = "Did you know cats have big bushy tails?";
+            string penguinFact = "Did you know penguins have big bushy tails?";
             if (File.Exists(_dataServices.catFactPath))
             {
-                var allLines = File.ReadAllLines(_dataServices.catFactPath);
+                var allLines = File.ReadAllLines(_dataServices.penguinFactPath);
                 var lineNumber = _rand.Next(0, allLines.Length);
-                catFact = allLines[lineNumber];
+                penguinFact = allLines[lineNumber];
             }
 
             var authBuilder = new EmbedAuthorBuilder()
@@ -410,18 +410,17 @@ namespace BotHATTwaffle.Modules
             {
                 Text = "This was penguin facts, you cannot unsubscribe."
             };
-            catFact = catFact.Replace("cat", "penguin").Replace("Cat", "Penguin").Replace("kitten","penguin").Replace("Kitten", "Penguin");
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/penguin.png",
                 Color = new Color(230, 235, 240),
 
-                Description = catFact
+                Description = penguinFact
             };
-            await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A ~~CAT~~ PENGUIN FACT");
+            await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
             await ReplyAsync("", false, builder.Build());
         }
     }
