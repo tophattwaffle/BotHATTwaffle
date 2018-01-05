@@ -339,7 +339,15 @@ namespace BotHATTwaffle.Modules
                     alertedFifteen = true;
                     await SetupServerAsync(eventInfo[10], false);
                 }
-
+                
+                //Try to use the user's avatar as the thumbnail
+                string thumbURL = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png";
+                var splitUser = currentEventInfo[3].Split('#');
+                try
+                {
+                    thumbURL = Program._client.GetUser(splitUser[0], splitUser[1]).GetAvatarUrl();
+                }
+                catch { }
 
                 authBuilder = new EmbedAuthorBuilder()
                 {
@@ -370,7 +378,7 @@ namespace BotHATTwaffle.Modules
                     Title = $"Workshop Link",
                     Url = eventInfo[6],
                     ImageUrl = eventInfo[4],
-                    ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+                    ThumbnailUrl = thumbURL,
                     Color = new Color(71, 126, 159),
 
                     Description = $"{eventInfo[9]}\n*level is loaded on the server 15 minutes before the start time.*"
