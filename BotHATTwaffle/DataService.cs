@@ -718,7 +718,7 @@ namespace BotHATTwaffle
             }
 
             var listFiles = Directory.GetFiles(localPath);
-            await ChannelLog($"Download complete!", $"Files in {localPath}\n{string.Join("\n", listFiles)}");
+            await ChannelLog($"Download complete!", $"{string.Join("\n", listFiles)}");
         }
 
         //Download files over FTPS
@@ -774,7 +774,7 @@ namespace BotHATTwaffle
                 client.DownloadFile(localPathBSPFile, bspFTPPath);
 
                 var listFiles = Directory.GetFiles(localPath);
-                await ChannelLog($"Download complete!",$"Files in {localPath}\n{string.Join("\n", listFiles)}");
+                await ChannelLog($"Download complete!",$"{string.Join("\n", listFiles)}");
             }
         }
 
