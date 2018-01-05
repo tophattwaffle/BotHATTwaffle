@@ -73,7 +73,8 @@ namespace BotHATTwaffle.Modules
                     AnnounceMessage = await _dataServices.announcementChannel.GetMessageAsync(announceID) as IUserMessage;
                     await AnnounceMessage.DeleteAsync();
                     AnnounceMessage = null;
-                    Console.WriteLine("Old message Deleted!");
+                    Console.WriteLine("Old message Deleted!\nForcing refresh to post new message.");
+                    await Announce();
                 }
                 catch
                 {
