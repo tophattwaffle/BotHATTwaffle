@@ -274,6 +274,8 @@ namespace BotHATTwaffle.Modules
                         $"\n**Playtest starting now!** `connect {eventInfo[10]}`" +
                         $"\n*Type `>playtester` to unsubscribe*");
 
+                        await _dataServices.ChannelLog($"Posing start playtest message for {currentEventInfo[2]}");
+
                         alertedStart = true;
 
                         await _dataServices.playTesterRole.ModifyAsync(x =>
@@ -308,6 +310,8 @@ namespace BotHATTwaffle.Modules
                     await _dataServices.testingChannel.SendMessageAsync($"{_dataServices.playTesterRole.Mention}" +
                             $"\n**Playtest starting in 1 hour**" +
                             $"\n*Type `>playtester` to unsubscribe*");
+
+                    await _dataServices.ChannelLog($"Posing 1 hour playtest message for {currentEventInfo[2]}");
 
                     await _dataServices.playTesterRole.ModifyAsync(x =>
                     {
