@@ -12,6 +12,10 @@ using System.Threading.Tasks;
 using System.IO;
 using Renci.SshNet;
 using Renci.SshNet.Sftp;
+using HtmlAgilityPack;
+using System.Linq;
+using System.Collections.Generic;
+using System.Web;
 
 namespace TestHATTwaffle
 {
@@ -19,15 +23,29 @@ namespace TestHATTwaffle
     {
         private static void Main(string[] args)
         {
-            string user = "TopHATTwaffle#1679";
+            string site = "https://www.youtube.com/watch?v=47HR2jewQms";
 
-            var split = user.Split('#');
+            HtmlWeb htmlWeb = new HtmlWeb();
+            HtmlDocument htmlDocument = htmlWeb.Load(site);
 
-            Console.WriteLine(split[0]);
-            Console.WriteLine(split[1]);
+            Console.WriteLine("Title: " + GetYouTubeImage(site));
 
             Console.ReadLine();
         }
 
+        public static string GetYouTubeImage(string videoUrl)
+        {
+            int mInd = videoUrl.IndexOf("/watch?v=");
+            if (mInd != -1)
+            {
+                string strVideoCode = videoUrl.Substring(videoUrl.IndexOf("/watch?v=") + 9);
+                Console.WriteLine(strVideoCode);
+                //int ind = strVideoCode.IndexOf("?");
+                //strVideoCode = strVideoCode.Substring(0, ind == -1 ? strVideoCode.Length : ind);
+                return "https://img.youtube.com/vi/" + strVideoCode + "/hqdefault.jpg";
+            }
+            else
+                return "";
+        }
     }
 }
