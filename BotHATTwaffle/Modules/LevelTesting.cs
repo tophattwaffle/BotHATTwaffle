@@ -910,7 +910,7 @@ namespace BotHATTwaffle.Modules
                 if (!_levelTesting.canReserve)
                 {
                     await ReplyAsync($"```Servers cannot be reserved at this time." +
-                        $"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+                        $"\nServer reservation is blocked 1 hour before a scheduled test, and resumes once the calendar event has passed.```");
                     return;
                 }
                 Boolean hasServer = false;
@@ -925,6 +925,7 @@ namespace BotHATTwaffle.Modules
 
                 if (hasServer)
                 {
+                    await ReplyAsync("```Releasing Server reservation.```");
                     await _levelTesting.ClearServerReservations(server.Name);
                 }
                 else
