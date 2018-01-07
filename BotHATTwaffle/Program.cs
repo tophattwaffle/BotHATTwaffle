@@ -15,7 +15,8 @@ public class Program
 {
     private CommandService _commands;
     public static DiscordSocketClient _client;
-    public IServiceProvider _services;   
+    public IServiceProvider _services;
+    Eavesdropping _eavesdrop;
 
     private static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
 
@@ -43,12 +44,11 @@ public class Program
         if (_services.GetRequiredService<DataServices>().config.ContainsKey("botToken"))
             botToken = (_services.GetRequiredService<DataServices>().config["botToken"]);
 
-        Eavesdropping _eavesdrop = new Eavesdropping(_services.GetRequiredService<DataServices>());
+        _eavesdrop = new Eavesdropping(_services.GetRequiredService<DataServices>());
 
         //Event Subscriptions
         _client.Log += Log;
         _client.UserJoined += _eavesdrop.UserJoin;
-        _client.MessageReceived += _eavesdrop.Listen;
         _client.GuildAvailable += Client_GuildAvailable;
 
         await InstallCommandsAsync();
@@ -89,7 +89,13 @@ public class Program
         // Create a number to track where the prefix ends and the command begins
         int argPos = 0;
         // Determine if the message is a command, based on if it starts with '>' or a mention prefix
-        if (!(message.HasCharPrefix(prefixChar, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))) return;
+        if (!(message.HasCharPrefix(prefixChar, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)))
+        {
+#pragma warning disable CS4014 //The message isn't a command. Lets eavesdrop on it to see if we should do something else. We should not wait for this. Low priority. 
+            _eavesdrop.Listen(messageParam); 
+#pragma warning restore CS4014
+            return;
+        }
         // Create a Command Context
         var context = new SocketCommandContext(_client, message);
         // Execute the command. (result does not indicate a return value, 
@@ -97,9 +103,24 @@ public class Program
         var result = await _commands.ExecuteAsync(context, argPos, _services);
         if (!result.IsSuccess)
         {
-            Console.WriteLine($"Command: {context.Message}\nError Reason: {result.ErrorReason}\n");
-            if (result.ErrorReason != "Unknown command.")
-                await context.Channel.SendMessageAsync(result.ErrorReason);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Boolean alert = true;
+
+            if (result.ErrorReason == "Unknown command.")
+            {
+                alert = false; //Don't tag me when someone does an unknown command.
+            }
+            else
+            {
+                await context.Channel.SendMessageAsync("Something bad happened! I logged the error for TopHATTwaffle.");
+            }
+
+            await _services.GetRequiredService<DataServices>().ChannelLog($"An error occurred!\nInvoking command: {context.Message}",
+                $"Invoking User: {message.Author}\nChannel: {message.Channel}\nError Reason: {result.ErrorReason}", alert);
+            
+            Console.ResetColor();
         }
+
+        await _eavesdrop.Listen(messageParam);
     }
 }
