@@ -15,6 +15,7 @@ using Renci.SshNet;
 using Renci.SshNet.Sftp;
 using Discord;
 using Discord.WebSocket;
+using System.Web;
 
 namespace BotHATTwaffle
 {
@@ -60,6 +61,7 @@ namespace BotHATTwaffle
         public string[] roleMeWhiteList;
         public string catFactPath;
         public string penguinFactPath;
+        public string alertUser;
 
         //TimerService Vars
         public int startDelay = 10;
@@ -139,6 +141,7 @@ namespace BotHATTwaffle
             mainConfig.AddKeyIfMissing("announcementChannel", "announcements");
             mainConfig.AddKeyIfMissing("playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
             mainConfig.AddKeyIfMissing("agreeUserCSV", "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
+            mainConfig.AddKeyIfMissing("alertUser", "[DISCORD NAME OF USER WITH #]");
             #endregion
 
             #region Playtesting vars
@@ -228,6 +231,8 @@ namespace BotHATTwaffle
             }
             if (config.ContainsKey("playingStringsCSV"))
                 playingStrings = (config["playingStringsCSV"]).Split(',');
+            if (config.ContainsKey("alertUser"))
+                alertUser = (config["alertUser"]);
         }
 
         private void RoleChannelAssignments()
@@ -313,16 +318,30 @@ namespace BotHATTwaffle
             Console.ResetColor();
         }
 
-        public Task ChannelLog(string message)
+        public Task ChannelLog(string message, Boolean mention = false)
         {
-            logChannel.SendMessageAsync($"```{DateTime.Now}\n{message}```");
+            string alert = null;
+            if (mention)
+            {
+                var splitUser = alertUser.Split('#');
+                alert = Program._client.GetUser(splitUser[0], splitUser[1]).Mention;
+            }
+
+            logChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{message}```");
             Console.WriteLine($"{DateTime.Now}: {message}\n");
             return Task.CompletedTask;
         }
 
-        public Task ChannelLog(string title, string message)
+        public Task ChannelLog(string title, string message, Boolean mention = false)
         {
-            logChannel.SendMessageAsync($"```{DateTime.Now}\n{title}\n{message}```");
+            string alert = null;
+            if (mention)
+            {
+                var splitUser = alertUser.Split('#');
+                alert = Program._client.GetUser(splitUser[0], splitUser[1]).Mention;
+            }
+
+            logChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{title}\n{message}```");
             Console.WriteLine($"{DateTime.Now}: {title}\n{message}\n");
             return Task.CompletedTask;
         }
@@ -445,7 +464,7 @@ namespace BotHATTwaffle
                 }
             }
             //troubleshooting 4
-            if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "all")
+            if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "misc" || searchSeries.ToLower() == "all")
             {
                 foreach (string s in searchTermArray)
                 {
@@ -474,10 +493,17 @@ namespace BotHATTwaffle
 
                 HtmlWeb htmlWeb = new HtmlWeb();
                 HtmlDocument htmlDocument = htmlWeb.Load(result.url);
-
-                string title = (from x in htmlDocument.DocumentNode.Descendants()
-                                where x.Name.ToLower() == "title"
-                                select x.InnerText).FirstOrDefault();
+                string title = null;
+                if (!result.url.Contains("youtube"))
+                {
+                    title = (from x in htmlDocument.DocumentNode.Descendants()
+                             where x.Name.ToLower() == "title"
+                             select x.InnerText).FirstOrDefault();
+                }
+                else if (result.url.Contains("youtube"))//Is a youtube URL
+                {
+                    title = GetTitle(result.url);
+                }
 
                 string description = null;
                 //Get atricle content, this is by ID. Only works for my site.
@@ -485,24 +511,40 @@ namespace BotHATTwaffle
                 {
                     description = htmlDocument.GetElementbyId("content-area").InnerText;
                 }
+                else if(result.url.ToLower().Contains("youtube"))
+                {
+                    description = result.url;
+                }
                 //Fix the bad characters that get pulled from the web page.
-                description = description.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+                if (description != null)
+                    description = description.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+
                 title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
 
                 //Limit length if needed
-                if (description.Length >= 250)
+                if (description != null && description.Length >= 250)
                 {
                     description = description.Substring(0, 250) + "...";
                 }
-
+                List<string> imgs = null;
                 //Get images on the page
-                List<string> imgs = (from x in htmlDocument.DocumentNode.Descendants()
+
+                if (!result.url.ToLower().Contains("youtube"))
+                { 
+                imgs = (from x in htmlDocument.DocumentNode.Descendants()
                                      where x.Name.ToLower() == "img"
                                      select x.Attributes["src"].Value).ToList<String>();
+                }
+
                 //Set image to the first non-header image if it exists.
                 string finalImg = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png";
-                if (imgs.Count > 1)
+                if (imgs != null && imgs.Count > 1)
                     finalImg = imgs[_random.Next(0, imgs.Count)];
+
+                if (result.url.Contains("youtube"))
+                {
+                    finalImg = GetYouTubeImage(result.url);
+                }
 
                 singleResult.Add(title);
                 singleResult.Add(result.url);
@@ -511,6 +553,34 @@ namespace BotHATTwaffle
                 listResults.Add(singleResult);
             }
             return listResults;
+        }
+
+        //Youtube info
+        public static string GetTitle(string url)
+        {
+            var api = $"http://youtube.com/get_video_info?video_id={GetArgs(url, "v", '?')}";
+            return GetArgs(new WebClient().DownloadString(api), "title", '&');
+        }
+
+        private static string GetArgs(string args, string key, char query)
+        {
+            var iqs = args.IndexOf(query);
+            return iqs == -1
+                ? string.Empty
+                : HttpUtility.ParseQueryString(iqs < args.Length - 1
+                    ? args.Substring(iqs + 1) : string.Empty)[key];
+        }
+
+        public static string GetYouTubeImage(string videoUrl)
+        {
+            int mInd = videoUrl.IndexOf("/watch?v=");
+            if (mInd != -1)
+            {
+                string strVideoCode = videoUrl.Substring(videoUrl.IndexOf("/watch?v=") + 9);
+                return "https://img.youtube.com/vi/" + strVideoCode + "/hqdefault.jpg";
+            }
+            else
+                return "";
         }
 
         public List<List<string>> DumpSearch(string searchSeries)
