@@ -88,11 +88,11 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("",false,builder);
         }
 
-
-        [Command("search")]
+        //RunMode Async so the bot does not hang making a web request. We lose exceptions, but that is fine.
+        [Command("search", RunMode = RunMode.Async)]
         [Summary("`>search [series] [SearchTerm]` searches a tutorial series.")]
         [Remarks("`>search [series] [SearchTerm]` searches our tutorial database for a result." +
-            "\nThere are a few series you can searh from. You can use `>tutorial all [SearchTerm]` to search them all. `All` does not search the FAQ" +
+            "\nThere are a few series you can search from. You can use `>tutorial all [SearchTerm]` to search them all. `All` does not search the FAQ" +
             "\nExample:" +
             "\n `>search v2 displacements` or `>search f leak`" +
             "\n `1` `V2Series` `v2`" +
@@ -100,13 +100,14 @@ namespace BotHATTwaffle.Modules
             "\n `3` `3dsmax` `3ds`" +
             "\n `4` `WrittenTutorials` `written`" +
             "\n `5` `LegacySeries` `v1` `lg`" +
-            "\n `6` `HammerTroubleshooting` `ht`" +
+            "\n `6` `HammerTroubleshooting` `ht` `misc`" +
             "\n `7` `FAQ` `f`" +
-            "\n\n `>s [series] [dump/all]` Exmaple: `>s v2 all` Will display ALL tutorials in that series. It can be slow to respond, so please wait!" +
+            "\n\n `>s [series] [dump/all]` Example: `>s v2 all` Will display ALL tutorials in that series. It can be slow to respond, so please wait!" +
             "\nReally big thanks to Mark for helping make the JSON searching work!")]
         [Alias("s")]
         public async Task SearchAsync(string series, [Remainder]string search)
         {
+            var wait = await ReplyAsync($":eyes: Searching for **{search}** in **{series}**. This may take a moment! :eyes:");
             await _dataServices.ChannelLog($"{Context.User} ran a search",$"Series: {series}\nSearch Term: {search}");
             bool isPrivate = false;
             
@@ -192,6 +193,8 @@ namespace BotHATTwaffle.Modules
                 };
                 await ReplyAsync("",false,builder);
             }
+            if (!isPrivate)
+                await wait.DeleteAsync();
         }
 
         [Command("tutorials")]
