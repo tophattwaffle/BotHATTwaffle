@@ -42,7 +42,7 @@ namespace BotHATTwaffle.Modules
                 {
                     var result = await cmd.CheckPreconditionsAsync(Context);
                     if (result.IsSuccess)
-                        description += $"{cmd.Aliases.First()} - {cmd.Summary}\n";
+                        description += $"{cmd.Name} - {cmd.Summary}\n";
                 }
 
                 if (!string.IsNullOrWhiteSpace(description))
