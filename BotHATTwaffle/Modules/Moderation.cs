@@ -330,14 +330,11 @@ namespace BotHATTwaffle.Modules
                                 run = false;
                                 valid = false;
                                 break;
-
                             default:
+                                await ReplyAndDeleteAsync("```UNKNOWN OPTION. PLEASE ENTER ONLY THE OPTIONS LISTED ABOVE.\nFor example \"title\"```", timeout: TimeSpan.FromSeconds(5));
                                 valid = false;
                                 break;
                         }
-
-
-
                         if (valid) //Unknown command was sent. Don't delete.
                         {
                             try
