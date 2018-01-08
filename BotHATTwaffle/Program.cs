@@ -36,7 +36,7 @@ public class Program
             .AddSingleton<Eavesdropping>()
             .AddSingleton<DataServices>()
             .AddSingleton<Random>()
-            .AddSingleton<InteractiveService>()
+            .AddSingleton(s => new InteractiveService(_client, TimeSpan.FromSeconds(120)))
             .BuildServiceProvider();
 
         _services.GetRequiredService<TimerService>();
