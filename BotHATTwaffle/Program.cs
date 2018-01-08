@@ -10,6 +10,7 @@ using BotHATTwaffle.Modules;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Discord.Addons.Interactive;
 
 public class Program
 {
@@ -35,6 +36,7 @@ public class Program
             .AddSingleton<Eavesdropping>()
             .AddSingleton<DataServices>()
             .AddSingleton<Random>()
+            .AddSingleton<InteractiveService>()
             .BuildServiceProvider();
 
         _services.GetRequiredService<TimerService>();

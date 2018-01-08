@@ -615,7 +615,7 @@ namespace BotHATTwaffle
 
             }
             //troubleshooting 4
-            if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "all")
+            if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "misc" || searchSeries.ToLower() == "all")
             {
                 foundTutorials.AddRange(series[4].tutorial);
             }

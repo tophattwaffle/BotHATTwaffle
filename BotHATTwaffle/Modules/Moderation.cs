@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using BotHATTwaffle.Modules.Json;
 using System.Text.RegularExpressions;
+using Discord.Addons.Interactive;
 
 namespace BotHATTwaffle.Modules
 {
@@ -56,7 +57,7 @@ namespace BotHATTwaffle.Modules
         }
     }
 
-    public class ModerationModule : ModuleBase<SocketCommandContext>
+    public class ModerationModule : InteractiveBase
     {
         private ModerationServices _mod;
         private LevelTesting _levelTesting;
@@ -69,9 +70,327 @@ namespace BotHATTwaffle.Modules
             _mod = mod;
         }
 
+        [Command("announce", RunMode = RunMode.Async)]
+        [Summary("`>announce` Interactively create an embed message to be sent to any channel")]
+        [Alias("a")]
+        public async Task Test_NextMessageAsync()
+        {
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("```This command can not be used in a DM```");
+                return;
+            }
+            if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
+            {
+                await Context.Message.DeleteAsync();
+
+                var embedLayout = new EmbedBuilder()
+                {
+                    ImageUrl = "https://content.tophattwaffle.com/BotHATTwaffle/embed.png",
+                };
+
+                string embedDescription = null;
+                Color embedColor = new Color(243, 128, 72);
+                string embedThumbUrl = null;
+                string embedTitle = null;
+                string embedURL = null;
+                string footText = null;
+                string authName = null;
+                string footIconURL = null;
+                string embedImageURL = null;
+
+                List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
+                var authBuilder = new EmbedAuthorBuilder()
+                {
+                    Name = authName,
+                    IconUrl = Context.Message.Author.GetAvatarUrl(),
+                };
+                var footBuilder = new EmbedFooterBuilder()
+                {
+                    Text = footText,
+                    IconUrl = footIconURL
+                };
+                var builder = new EmbedBuilder()
+                {
+                    Fields = fieldBuilder,
+                    Footer = footBuilder,
+                    Author = authBuilder,
+
+                    ImageUrl = embedImageURL,
+                    Url = embedURL,
+                    Title = embedTitle,
+                    ThumbnailUrl = embedThumbUrl,
+                    Color = embedColor,
+                    Description = embedDescription
+                    
+                };
+                Boolean submit = false;
+                string instructionsStr = "Here is what you can do:" +
+                    "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Field` `Footer Text` `submit` `cancel`";
+                var pic = await ReplyAsync("", false, embedLayout);
+                var preview = await ReplyAsync("__**PREVIEW**__",false,builder);
+                var instructions = await ReplyAsync(instructionsStr);
+                Boolean run = true;
+                while(run)
+                {
+                    var response = await NextMessageAsync();
+                    try
+                    {
+                        await response.DeleteAsync();
+                    }
+                    catch { }
+                    Boolean valid = true;
+                    switch(response.Content.ToLower())
+                    {
+                        case "author name":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Author Name text:";
+                            });
+                            response = await NextMessageAsync();
+                            authName = response.Content;
+                            break;
+
+                        case "thumbnail":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Thumbnail URL:";
+                            });
+                            response = await NextMessageAsync();
+                            if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
+                            {
+                                embedThumbUrl = response.Content;
+                            }
+                            else
+                            {
+                                await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
+                            }
+                            break;
+
+                        case "title":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Title text:";
+                            });
+                            response = await NextMessageAsync();
+                            embedTitle = response.Content;
+                            break;
+
+                        case "url":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Title URL:";
+                            });
+                            response = await NextMessageAsync();
+                            if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
+                            {
+                                embedURL = response.Content;
+                            }
+                            else
+                            {
+                                await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
+                            }
+                            break;
+
+                        case "color":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Color in form of `R G B` Example: `250 120 50` :";
+                            });
+                            response = await NextMessageAsync();
+                            string[] splitString = { null, null, null };
+                            splitString = response.Content.Split(' ');
+                            try
+                            {
+                                var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
+                                embedColor = new Color(splitInts[0], splitInts[1], splitInts[2]);
+                            }
+                            catch
+                            {
+                                await ReplyAndDeleteAsync("```INVALID R G B STRUCTURE!```", timeout: TimeSpan.FromSeconds(3));
+                            }
+                            break;
+
+                        case "description":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Description text:";
+                            });
+                            response = await NextMessageAsync();
+                            embedDescription = response.Content;
+                            break;
+
+                        case "image":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Image URL:";
+                            });
+                            response = await NextMessageAsync();
+                            if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
+                            {
+                                embedImageURL = response.Content;
+                            }
+                            else
+                            {
+                                await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
+                            }
+                            break;
+
+                        case "field":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Field Name text:";
+                            });
+
+                            response = await NextMessageAsync();
+                            string fTitle = response.Content;
+                            await response.DeleteAsync();
+
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Field Content text:";
+                            });
+
+                            response = await NextMessageAsync();
+                            string fContent = response.Content;
+                            await response.DeleteAsync();
+
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Inline? [T]rue or [F]alse?";
+                            });
+                            Boolean fInline = false;
+
+                            response = await NextMessageAsync();
+                            if (response.Content.ToLower() == "t" || response.Content.ToLower() == "true")
+                                fInline = true;
+
+                            if (fTitle != null && fContent != null)
+                                fieldBuilder.Add(new EmbedFieldBuilder { Name = fTitle, Value = fContent, IsInline = fInline });
+                            else
+                                await ReplyAndDeleteAsync("```YOU MUST SPECIFY TITLE AND CONTENT```", timeout: TimeSpan.FromSeconds(3));
+                            break;
+
+                        case "footer text":
+                            await instructions.ModifyAsync(x =>
+                            {
+                                x.Content = "Enter Footer text:";
+                            });
+                            response = await NextMessageAsync();
+                            footText = response.Content;
+                            break;
+
+                        case "submit":
+                            submit = true;
+                            await preview.DeleteAsync();
+                            await instructions.DeleteAsync();
+                            await pic.DeleteAsync();
+                            run = false;
+                            valid = false;
+                            break;
+
+                        case "cancel":
+                            await preview.DeleteAsync();
+                            await instructions.DeleteAsync();
+                            await pic.DeleteAsync();
+                            run = false;
+                            valid = false;
+                            break;
+
+                        default:
+                            valid = false;
+                            break;
+                    }
+                    if (valid) //Unknown command was sent. Don't delete.
+                    {
+                        try
+                        {
+                            await response.DeleteAsync();
+                        }
+                        catch { }
+                    }
+
+                    authBuilder = new EmbedAuthorBuilder()
+                    {
+                        Name = authName,
+                        IconUrl = Context.Message.Author.GetAvatarUrl()
+                    };
+                    footBuilder = new EmbedFooterBuilder()
+                    {
+                        Text = footText,
+                        IconUrl = Context.Message.Author.GetAvatarUrl()
+                    };
+                    builder = new EmbedBuilder()
+                    {
+                        Fields = fieldBuilder,
+                        Footer = footBuilder,
+                        Author = authBuilder,
+
+                        ImageUrl = embedImageURL,
+                        Url = embedURL,
+                        Title = embedTitle,
+                        ThumbnailUrl = embedThumbUrl,
+                        Color = embedColor,
+                        Description = embedDescription
+
+                    };
+                    if (valid)
+                    {
+                        await preview.ModifyAsync(x =>
+                        {
+                            x.Content = "__**PREVIEW**__";
+                            x.Embed = builder.Build();
+                        });
+                        await instructions.ModifyAsync(x =>
+                        {
+                            x.Content = instructionsStr;
+                        });
+                    }
+                }
+
+                if(submit)
+                {
+                    var msg = await ReplyAsync("Send this to what channel?", false, builder);
+                    Boolean sent = false;
+                    while (!sent)
+                    {
+                        var response = await NextMessageAsync();
+
+                        if (response.Content.ToLower() == "cancel")
+                            return;
+
+                        foreach (SocketTextChannel s in Context.Guild.TextChannels)
+                        {
+                            if (s.Name.ToLower() == response.Content)
+                            {
+                                await s.SendMessageAsync("", false, builder);
+                                await _dataServices.ChannelLog($"Embed created by {Context.User} was sent to {s.Name}!");
+                                await _dataServices.logChannel.SendMessageAsync("", false, builder);
+                                sent = true;
+                                await msg.ModifyAsync(x =>
+                                {
+                                    x.Content = "__**SENT!**__";
+                                    x.Embed = builder.Build();
+                                });
+                                await response.DeleteAsync();
+                                return;
+                            }
+                        }
+                        await ReplyAndDeleteAsync("```CHANNEL NOT FOUND TRY AGAIN.```", timeout: TimeSpan.FromSeconds(3));
+                        await response.DeleteAsync();
+                    }
+                }
+            }
+            else
+            {
+                await _dataServices.ChannelLog($"{Context.User} is trying to announce from the bot.");
+                await ReplyAsync("```You cannot use this command with your current permission level!```");
+            }
+        }
+
         [Command("rcon")]
         [Summary("`>rcon [server] [command]` Sends rcon command to server.")]
-        [Remarks("Requirements: Moderator Role. Sends rcon command to the desired server. Use the server 3 letter code (eus) to pick the server. If " +
+        [Remarks("Requirements: Moderator Role. Sends rcon command to the desired server. Use the server 3 letter code (ex: `eus`) to pick the server. If " +
             "the command returns output it will be displayed. Some commands do not have output.")]
         [Alias("r")]
         public async Task RconAsync(string serverString = null, [Remainder]string command = null)
