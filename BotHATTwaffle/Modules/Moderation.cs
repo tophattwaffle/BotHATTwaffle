@@ -813,7 +813,7 @@ namespace BotHATTwaffle.Modules
 
         [Command("ClearReservations")]
         [Summary("`>cr` Clears all server reservations")]
-        [Remarks("Requirements: Moderator Role")]
+        [Remarks("`>cr [server prefix]` will clear a specific server. Requirements: Moderator Role")]
         [Alias("cr")]
         public async Task ClearReservationsAsync(string serverStr = null)
         {
