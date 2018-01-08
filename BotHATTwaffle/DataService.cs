@@ -311,7 +311,7 @@ namespace BotHATTwaffle
                 if (r.Name == ActiveRoleStr)
                 {
                     ActiveRole = r;
-                    Console.WriteLine($"\nActive Memeber role found!: {r.Name}");
+                    Console.WriteLine($"\nActive Memeber role found!: {r.Name}"); //That isn't a spelling mistake :kappa:
                 }
             }
             Console.WriteLine();
