@@ -400,11 +400,10 @@ namespace BotHATTwaffle
             Console.WriteLine($"RCON COMMAND: {server.Address}\nCommand: {command}\n");
             Console.ResetColor();
 
-#pragma warning disable CS4014 //If you re-set the rcon_password all RCON connections are closed.
-            //By not awaiting this, we are able to set the rcon password back to the samve value closing the connection.
+            //If you re-set the rcon_password all RCON connections are closed.
+            //By not awaiting this, we are able to set the rcon password back to the same value closing the connection.
             //This will automatically timeout and dispose of the rcon connection when it tries to conncect again.
-            rcon.SendCommandAsync($"rcon_password {server.Password}");
-#pragma warning restore CS4014
+            Task fireAndForget = rcon.SendCommandAsync($"rcon_password {server.Password}");
 
             reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
 
@@ -721,19 +720,21 @@ namespace BotHATTwaffle
             return listResults;
         }
 
-        async public Task GetPlayTestFiles(string[] testInfo, JsonServer server)
+        public Task GetPlayTestFiles(string[] testInfo, JsonServer server)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
 
             if (server.FTPType.ToLower() == "ftps" || server.FTPType.ToLower() == "ftp")
-                await DownloadFTPorFTPS(testInfo, server);
+                DownloadFTPorFTPS(testInfo, server);
             if (server.FTPType.ToLower() == "sftp")
-                await Task.Run(() => DownloadSFTP(testInfo, server));
+                DownloadSFTP(testInfo, server);
 
             Console.ResetColor();
+
+            return Task.CompletedTask;
         }
 
-        private async Task DownloadSFTP(string[] testInfo, JsonServer server)
+        private void DownloadSFTP(string[] testInfo, JsonServer server)
         {
             DateTime time = Convert.ToDateTime(testInfo[1]);
             var workshopID = Regex.Match(testInfo[6], @"\d+$").Value;
@@ -767,13 +768,13 @@ namespace BotHATTwaffle
                     string localPathBSPFile = $"{localPath}\\{remoteBSPFile.Name}";
 
                     Directory.CreateDirectory(localPath);
-                    await ChannelLog($"Getting Demo File From Playtest",$"{remoteDemoFile.FullName}\n{localPathDemFile}");
+                    ChannelLog($"Getting Demo File From Playtest",$"{remoteDemoFile.FullName}\n{localPathDemFile}");
                     using (Stream fileStreamDem = File.OpenWrite(localPathDemFile))
                     {
                         sftp.DownloadFile(remoteDemoFile.FullName, fileStreamDem);
                     }
 
-                    await ChannelLog($"Getting BSP File From Playtest", $"{remoteBSPFile.FullName}\n{localPathBSPFile}");
+                    ChannelLog($"Getting BSP File From Playtest", $"{remoteBSPFile.FullName}\n{localPathBSPFile}");
                     using (Stream fileStreamBSP = File.OpenWrite(localPathBSPFile))
                     {
                         sftp.DownloadFile(remoteBSPFile.FullName, fileStreamBSP);
@@ -788,11 +789,11 @@ namespace BotHATTwaffle
             }
 
             var listFiles = Directory.GetFiles(localPath);
-            await ChannelLog($"Download complete!", $"{string.Join("\n", listFiles)}");
+            ChannelLog($"Download complete!", $"{string.Join("\n", listFiles)}");
         }
 
         //Download files over FTPS
-        async private Task DownloadFTPorFTPS(string[] testInfo, JsonServer server)
+        private void DownloadFTPorFTPS(string[] testInfo, JsonServer server)
         {
             using (FtpClient client = new FtpClient(server.Address, server.FTPUser, server.FTPPass))
             {
@@ -802,7 +803,7 @@ namespace BotHATTwaffle
                     client.SslProtocols = SslProtocols.Tls;
                     client.ValidateCertificate += new FtpSslValidation(OnValidateCertificate);
                 }
-                await client.ConnectAsync();
+                client.Connect();
 
                 //Setup variables for getting the files.
                 string workshopID = Regex.Match(testInfo[6], @"\d+$").Value;
@@ -837,14 +838,14 @@ namespace BotHATTwaffle
                 string localPathBSPFile = $"{localPath}\\{Path.GetFileName(bspFTPPath)}";
 
                 //Download Demo and BSP
-                await ChannelLog($"Getting Demo File From Playtest", $"{demoFTPPath}\n{localPathDemoFile}");
+                ChannelLog($"Getting Demo File From Playtest", $"{demoFTPPath}\n{localPathDemoFile}");
                 client.DownloadFile(localPathDemoFile, demoFTPPath);
 
-                await ChannelLog($"Getting BSP File From Playtest", $"{bspFTPPath}\n{localPathBSPFile}");
+                ChannelLog($"Getting BSP File From Playtest", $"{bspFTPPath}\n{localPathBSPFile}");
                 client.DownloadFile(localPathBSPFile, bspFTPPath);
 
                 var listFiles = Directory.GetFiles(localPath);
-                await ChannelLog($"Download complete!",$"{string.Join("\n", listFiles)}");
+                ChannelLog($"Download complete!",$"{string.Join("\n", listFiles)}");
             }
         }
 

@@ -598,9 +598,8 @@ namespace BotHATTwaffle.Modules
                 {
                     await ReplyAsync($"```Playtest post started. Begin feedback!```");
 
-#pragma warning disable CS4014 //Lets do all of the post game tasks and not wait. This is so the bot won't skip a heartbeat.
-                    PostTasks(server);
-#pragma warning restore CS4014
+                    //Don't await, it does not matter.
+                    Task fireAndForget = PostTasks(server);
 
                     await _dataServices.ChannelLog($"Playtest Post on {server.Name}", $"exec {_dataServices.postConfig}" +
                         $"\nsv_voiceenable 0" +
@@ -646,7 +645,7 @@ namespace BotHATTwaffle.Modules
             }
         }
 
-        private async void PostTasks(JsonServer server)
+        private async Task PostTasks(JsonServer server)
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -680,9 +679,7 @@ namespace BotHATTwaffle.Modules
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
-#pragma warning disable CS4014 // Program can hang if we await this while downloading the files. So just don't wait.
-            _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
-#pragma warning restore CS4014
+            Task fireAndForget = Task.Run(() => _dataServices.GetPlayTestFiles(_mod.TestInfo, server));
 
             var splitUser = _mod.TestInfo[3].Split('#');
 

@@ -82,21 +82,6 @@ namespace TestHATTwaffle
                 Console.WriteLine(finalImg);
                 Console.WriteLine(newurl);
             }
-
-
-
-            //TODO: Basically everything
-
-            //Download webpage title and store to string
-
-            /*
-            string URL = null;
-            WebClient x = new WebClient();
-            string siteTitle = x.DownloadString(URL);
-            string regex = @"(?<=<title.*>)([\s\S]*)(?=</title>)";
-            Regex ex = new Regex(regex, RegexOptions.IgnoreCase);
-            siteTitle = ex.Match(siteTitle).Value.Trim();
-            */
             return results;
         }
     }
