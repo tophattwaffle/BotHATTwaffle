@@ -63,9 +63,11 @@ namespace BotHATTwaffle.Modules
         private ModerationServices _mod;
         private LevelTesting _levelTesting;
         private DataServices _dataServices;
+        private TimerService _timer;
 
-        public ModerationModule(ModerationServices mod, LevelTesting levelTesting, DataServices dataServices)
+        public ModerationModule(ModerationServices mod, LevelTesting levelTesting, DataServices dataServices,TimerService timer)
         {
+            _timer = timer;
             _dataServices = dataServices;
             _levelTesting = levelTesting;
             _mod = mod;
@@ -785,6 +787,7 @@ namespace BotHATTwaffle.Modules
                     await ReplyAsync("```Reloading Data!```");
                     await _dataServices.ChannelLog($"{Context.User} reloaded bot data!");
                     _dataServices.ReadData();
+                    _timer.Restart();
                 }
             }
             else

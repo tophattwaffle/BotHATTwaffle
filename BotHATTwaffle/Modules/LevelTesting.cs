@@ -9,6 +9,9 @@ using Discord.Rest;
 using System.IO;
 using System.Text.RegularExpressions;
 using BotHATTwaffle.Modules.Json;
+using Imgur.API.Authentication.Impl;
+using Imgur.API.Endpoints.Impl;
+using Imgur.API.Models;
 
 namespace BotHATTwaffle.Modules
 {
@@ -26,16 +29,16 @@ namespace BotHATTwaffle.Modules
         Boolean alertedFifteen = false;
         public Boolean canReserve = true;
         int caltick = 0;
-        string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
         string announcePath = "announcement_id.txt";
         Boolean firstRun = true;
+        private Random _random;
+        private IAlbum featureAlbum;
+        private Boolean canRandomImage = false;
 
-        public LevelTesting(DataServices dataServices)
+        public LevelTesting(DataServices dataServices, Random random)
         {
             _dataServices = dataServices;
-
-
-            _dataServices.calUpdateTicks = _dataServices.calUpdateTicks - 1; //This is so the if statement does not add 1.
+            _random = random;
             _googleCalendar = new GoogleCalendar(_dataServices);
             currentEventInfo = _googleCalendar.GetEvents(); //Initial get of playtest.
             lastEventInfo = currentEventInfo; //Make sure array is same size for doing compares later.
@@ -64,6 +67,7 @@ namespace BotHATTwaffle.Modules
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Unable to load previous announcement message");
                 }
+                await GetAlbum();
             }
             else
             {
@@ -94,7 +98,6 @@ namespace BotHATTwaffle.Modules
                 firstRun = false;
                 GetPreviousAnnounceAsync();
             }
-
             caltick++;
             if (_dataServices.calUpdateTicks < caltick)
             {
@@ -117,10 +120,42 @@ namespace BotHATTwaffle.Modules
 
         }
 
+        //Gets imgur album to random featured image
+        private async Task GetAlbum()
+        {
+            canRandomImage = true;
+            try
+            {
+                string albumURL = currentEventInfo[5];
+                string albumID = albumURL.Substring(albumURL.IndexOf("/a/") + 3);
+                var client = new ImgurClient(_dataServices.imgurAPI);
+                var endpoint = new AlbumEndpoint(client);
+
+                featureAlbum = await endpoint.GetAlbumAsync(albumID);
+
+                string foundImages = null;
+
+                foreach (var i in featureAlbum.Images)
+                {
+                    foundImages += $"{i.Link}\n";
+                }
+
+                await _dataServices.ChannelLog("Getting Imgur Info from IMGUR API", $"Album URL: {albumURL}" +
+                $"\nAlbum ID: {albumID}" +
+                $"\nClient Credits Remaining: {client.RateLimit.ClientRemaining} of {client.RateLimit.ClientLimit}" +
+                $"\nImages Found: {foundImages}");
+            }
+            catch
+            {
+                await _dataServices.ChannelLog($"Unable to get Imgur Album for Random Image for {currentEventInfo[2]}","Falling back to the image in the cal event.");
+                canRandomImage = false;
+            }
+        }
+
         private async Task PostAnnounce(Embed embed)
         {
             AnnounceMessage = await _dataServices.announcementChannel.SendMessageAsync("",false,embed) as IUserMessage;
-
+            await GetAlbum();
             //If the file exists, just delete it so it can be remade with the new test info.
             if (File.Exists(announcePath))
             {
@@ -369,6 +404,15 @@ namespace BotHATTwaffle.Modules
                     IconUrl = Program._client.CurrentUser.GetAvatarUrl()
                 };
 
+                //If possible, use a random image from the imgur album.
+                string embedImage = eventInfo[4];
+                try
+                {
+                    if (canRandomImage)
+                        embedImage = featureAlbum.Images.ToArray()[(_random.Next(0, featureAlbum.ImagesCount))].Link;
+                }
+                catch{}
+
                 builder = new EmbedBuilder()
                 {
                     Author = authBuilder,
@@ -377,7 +421,7 @@ namespace BotHATTwaffle.Modules
 
                     Title = $"Workshop Link",
                     Url = eventInfo[6],
-                    ImageUrl = eventInfo[4],
+                    ImageUrl = embedImage,
                     ThumbnailUrl = thumbURL,
                     Color = new Color(71, 126, 159),
 

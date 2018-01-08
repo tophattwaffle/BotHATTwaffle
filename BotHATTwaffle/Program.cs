@@ -41,8 +41,9 @@ public class Program
             .AddSingleton(s => new InteractiveService(_client, TimeSpan.FromSeconds(120)))
             .BuildServiceProvider();
 
-        _services.GetRequiredService<TimerService>();
         _services.GetRequiredService<DataServices>();
+        _services.GetRequiredService<TimerService>();
+        
 
         string botToken = null;
         if (_services.GetRequiredService<DataServices>().config.ContainsKey("botToken"))

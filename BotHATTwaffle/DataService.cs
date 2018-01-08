@@ -16,6 +16,7 @@ using Renci.SshNet.Sftp;
 using Discord;
 using Discord.WebSocket;
 using System.Web;
+using BotHATTwaffle.Modules;
 
 namespace BotHATTwaffle
 {
@@ -76,10 +77,12 @@ namespace BotHATTwaffle
         //LevelTesting Vars
         public string[] publicCommandWhiteList;
         public int calUpdateTicks = 2;
+        public string imgurAPI;
 
         public DataServices(Random random)
         {
             config = ReadSettings(); //Needed when the data is first DI'd
+            VariableAssignment();
             _random = random;
         }
 
@@ -134,6 +137,7 @@ namespace BotHATTwaffle
             #region Add existing settings at their default
             #region General or global
             mainConfig.AddKeyIfMissing("botToken", "NEEDS_TO_BE_REPLACED");
+            mainConfig.AddKeyIfMissing("imgurAPI", "NEEDS_TO_BE_REPLACED");
             mainConfig.AddKeyIfMissing("startDelay", "10");
             mainConfig.AddKeyIfMissing("updateInterval", "60");
             mainConfig.AddKeyIfMissing("calUpdateTicks", "1");
@@ -181,7 +185,6 @@ namespace BotHATTwaffle
 
             // Save new config file
             File.WriteAllLines(configPath, mainConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}").ToArray());
-
             return mainConfig;
         }
 
@@ -229,10 +232,16 @@ namespace BotHATTwaffle
             {
                 Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {calUpdateTicks}.");
             }
+
+            calUpdateTicks = calUpdateTicks - 1;
+
             if (config.ContainsKey("playingStringsCSV"))
                 playingStrings = (config["playingStringsCSV"]).Split(',');
             if (config.ContainsKey("alertUser"))
                 alertUser = (config["alertUser"]);
+            if (config.ContainsKey("imgurAPI"))
+                imgurAPI = (config["imgurAPI"]);
+            
         }
 
         private void RoleChannelAssignments()
