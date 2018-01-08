@@ -23,6 +23,8 @@ public class Program
 
     public async Task StartAsync()
     {
+        Console.Title = "BotHATTwaffle";
+
         _client = new DiscordSocketClient();
         _commands = new CommandService();
         _services = new ServiceCollection()
