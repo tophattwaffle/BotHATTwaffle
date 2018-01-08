@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using BotHATTwaffle.Modules.Json;
@@ -37,7 +38,7 @@ namespace BotHATTwaffle.Modules
                 }
                 if (u.CanUnmute())
                 {
-                    
+
                     u.User.RemoveRoleAsync(_dataServices.MuteRole);
                     u.User.SendMessageAsync("You have been unmuted!");
                     muteList.Remove(u);
@@ -122,7 +123,7 @@ namespace BotHATTwaffle.Modules
                     ThumbnailUrl = embedThumbUrl,
                     Color = embedColor,
                     Description = embedDescription
-                    
+
                 };
                 Boolean submit = false;
                 string instructionsStr = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
@@ -477,7 +478,7 @@ namespace BotHATTwaffle.Modules
 
                     if (reply.Length > 1880)
                         reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED...]";
-                    
+
                     //Remove log messages from log
                     string[] replyArray = reply.Split(
                     new[] { "\r\n", "\r", "\n" },
@@ -679,8 +680,20 @@ namespace BotHATTwaffle.Modules
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
-            //Fire and forget. Get the demos and don't wait.
-            Task fireAndForget = Task.Run(() => _dataServices.GetPlayTestFiles(_mod.TestInfo, server));
+            // Creates a new worker object.
+            BackgroundWorker bgWorker = new BackgroundWorker();
+
+            // Creates an event handler for the DoWork event using an anonymous
+            // function (lambda). The two parameters aren't used in this case,
+            // as the event simply consists of calling GetPlayTestFiles.
+            bgWorker.DoWork += (sender, e) => {
+                _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
+            };
+
+            // Submits a request to start running asynchronously which in turn
+            // raises the DoWork event.
+            bgWorker.RunWorkerAsync();
+
 
             var splitUser = _mod.TestInfo[3].Split('#');
 

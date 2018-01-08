@@ -22,7 +22,7 @@ namespace BotHATTwaffle
     public class DataServices
     {
         public Dictionary<string, string> config;
-        
+
         JObject searchData;
         JObject serverData;
         JsonRoot root;
@@ -393,7 +393,7 @@ namespace BotHATTwaffle
             }
 
             var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password,1000);
-            
+
             reply = await rcon.SendCommandAsync(command);
 
             Console.ForegroundColor = ConsoleColor.Green;
@@ -529,7 +529,7 @@ namespace BotHATTwaffle
                 //Get images on the page
 
                 if (!result.url.ToLower().Contains("youtube"))
-                { 
+                {
                 imgs = (from x in htmlDocument.DocumentNode.Descendants()
                                      where x.Name.ToLower() == "img"
                                      select x.Attributes["src"].Value).ToList<String>();
@@ -609,7 +609,7 @@ namespace BotHATTwaffle
             }
             //legacy 5
             if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5" || searchSeries.ToLower() == "all")
-            { 
+            {
                foundTutorials.AddRange(series[5].tutorial);
 
             }
@@ -646,7 +646,7 @@ namespace BotHATTwaffle
         public List<List<string>> SearchFAQ(string searchTerm, bool isPrivate)
         {
             List<List<string>> listResults = new List<List<string>>();
-            
+
             string faqurl = "https://www.tophattwaffle.com/wp-admin/admin-ajax.php?action=epkb-search-kb&epkb_kb_id=1&search_words=";
             try
             {
@@ -720,7 +720,7 @@ namespace BotHATTwaffle
             return listResults;
         }
 
-        public Task GetPlayTestFiles(string[] testInfo, JsonServer server)
+        public void GetPlayTestFiles(string[] testInfo, JsonServer server)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
 
@@ -730,8 +730,6 @@ namespace BotHATTwaffle
                 DownloadSFTP(testInfo, server);
 
             Console.ResetColor();
-
-            return Task.CompletedTask;
         }
 
         private void DownloadSFTP(string[] testInfo, JsonServer server)
