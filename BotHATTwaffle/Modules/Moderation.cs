@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using BotHATTwaffle.Modules.Json;
@@ -37,7 +38,7 @@ namespace BotHATTwaffle.Modules
                 }
                 if (u.CanUnmute())
                 {
-                    
+
                     u.User.RemoveRoleAsync(_dataServices.MuteRole);
                     u.User.SendMessageAsync("You have been unmuted!");
                     muteList.Remove(u);
@@ -122,7 +123,7 @@ namespace BotHATTwaffle.Modules
                     ThumbnailUrl = embedThumbUrl,
                     Color = embedColor,
                     Description = embedDescription
-                    
+
                 };
                 Boolean submit = false;
                 string instructionsStr = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
@@ -477,7 +478,7 @@ namespace BotHATTwaffle.Modules
 
                     if (reply.Length > 1880)
                         reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED...]";
-                    
+
                     //Remove log messages from log
                     string[] replyArray = reply.Split(
                     new[] { "\r\n", "\r", "\n" },
@@ -679,7 +680,11 @@ namespace BotHATTwaffle.Modules
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
-            Task fireAndForget = Task.Run(() => _dataServices.GetPlayTestFiles(_mod.TestInfo, server));
+			BackgroundWorker bgWorker = new BackgroundWorker();
+			bgWorker.DoWork += (sender, e) => {
+				_dataServices.GetPlayTestFiles(_mod.TestInfo, server);
+			};
+			bgWorker.RunWorkerAsync();
 
             var splitUser = _mod.TestInfo[3].Split('#');
 
