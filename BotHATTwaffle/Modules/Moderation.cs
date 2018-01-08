@@ -598,7 +598,7 @@ namespace BotHATTwaffle.Modules
                 {
                     await ReplyAsync($"```Playtest post started. Begin feedback!```");
 
-                    //Don't await, it does not matter.
+                    //Fire and forget. Start the post tasks and don't wait for them to complete.
                     Task fireAndForget = PostTasks(server);
 
                     await _dataServices.ChannelLog($"Playtest Post on {server.Name}", $"exec {_dataServices.postConfig}" +
@@ -679,6 +679,7 @@ namespace BotHATTwaffle.Modules
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
+            //Fire and forget. Get the demos and don't wait.
             Task fireAndForget = Task.Run(() => _dataServices.GetPlayTestFiles(_mod.TestInfo, server));
 
             var splitUser = _mod.TestInfo[3].Split('#');
