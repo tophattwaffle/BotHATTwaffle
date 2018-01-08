@@ -214,7 +214,7 @@ namespace BotHATTwaffle.Modules
             string authImgUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png";
             string footText = null;
             string footImgUrl = Program._client.CurrentUser.GetAvatarUrl();
-            string bodyTitle = null;
+            string bodyTitle = "Click Here!";
             string bodyUrl = null;
             string bodyThumbUrl = null;  //"https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png"
             string bodyImageUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/header.png";
