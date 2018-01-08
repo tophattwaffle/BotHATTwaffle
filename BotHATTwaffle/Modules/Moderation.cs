@@ -680,11 +680,19 @@ namespace BotHATTwaffle.Modules
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
-			BackgroundWorker bgWorker = new BackgroundWorker();
-			bgWorker.DoWork += (sender, e) => {
-				_dataServices.GetPlayTestFiles(_mod.TestInfo, server);
-			};
-			bgWorker.RunWorkerAsync();
+            // Creates a new worker object.
+            BackgroundWorker bgWorker = new BackgroundWorker();
+
+            // Creates an event handler for the DoWork event using an anonymous
+            // function (lambda). The two parameters aren't used in this case,
+            // as the event simply consists of calling GetPlayTestFiles.
+            bgWorker.DoWork += (sender, e) => {
+                _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
+            };
+
+            // Submits a request to start running asynchronously which in turn
+            // raises the DoWork event.
+            bgWorker.RunWorkerAsync();
 
             var splitUser = _mod.TestInfo[3].Split('#');
 
