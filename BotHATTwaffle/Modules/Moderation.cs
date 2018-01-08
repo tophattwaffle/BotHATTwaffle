@@ -783,12 +783,6 @@ namespace BotHATTwaffle.Modules
             }
         }
 
-
-        //TODO: Announce Command
-        //Posts announcement to Announcements channel. Will need to be responsive
-        //so it can prompt people for: title, description, ect... Then use embed builder to post it.
-        //Have a time limit on the module so it can auto remove after X amount of time.
-
         [Command("mute")]
         [Summary("`>mute [@user] [duration] [Optional Reason]` Mutes someone.")]
         [Remarks("Requirements: Moderator Role" +
