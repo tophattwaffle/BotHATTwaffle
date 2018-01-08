@@ -17,35 +17,43 @@ using HtmlAgilityPack;
 using System.Linq;
 using System.Collections.Generic;
 using System.Web;
+using System.ComponentModel;
 
 namespace TestHATTwaffle
 {
     class Program
     {
-        public static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
-
-
-        public async Task StartAsync()
+        public static void Main(string[] args)
         {
-            Task fireAndForget = Task.Run(() =>Test());
+            BackgroundWorker bgWorker = new BackgroundWorker();
+            bgWorker.DoWork += (sender, e) => {
+                Test();
+            };
+            bgWorker.RunWorkerAsync();
+
+            GetTitle();
+            GetTitle();
+            GetTitle();
+            GetTitle();
+
+            Console.ReadLine();
+        }
+
+        public static void GetTitle()
+        {
             string site = "https://www.youtube.com/watch?v=47HR2jewQms";
 
             HtmlWeb htmlWeb = new HtmlWeb();
             HtmlDocument htmlDocument = htmlWeb.Load(site);
 
             Console.WriteLine("Title: " + GetYouTubeImage(site));
-            await Task.Delay(1000);
-            await fireAndForget;
-            Console.WriteLine("Program done");
-            Console.ReadLine();
         }
 
-        public static Task Test()
+        public static void Test()
         {
             Console.WriteLine("TEST WORK STATED");
             Thread.Sleep(5000);
             Console.WriteLine("TEST WORK COMPLETTE");
-            return Task.CompletedTask;
         }
 
         public static string GetYouTubeImage(string videoUrl)
