@@ -57,7 +57,7 @@ namespace TestHATTwaffle
             Console.WriteLine(albumID);
 
             Console.WriteLine("TEST WORK STATED");
-            var client = new ImgurClient("fc19d69916d543e");
+            var client = new ImgurClient("API KEY");
             var endpoint = new AlbumEndpoint(client);
             var album = await endpoint.GetAlbumAsync(albumID);
 
