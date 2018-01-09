@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using BotHATTwaffle.Modules.Json;
 
-namespace BotHATTwaffle.Objects.Downloader {
+namespace BotHATTwaffle.Objects.Downloader
+{
     public class DownloaderService
     {
         private readonly DataServices dataSvc;
@@ -30,23 +31,20 @@ namespace BotHATTwaffle.Objects.Downloader {
         private void DownloadFiles(object sender, DoWorkEventArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-            var (testInfo, server) =
-                (ValueTuple<IReadOnlyList<string>, JsonServer>) e.Argument;
+            var (testInfo, server) = (ValueTuple<IReadOnlyList<string>, JsonServer>) e.Argument;
 
             switch (server.FTPType.ToLower())
             {
                 case "ftps":
                 case "ftp":
-                    using (var dl = new FtpDownloader(testInfo, server,
-                                                      dataSvc))
+                    using (var dl = new FtpDownloader(testInfo, server, dataSvc))
                     {
                         dl.Download();
                     }
 
                     break;
                 case "sftp":
-                    using (var dl = new SftpDownloader(testInfo, server,
-                                                       dataSvc))
+                    using (var dl = new SftpDownloader(testInfo, server, dataSvc))
                     {
                         dl.Download();
                     }

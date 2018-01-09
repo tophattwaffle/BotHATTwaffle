@@ -64,7 +64,6 @@ namespace BotHATTwaffle.Modules
             {
                 await ReplyAsync("", false, builder.Build());
             }
-            
         }
 
         [Command("help")]
@@ -95,9 +94,9 @@ namespace BotHATTwaffle.Modules
                 {
                     x.Name = string.Join(", ", cmd.Aliases);
                     x.Value = $"Parameters: {string.Join(", ", cmd.Parameters.Select(p => p.Name))}" +
-                              $"\nSummary: {cmd.Summary}" +
-                              $"\nInstructions: {cmd.Remarks}" +
-                              $"\nAlias: {string.Join(", ", cmd.Aliases.ToArray())}"; ;
+                              $"\nSummary: {cmd.Summary}" + $"\nInstructions: {cmd.Remarks}" +
+                              $"\nAlias: {string.Join(", ", cmd.Aliases.ToArray())}";
+                    ;
                     x.IsInline = false;
                 });
             }
@@ -119,15 +118,35 @@ namespace BotHATTwaffle.Modules
             DateTime buildDate = new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime;
 
             List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-            fieldBuilder.Add(new EmbedFieldBuilder { Name = "Written by", Value = "[TopHATTwaffle](https://github.com/tophattwaffle)", IsInline = true });
-            fieldBuilder.Add(new EmbedFieldBuilder { Name = "With Help From", Value = "[BenBlodgi](https://github.com/BenVlodgi)\n[Mark](https://github.com/MarkKoz)", IsInline = true });
-            fieldBuilder.Add(new EmbedFieldBuilder { Name = "Build Date", Value = $"{buildDate}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)", IsInline = true });
-            fieldBuilder.Add(new EmbedFieldBuilder { Name = "Built With", Value = $"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)" +
-                $"\n[CoreRCON](https://github.com/ScottKaye/CoreRCON)" +
-                $"\n[Html Agility Pack](http://html-agility-pack.net/)" +
-                $"\n[Newtonsoft Json.NET](https://www.newtonsoft.com/json)" +
-                $"\n[SSH.NET](https://github.com/sshnet/SSH.NET/)" +
-                $"\n[FluentFTP](https://github.com/robinrodricks/FluentFTP)", IsInline = true });
+            fieldBuilder.Add(new EmbedFieldBuilder
+            {
+                Name = "Written by",
+                Value = "[TopHATTwaffle](https://github.com/tophattwaffle)",
+                IsInline = true
+            });
+            fieldBuilder.Add(new EmbedFieldBuilder
+            {
+                Name = "With Help From",
+                Value = "[BenBlodgi](https://github.com/BenVlodgi)\n[Mark](https://github.com/MarkKoz)",
+                IsInline = true
+            });
+            fieldBuilder.Add(new EmbedFieldBuilder
+            {
+                Name = "Build Date",
+                Value = $"{buildDate}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)",
+                IsInline = true
+            });
+            fieldBuilder.Add(new EmbedFieldBuilder
+            {
+                Name = "Built With",
+                Value = $"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)" +
+                        $"\n[CoreRCON](https://github.com/ScottKaye/CoreRCON)" +
+                        $"\n[Html Agility Pack](http://html-agility-pack.net/)" +
+                        $"\n[Newtonsoft Json.NET](https://www.newtonsoft.com/json)" +
+                        $"\n[SSH.NET](https://github.com/sshnet/SSH.NET/)" +
+                        $"\n[FluentFTP](https://github.com/robinrodricks/FluentFTP)",
+                IsInline = true
+            });
 
 
             //string prefix = _config["prefix"];
@@ -143,13 +162,13 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Url = "https://www.tophattwaffle.com/",
                 ThumbnailUrl = Program._client.CurrentUser.GetAvatarUrl(),
-                Color = new Color(130,171,206),
-                Description = "BotHATTwaffle was started to centralize Source Engine Discord server functions that were fractured between multiple bots. " +
-                "This bot was my first attempt at a real C# program that other people would interact with." +
-                "\n\nPlease let me know if you have any suggests or find bugs!"
+                Color = new Color(130, 171, 206),
+                Description =
+                    "BotHATTwaffle was started to centralize Source Engine Discord server functions that were fractured between multiple bots. " +
+                    "This bot was my first attempt at a real C# program that other people would interact with." +
+                    "\n\nPlease let me know if you have any suggests or find bugs!"
             };
             await ReplyAsync("", false, builder.Build());
-
         }
     }
 }

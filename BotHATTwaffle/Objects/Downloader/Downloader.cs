@@ -5,8 +5,7 @@ using BotHATTwaffle.Modules.Json;
 
 namespace BotHATTwaffle.Objects.Downloader
 {
-    public abstract class Downloader<TClient> : IDisposable
-        where TClient : IDisposable
+    public abstract class Downloader<TClient> : IDisposable where TClient : IDisposable
     {
         protected TClient Client;
         protected readonly DataServices DataSvc;
@@ -15,9 +14,7 @@ namespace BotHATTwaffle.Objects.Downloader
         protected readonly string LocalPath;
         protected readonly string WorkshopId;
 
-        protected Downloader(IReadOnlyList<string> testInfo,
-                             JsonServer server,
-                             DataServices dataSvc)
+        protected Downloader(IReadOnlyList<string> testInfo, JsonServer server, DataServices dataSvc)
         {
             DataSvc = dataSvc;
             DateTime time = Convert.ToDateTime(testInfo[1]);
@@ -25,8 +22,7 @@ namespace BotHATTwaffle.Objects.Downloader
 
             DemoName = $"{time:MM_dd_yyyy}_{title}";
             FtpPath = server.FTPPath;
-            LocalPath = $"{DataSvc.DemoPath}\\{time:yyyy}\\{time:MM} - " +
-                        $"{time:MMMM}\\{DemoName}";
+            LocalPath = $"{DataSvc.DemoPath}\\{time:yyyy}\\{time:MM} - " + $"{time:MMMM}\\{DemoName}";
             WorkshopId = Regex.Match(testInfo[6], @"\d+$").Value;
         }
 
