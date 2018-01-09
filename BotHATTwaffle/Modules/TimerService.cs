@@ -42,6 +42,7 @@ namespace BotHATTwaffle.Modules
         public void Stop()
         {
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            Console.WriteLine($"Timer stopped!\n");
         }
 
         public void Restart()
@@ -49,7 +50,7 @@ namespace BotHATTwaffle.Modules
             _timer.Change(TimeSpan.FromSeconds(_dataServices.startDelay), TimeSpan.FromSeconds(_dataServices.updateInterval));
             Console.WriteLine($"Timer restarted" +
                               $"\nStart Delay: {_dataServices.startDelay}" +
-                              $"\nUpdate Interval {_dataServices.updateInterval}");
+                              $"\nUpdate Interval {_dataServices.updateInterval}\n");
         }
 
         public void ChangePlaying()

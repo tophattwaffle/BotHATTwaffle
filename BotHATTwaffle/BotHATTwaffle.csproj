@@ -197,6 +197,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleCopy.cs" />
     <Compile Include="Eavesdropping.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GoogleCalendar.cs" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Reflection;
 using Discord;
@@ -17,11 +18,18 @@ public class Program
     public IServiceProvider _services;
     Eavesdropping _eavesdrop;
 
+    string logPath = "c:/BotHATTwafflelogs/";
+    string logFile = $"{DateTime.Now.ToString("hh_mmtt-MM_dd_yyyy")}.log";
+
     private static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
 
     public async Task StartAsync()
     {
         Console.Title = "BotHATTwaffle";
+
+        //Mirror output to a log file incase I need it later.
+        Directory.CreateDirectory(logPath);
+        var cc = new ConsoleCopy(logPath + logFile);
 
         _client = new DiscordSocketClient();
         _commands = new CommandService();
@@ -60,7 +68,29 @@ public class Program
         await _client.LoginAsync(TokenType.Bot, botToken);
         await _client.StartAsync();
 
+        //Subscribe to connect/disconnect after actually connecting
+        _client.Disconnected += Client_Disconnected;
+        _client.Connected += Client_Connected;
+
         await Task.Delay(-1);
+    }
+
+    private Task Client_Connected()
+    {
+        Console.WriteLine($"\n{DateTime.Now}\nCLIENT CONNECTED\n");
+
+        _services.GetRequiredService<TimerService>().Restart();
+
+        return Task.CompletedTask;
+    }
+
+    private Task Client_Disconnected(Exception arg)
+    {
+        Console.WriteLine($"\n{DateTime.Now}\nCLIENT DISCONNECTED\n");
+
+        _services.GetRequiredService<TimerService>().Stop();
+
+        return Task.CompletedTask;
     }
 
     private Task Client_GuildAvailable(SocketGuild arg)
@@ -115,7 +145,14 @@ public class Program
             }
             else if (result.ErrorReason == "The input text has too many parameters.")
             {
+                //Too many params, cut off the excess for the help reply.
                 await context.Channel.SendMessageAsync($"You provided too many parameters! Please consult `>help {context.Message.Content.Substring(1, context.Message.Content.IndexOf(" ") - 1)}`");
+                alert = false;
+            }
+            else if (result.ErrorReason == "The input text has too few parameters.")
+            {
+                //Too few, just reply back with help
+                await context.Channel.SendMessageAsync($"You provided too few parameters! Please consult `>help {context.Message.Content.Substring(1)}`");
                 alert = false;
             }
             else
