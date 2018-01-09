@@ -210,6 +210,7 @@
     <Compile Include="Modules\TimerService.cs" />
     <Compile Include="Modules\UtilityService.cs" />
     <Compile Include="Objects\Downloader\Downloader.cs" />
+    <Compile Include="Objects\Downloader\DownloaderService.cs" />
     <Compile Include="Objects\Downloader\FtpDownloader.cs" />
     <Compile Include="Objects\Downloader\SftpDownloader.cs" />
     <Compile Include="Program.cs" />

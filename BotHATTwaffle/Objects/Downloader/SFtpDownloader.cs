@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BotHATTwaffle.Modules.Json;
 using Renci.SshNet;
 using Renci.SshNet.Sftp;
@@ -21,7 +19,14 @@ namespace BotHATTwaffle.Objects.Downloader {
 
         public override void Download()
         {
-            Client.Connect();
+            try {
+                Client.Connect();
+            } catch (Exception e) {
+                /*ChannelLog("Connection Failure",
+                           $"Failed to connect to the server.\n{e.Message}");*/
+                return;
+            }
+
             Directory.CreateDirectory(LocalPath);
 
             SftpFile fileDemo = GetFile(FtpPath, DemoName);

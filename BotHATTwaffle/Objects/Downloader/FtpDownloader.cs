@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Security.Authentication;
-using System.Text;
-using System.Threading.Tasks;
 using BotHATTwaffle.Modules.Json;
 using FluentFTP;
 
@@ -36,7 +33,16 @@ namespace BotHATTwaffle.Objects.Downloader
 
         public override void Download()
         {
-            Client.Connect();
+            try
+            {
+                Client.Connect();
+            }
+            catch (Exception e)
+            {
+                /*ChannelLog("Connection Failure",
+                           $"Failed to connect to the server.\n{e.Message}");*/
+                return;
+            }
 
             // Downloads the demo file.
             DownloadFile(GetFile(FtpPath, DemoName),

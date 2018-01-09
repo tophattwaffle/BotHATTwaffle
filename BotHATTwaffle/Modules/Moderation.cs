@@ -3,14 +3,12 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Threading;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using BotHATTwaffle.Modules.Json;
 using System.Text.RegularExpressions;
+using BotHATTwaffle.Objects.Downloader;
 using Discord.Addons.Interactive;
 
 namespace BotHATTwaffle.Modules
@@ -19,7 +17,7 @@ namespace BotHATTwaffle.Modules
     {
         public List<UserData> muteList = new List<UserData>();
         public string[] TestInfo { get; set; }
-        DataServices _dataServices;
+        private readonly DataServices _dataServices;
 
         public ModerationServices(DataServices dataServices)
         {
@@ -60,15 +58,20 @@ namespace BotHATTwaffle.Modules
 
     public class ModerationModule : InteractiveBase
     {
-        private ModerationServices _mod;
-        private LevelTesting _levelTesting;
-        private DataServices _dataServices;
+        private readonly ModerationServices _mod;
+        private readonly LevelTesting _levelTesting;
+        private readonly DataServices _dataServices;
+        private readonly DownloaderService downloaderSvc;
 
-        public ModerationModule(ModerationServices mod, LevelTesting levelTesting, DataServices dataServices)
+        public ModerationModule(ModerationServices mod,
+                                LevelTesting levelTesting,
+                                DataServices dataServices,
+                                DownloaderService dlSvc)
         {
             _dataServices = dataServices;
             _levelTesting = levelTesting;
             _mod = mod;
+            downloaderSvc = dlSvc;
         }
 
         [Command("announce", RunMode = RunMode.Async)]
@@ -680,20 +683,8 @@ namespace BotHATTwaffle.Modules
             await Task.Delay(3000);
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
-            // Creates a new worker object.
-            BackgroundWorker bgWorker = new BackgroundWorker();
-
-            // Creates an event handler for the DoWork event using an anonymous
-            // function (lambda). The two parameters aren't used in this case,
-            // as the event simply consists of calling GetPlayTestFiles.
-            bgWorker.DoWork += (sender, e) => {
-                _dataServices.GetPlayTestFiles(_mod.TestInfo, server);
-            };
-
-            // Submits a request to start running asynchronously which in turn
-            // raises the DoWork event.
-            bgWorker.RunWorkerAsync();
-
+            // Starts downloading playtesting files in the background.
+            downloaderSvc.Start(_mod.TestInfo, server);
 
             var splitUser = _mod.TestInfo[3].Split('#');
 

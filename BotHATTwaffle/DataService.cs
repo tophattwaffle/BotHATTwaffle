@@ -8,11 +8,6 @@ using HtmlAgilityPack;
 using System.Threading.Tasks;
 using CoreRCON;
 using System.Net;
-using FluentFTP;
-using System.Security.Authentication;
-using System.Text.RegularExpressions;
-using Renci.SshNet;
-using Renci.SshNet.Sftp;
 using Discord;
 using Discord.WebSocket;
 using System.Web;
@@ -30,7 +25,7 @@ namespace BotHATTwaffle
         List<JsonSeries> series;
         List<JsonServer> servers;
         Random _random;
-        private string demoPath;
+        public string DemoPath;
 
         //Channels and Role vars
         string logChannelStr;
@@ -150,7 +145,7 @@ namespace BotHATTwaffle
             mainConfig.AddKeyIfMissing("playTesterRole", "Playtester");
             mainConfig.AddKeyIfMissing("activeMemberRole", "Active Member");
             mainConfig.AddKeyIfMissing("testingChannel", "csgo_level_testing");
-            mainConfig.AddKeyIfMissing("demoPath", $"X:\\Playtesting Demos");
+            mainConfig.AddKeyIfMissing("DemoPath", $"X:\\Playtesting Demos");
             mainConfig.AddKeyIfMissing("casualConfig", $"thw");
             mainConfig.AddKeyIfMissing("compConfig", $"thw");
             mainConfig.AddKeyIfMissing("postConfig", $"postame");
@@ -188,8 +183,8 @@ namespace BotHATTwaffle
 
         private void VariableAssignment()
         {
-            if (config.ContainsKey("demoPath"))
-                demoPath = (config["demoPath"]);
+            if (config.ContainsKey("DemoPath"))
+                DemoPath = (config["DemoPath"]);
             if (config.ContainsKey("pakRatEavesDropCSV"))
                 pakRatEavesDrop = (config["pakRatEavesDropCSV"]).Split(',');
             if (config.ContainsKey("howToPackEavesDropCSV"))
@@ -719,27 +714,6 @@ namespace BotHATTwaffle
                 //Do nothing. The command that called this will handle the no results found message.
             }
             return listResults;
-        }
-
-        public void GetPlayTestFiles(string[] testInfo, JsonServer server)
-        {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-
-            switch (server.FTPType.ToLower()) {
-                case "ftps":
-                case "ftp":
-                    using (var dl = new FtpDownloader(testInfo, server, demoPath))
-                        dl.Download();
-
-                    break;
-                case "sftp":
-                    using (var dl = new SftpDownloader(testInfo, server, demoPath))
-                        dl.Download();
-
-                    break;
-            }
-
-            Console.ResetColor();
         }
     }
 }

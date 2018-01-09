@@ -7,9 +7,7 @@ using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using BotHATTwaffle;
 using BotHATTwaffle.Modules;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
+using BotHATTwaffle.Objects.Downloader;
 using Discord.Addons.Interactive;
 
 public class Program
@@ -38,6 +36,7 @@ public class Program
             .AddSingleton<Eavesdropping>()
             .AddSingleton<DataServices>()
             .AddSingleton<Random>()
+            .AddSingleton<DownloaderService>()
             .AddSingleton(s => new InteractiveService(_client, TimeSpan.FromSeconds(120)))
             .BuildServiceProvider();
 
@@ -95,14 +94,14 @@ public class Program
         // Determine if the message is a command, based on if it starts with '>' or a mention prefix
         if (!(message.HasCharPrefix(prefixChar, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)))
         {
-#pragma warning disable CS4014 //The message isn't a command. Lets eavesdrop on it to see if we should do something else. We should not wait for this. Low priority. 
-            _eavesdrop.Listen(messageParam); 
+#pragma warning disable CS4014 //The message isn't a command. Lets eavesdrop on it to see if we should do something else. We should not wait for this. Low priority.
+            _eavesdrop.Listen(messageParam);
 #pragma warning restore CS4014
             return;
         }
         // Create a Command Context
         var context = new SocketCommandContext(_client, message);
-        // Execute the command. (result does not indicate a return value, 
+        // Execute the command. (result does not indicate a return value,
         // rather an object stating if the command executed successfully)
         var result = await _commands.ExecuteAsync(context, argPos, _services);
         if (!result.IsSuccess)
@@ -121,7 +120,7 @@ public class Program
 
             await _services.GetRequiredService<DataServices>().ChannelLog($"An error occurred!\nInvoking command: {context.Message}",
                 $"Invoking User: {message.Author}\nChannel: {message.Channel}\nError Reason: {result.ErrorReason}", alert);
-            
+
             Console.ResetColor();
         }
 
