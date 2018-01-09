@@ -114,6 +114,11 @@ public class Program
             {
                 alert = false; //Don't tag me when someone does an unknown command.
             }
+            else if (result.ErrorReason == "The input text has too many parameters.")
+            {
+                await context.Channel.SendMessageAsync($"You provided too many parameters! Please consult `>help {context.Message.Content.Substring(1, context.Message.Content.IndexOf(" ") - 1)}`");
+                alert = false;
+            }
             else
             {
                 await context.Channel.SendMessageAsync("Something bad happened! I logged the error for TopHATTwaffle.");
