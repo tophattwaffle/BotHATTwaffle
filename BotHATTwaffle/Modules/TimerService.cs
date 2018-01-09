@@ -9,7 +9,7 @@ namespace BotHATTwaffle.Modules
     public class TimerService
     {
         
-        private readonly Timer _timer;
+        public Timer _timer;
         private LevelTesting _levelTesting;
         private UtilityService _utility;
         private ModerationServices _mod;
@@ -47,6 +47,9 @@ namespace BotHATTwaffle.Modules
         public void Restart()
         {
             _timer.Change(TimeSpan.FromSeconds(_dataServices.startDelay), TimeSpan.FromSeconds(_dataServices.updateInterval));
+            Console.WriteLine($"Timer restarted" +
+                              $"\nStart Delay: {_dataServices.startDelay}" +
+                              $"\nUpdate Interval {_dataServices.updateInterval}");
         }
 
         public void ChangePlaying()

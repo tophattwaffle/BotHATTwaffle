@@ -18,6 +18,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Web;
 using System.ComponentModel;
+using Imgur.API.Authentication.Impl;
+using Imgur.API.Endpoints.Impl;
 
 namespace TestHATTwaffle
 {
@@ -25,18 +27,15 @@ namespace TestHATTwaffle
     {
         public static void Main(string[] args)
         {
-            BackgroundWorker bgWorker = new BackgroundWorker();
-            bgWorker.DoWork += (sender, e) => {
-                Test();
-            };
-            bgWorker.RunWorkerAsync();
+            while (true)
+            {
+                BackgroundWorker bgWorker = new BackgroundWorker();
+                bgWorker.DoWork += (sender, e) => { Test(); };
+                bgWorker.RunWorkerAsync();
 
-            GetTitle();
-            GetTitle();
-            GetTitle();
-            GetTitle();
 
-            Console.ReadLine();
+                Console.ReadLine();
+            }
         }
 
         public static void GetTitle()
@@ -49,11 +48,28 @@ namespace TestHATTwaffle
             Console.WriteLine("Title: " + GetYouTubeImage(site));
         }
 
-        public static void Test()
+        async static public void Test()
         {
+            string albumURL = "https://imgur.com/a/PItKx";
+
+            string albumID = albumURL.Substring(albumURL.IndexOf("/a/") + 3);
+
+            Console.WriteLine(albumID);
+
             Console.WriteLine("TEST WORK STATED");
-            Thread.Sleep(5000);
-            Console.WriteLine("TEST WORK COMPLETTE");
+            var client = new ImgurClient("API KEY");
+            var endpoint = new AlbumEndpoint(client);
+            var album = await endpoint.GetAlbumAsync(albumID);
+
+            Console.WriteLine("REMAIN: " + client.RateLimit.ClientRemaining);
+
+            Random _rand = new Random();
+
+            var tmpArray = album.Images.ToArray();
+
+            var finalimg = tmpArray[(_rand.Next(0,tmpArray.Length))].Link;
+
+            Console.WriteLine("TEST WORK COMPLETTE " + finalimg);
         }
 
         public static string GetYouTubeImage(string videoUrl)
