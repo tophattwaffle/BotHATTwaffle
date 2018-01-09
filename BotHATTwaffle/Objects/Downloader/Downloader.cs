@@ -8,26 +8,24 @@ namespace BotHATTwaffle.Objects.Downloader
     public abstract class Downloader<TClient> : IDisposable
         where TClient : IDisposable
     {
-        protected TClient Client { get; set; }
-
-        protected string DemoName { get; }
-
-        protected string FtpPath { get; }
-
-        protected string LocalPath { get; }
-
-        protected string WorkshopId { get; }
+        protected TClient Client;
+        protected readonly DataServices DataSvc;
+        protected readonly string DemoName;
+        protected readonly string FtpPath;
+        protected readonly string LocalPath;
+        protected readonly string WorkshopId;
 
         protected Downloader(IReadOnlyList<string> testInfo,
                              JsonServer server,
-                             string demoPath)
+                             DataServices dataSvc)
         {
+            DataSvc = dataSvc;
             DateTime time = Convert.ToDateTime(testInfo[1]);
             string title = testInfo[2].Substring(0, testInfo[2].IndexOf(" "));
 
             DemoName = $"{time:MM_dd_yyyy}_{title}";
             FtpPath = server.FTPPath;
-            LocalPath = $"{demoPath}\\{time:yyyy}\\{time:MM} - " +
+            LocalPath = $"{DataSvc.DemoPath}\\{time:yyyy}\\{time:MM} - " +
                         $"{time:MMMM}\\{DemoName}";
             WorkshopId = Regex.Match(testInfo[6], @"\d+$").Value;
         }

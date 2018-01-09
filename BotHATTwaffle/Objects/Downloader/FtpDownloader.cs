@@ -10,14 +10,14 @@ namespace BotHATTwaffle.Objects.Downloader
 {
     public sealed class FtpDownloader : Downloader<FtpClient>
     {
-        private string Gamemode { get; }
+        private readonly string gamemode;
 
         public FtpDownloader(IReadOnlyList<string> testInfo,
                              JsonServer server,
-                             string demoPath) :
-            base(testInfo, server, demoPath)
+                             DataServices dataSvc) :
+            base(testInfo, server, dataSvc)
         {
-            Gamemode = testInfo[7];
+            gamemode = testInfo[7];
             Client =
                 new FtpClient(server.Address, server.FTPUser, server.FTPPass);
 
@@ -39,14 +39,15 @@ namespace BotHATTwaffle.Objects.Downloader
             }
             catch (Exception e)
             {
-                /*ChannelLog("Connection Failure",
-                           $"Failed to connect to the server.\n{e.Message}");*/
+                DataSvc.ChannelLog("Connection Failure",
+                                   "Failed to connect to the server.\n" +
+                                   $"{e.Message}");
                 return;
             }
 
             // Downloads the demo file.
             DownloadFile(GetFile(FtpPath, DemoName),
-                         $"{LocalPath}\\{DemoName}_{Gamemode}.dem");
+                         $"{LocalPath}\\{DemoName}_{gamemode}.dem");
 
             // Downloads the BSP file.
             string sourceBsp =
@@ -55,37 +56,36 @@ namespace BotHATTwaffle.Objects.Downloader
                          $"{LocalPath}\\{Path.GetFileName(sourceBsp)}");
 
             Client.Disconnect();
-            /*ChannelLog("Listing of Download Directory",
-                       $"{string.Join("\n", Directory.GetFiles(LocalPath))}");*/
+            DataSvc.ChannelLog("Listing of Download Directory",
+                               $"{string.Join("\n", Directory.GetFiles(LocalPath))}");
         }
 
         private void DownloadFile(string sourcePath, string destPath)
         {
             if (sourcePath == null)
             {
-                /*ChannelLog("File Not Found",
-                           "Failed to find the file on the server.");*/
+                DataSvc.ChannelLog("File Not Found",
+                                   "Failed to find the file on the server.");
                 return;
             }
 
-            /*ChannelLog("Downloading File From Playtest",
-                       $"{sourcePath}\n{destPath}");*/
+            DataSvc.ChannelLog("Downloading File From Playtest",
+                               $"{sourcePath}\n{destPath}");
 
             try {
                 if (!Client.DownloadFile(destPath, sourcePath)) {
-                    /*ChannelLog("Download Failed",
-                               "Failed to download the file.");*/
-                    return;
+                    DataSvc.ChannelLog("Download Failed",
+                                       "Failed to download the file.");
                 }
             } catch (Exception e)
             {
-                /*ChannelLog("Download Failed",
-                           $"Failed to download the file.\n{e.Message}");*/
-                return;
+                DataSvc.ChannelLog("Download Failed",
+                                   "Failed to download the file.\n" +
+                                   $"{e.Message}");
             }
 
-            /*ChannelLog("Download Completed",
-                       "Successfully downloaded the demo file.");*/
+            DataSvc.ChannelLog("Download Completed",
+                               "Successfully downloaded the demo file.");
         }
 
         private string GetFile(string path, string name)

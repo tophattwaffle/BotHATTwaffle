@@ -4,26 +4,26 @@ using System.ComponentModel;
 using BotHATTwaffle.Modules.Json;
 
 namespace BotHATTwaffle.Objects.Downloader {
-    public class DownloaderService {
-        private DataServices DataSvc { get; }
+    public class DownloaderService
+    {
+        private readonly DataServices dataSvc;
+        private readonly BackgroundWorker worker;
 
-        private BackgroundWorker Worker { get; }
-
-        public DownloaderService(DataServices ds)
+        public DownloaderService(DataServices dataSvc)
         {
-            DataSvc = ds;
-            Worker = new BackgroundWorker();
+            this.dataSvc = dataSvc;
+            worker = new BackgroundWorker();
 
             // DownloadFiles is used as the DoWork event.
-            Worker.DoWork += DownloadFiles;
+            worker.DoWork += DownloadFiles;
         }
 
         public void Start(IReadOnlyList<string> testInfo, JsonServer server)
         {
-            if (!Worker.IsBusy)
+            if (!worker.IsBusy)
             {
                 // RunWorkerAsync raises the DoWork event.
-                Worker.RunWorkerAsync((DataSvc, testInfo, server));
+                worker.RunWorkerAsync((testInfo, server));
             }
         }
 
@@ -38,7 +38,7 @@ namespace BotHATTwaffle.Objects.Downloader {
                 case "ftps":
                 case "ftp":
                     using (var dl = new FtpDownloader(testInfo, server,
-                                                      DataSvc.DemoPath))
+                                                      dataSvc))
                     {
                         dl.Download();
                     }
@@ -46,7 +46,7 @@ namespace BotHATTwaffle.Objects.Downloader {
                     break;
                 case "sftp":
                     using (var dl = new SftpDownloader(testInfo, server,
-                                                       DataSvc.DemoPath))
+                                                       dataSvc))
                     {
                         dl.Download();
                     }
