@@ -40,7 +40,7 @@ namespace BotHATTwaffle.Modules
             searchTerm = searchTerm.Replace(' ','+');
             string builtUrl = $"https://developer.valvesoftware.com/w/index.php?search={searchTerm}&title=Special%3ASearch&go=Go";
 
-            
+
 
             //Download webpage title and store to string
             WebClient x = new WebClient();
@@ -110,7 +110,7 @@ namespace BotHATTwaffle.Modules
             var wait = await ReplyAsync($":eyes: Searching for **{search}** in **{series}**. This may take a moment! :eyes:");
             await _dataServices.ChannelLog($"{Context.User} ran a search",$"Series: {series}\nSearch Term: {search}");
             bool isPrivate = false;
-            
+
             if (Context.IsPrivate)
                 isPrivate = true;
 
@@ -126,7 +126,7 @@ namespace BotHATTwaffle.Modules
                 foreach (var r in results)
                 {
                     text += $"[{r[0]}]({r[1]})\nTags: {r[2]}\n\n";
-                    
+
                     if(text.Length > 1800)
                     {
                         reply.Add(text);
@@ -289,9 +289,9 @@ namespace BotHATTwaffle.Modules
             else if (searchSeries.ToLower() == "all")
             {
                 authTitle = "All Tutorial Series Information";
-                
+
                 bodyUrl = "https://www.tophattwaffle.com/tutorials/";
-                
+
                 bodyDescription = $"Over the years I've built up quite the collection of tutorial series! " +
                     $"\n__Here they all are__" +
                     $"\n[Version 2 Series](https://goo.gl/XoVXzd)" +
@@ -344,37 +344,45 @@ namespace BotHATTwaffle.Modules
         [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "catfacts", "cat facts")]
         public async Task CatFactAsync()
         {
-            Random _rand = new Random();            
+            var catFact = "Did you know cats have big bushy tails?";
+            var name = "Cat Fact 0";
 
-            string catFact = "Did you know cats have big bushy tails?";
             if (File.Exists(_dataServices.catFactPath))
             {
-                var allLines = File.ReadAllLines(_dataServices.catFactPath);
-                var lineNumber = _rand.Next(0, allLines.Length);
+                var _rand = new Random();
+
+                string[] allLines = File.ReadAllLines(_dataServices.catFactPath);
+                int lineNumber = _rand.Next(0, allLines.Length);
                 catFact = allLines[lineNumber];
+
+                Match match = Regex.Match(catFact, @"^Cat Fact \d*", RegexOptions.IgnoreCase);
+                name = match.Value;
+                catFact = catFact.Substring(match.Length).Trim();
             }
 
-            var authBuilder = new EmbedAuthorBuilder()
+            var builder = new EmbedBuilder
             {
-                Name = $"CAT FACTS!",
-                IconUrl = Context.Message.Author.GetAvatarUrl(),
-            };
-
-            var footBuilder = new EmbedFooterBuilder()
-            {
-                Text = "This was cat facts, you cannot unsubscribe."
-            };
-
-            var builder = new EmbedBuilder()
-            {
-                Author = authBuilder,
-                Footer = footBuilder,
+                Author = new EmbedAuthorBuilder {
+                    Name = "CAT FACTS!",
+                    IconUrl = Context.Message.Author.GetAvatarUrl(),
+                },
+                Footer = new EmbedFooterBuilder {
+                    Text = "This was cat facts, you cannot unsubscribe."
+                },
 
                 ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/cat.png",
                 Color = new Color(230, 235, 240),
 
-                Description = catFact
+                Fields =
+                {
+                    new EmbedFieldBuilder
+                    {
+                        Name = name,
+                        Value = catFact
+                    }
+                }
             };
+
             await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A CAT FACT");
             await ReplyAsync("", false, builder.Build());
         }
