@@ -172,7 +172,7 @@ namespace BotHATTwaffle
 
             #region  Shitpost vars
             mainConfig.AddKeyIfMissing("catFactPath", $"X:\\Scripts\\catfacts.txt");
-            mainConfig.AddKeyIfMissing("catFactPath", $"X:\\Scripts\\penguinfacts.txt");
+            mainConfig.AddKeyIfMissing("penguinFactPath", $"X:\\Scripts\\penguinfacts.txt");
             #endregion
 
             #endregion
