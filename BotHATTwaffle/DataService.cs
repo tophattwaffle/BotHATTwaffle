@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -8,15 +8,9 @@ using HtmlAgilityPack;
 using System.Threading.Tasks;
 using CoreRCON;
 using System.Net;
-using FluentFTP;
-using System.Security.Authentication;
-using System.Text.RegularExpressions;
-using Renci.SshNet;
-using Renci.SshNet.Sftp;
 using Discord;
 using Discord.WebSocket;
 using System.Web;
-using BotHATTwaffle.Modules;
 
 namespace BotHATTwaffle
 {
@@ -30,7 +24,7 @@ namespace BotHATTwaffle
         List<JsonSeries> series;
         List<JsonServer> servers;
         Random _random;
-        private string demoPath;
+        public string DemoPath;
 
         //Channels and Role vars
         string logChannelStr;
@@ -153,7 +147,7 @@ namespace BotHATTwaffle
             mainConfig.AddKeyIfMissing("playTesterRole", "Playtester");
             mainConfig.AddKeyIfMissing("activeMemberRole", "Active Member");
             mainConfig.AddKeyIfMissing("testingChannel", "csgo_level_testing");
-            mainConfig.AddKeyIfMissing("demoPath", $"X:\\Playtesting Demos");
+            mainConfig.AddKeyIfMissing("DemoPath", $"X:\\Playtesting Demos");
             mainConfig.AddKeyIfMissing("casualConfig", $"thw");
             mainConfig.AddKeyIfMissing("compConfig", $"thw");
             mainConfig.AddKeyIfMissing("postConfig", $"postame");
@@ -190,8 +184,8 @@ namespace BotHATTwaffle
 
         private void VariableAssignment()
         {
-            if (config.ContainsKey("demoPath"))
-                demoPath = (config["demoPath"]);
+            if (config.ContainsKey("DemoPath"))
+                DemoPath = (config["DemoPath"]);
             if (config.ContainsKey("pakRatEavesDropCSV"))
                 pakRatEavesDrop = (config["pakRatEavesDropCSV"]).Split(',');
             if (config.ContainsKey("howToPackEavesDropCSV"))
@@ -727,138 +721,6 @@ namespace BotHATTwaffle
                 //Do nothing. The command that called this will handle the no results found message.
             }
             return listResults;
-        }
-
-        public void GetPlayTestFiles(string[] testInfo, JsonServer server)
-        {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-
-            if (server.FTPType.ToLower() == "ftps" || server.FTPType.ToLower() == "ftp")
-                DownloadFTPorFTPS(testInfo, server);
-            if (server.FTPType.ToLower() == "sftp")
-                DownloadSFTP(testInfo, server);
-
-            Console.ResetColor();
-        }
-
-        private void DownloadSFTP(string[] testInfo, JsonServer server)
-        {
-            DateTime time = Convert.ToDateTime(testInfo[1]);
-            var workshopID = Regex.Match(testInfo[6], @"\d+$").Value;
-            string demoName = $"{time.ToString("MM_dd_yyyy")}_{testInfo[2].Substring(0, testInfo[2].IndexOf(" "))}";
-            string localPath = $"{demoPath}\\{time.ToString("yyyy")}\\{time.ToString("MM")} - {time.ToString("MMMM")}\\{demoName}";
-
-            using (SftpClient sftp = new SftpClient(testInfo[10], server.FTPUser, server.FTPPass))
-            {
-                try
-                {
-                    sftp.Connect();
-                    var files = sftp.ListDirectory(server.FTPPath);
-                    SftpFile remoteDemoFile = null;
-                    foreach (var file in files)
-                    {
-                        if (file.Name.ToLower().Contains(demoName.ToLower()))
-                        {
-                            remoteDemoFile = file;
-                        }
-                    }
-                    files = sftp.ListDirectory($"{server.FTPPath}/maps/workshop/{workshopID}");
-                    SftpFile remoteBSPFile = null;
-                    foreach (var file in files)
-                    {
-                        if (file.Name.ToLower().Contains(".bsp"))
-                        {
-                            remoteBSPFile = file;
-                        }
-                    }
-                    string localPathDemFile = $"{localPath}\\{remoteDemoFile.Name}";
-                    string localPathBSPFile = $"{localPath}\\{remoteBSPFile.Name}";
-
-                    Directory.CreateDirectory(localPath);
-                    ChannelLog($"Getting Demo File From Playtest",$"{remoteDemoFile.FullName}\n{localPathDemFile}");
-                    using (Stream fileStreamDem = File.OpenWrite(localPathDemFile))
-                    {
-                        sftp.DownloadFile(remoteDemoFile.FullName, fileStreamDem);
-                    }
-
-                    ChannelLog($"Getting BSP File From Playtest", $"{remoteBSPFile.FullName}\n{localPathBSPFile}");
-                    using (Stream fileStreamBSP = File.OpenWrite(localPathBSPFile))
-                    {
-                        sftp.DownloadFile(remoteBSPFile.FullName, fileStreamBSP);
-                    }
-
-                    sftp.Disconnect();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("An exception has been caught " + e.ToString());
-                }
-            }
-
-            var listFiles = Directory.GetFiles(localPath);
-            ChannelLog($"Download complete!", $"{string.Join("\n", listFiles)}");
-        }
-
-        //Download files over FTPS
-        private void DownloadFTPorFTPS(string[] testInfo, JsonServer server)
-        {
-            using (FtpClient client = new FtpClient(server.Address, server.FTPUser, server.FTPPass))
-            {
-                if (server.FTPType == "ftps")
-                {
-                    client.EncryptionMode = FtpEncryptionMode.Explicit;
-                    client.SslProtocols = SslProtocols.Tls;
-                    client.ValidateCertificate += new FtpSslValidation(OnValidateCertificate);
-                }
-                client.Connect();
-
-                //Setup variables for getting the files.
-                string workshopID = Regex.Match(testInfo[6], @"\d+$").Value;
-                DateTime time = Convert.ToDateTime(testInfo[1]);
-                string demoName = $"{time.ToString("MM_dd_yyyy")}_{testInfo[2].Substring(0, testInfo[2].IndexOf(" "))}";
-                string localPath = $"{demoPath}\\{time.ToString("yyyy")}\\{time.ToString("MM")} - {time.ToString("MMMM")}\\{demoName}";
-                string localPathDemoFile = $"{localPath}\\{demoName}_{testInfo[7]}.dem";
-
-                //Make local directory for storing demo
-                Directory.CreateDirectory(localPath);
-
-                //Find the remote path to the demo file
-                string[] fileList = client.GetNameListing(server.FTPPath);
-                string demoFTPPath = null;
-                foreach (var s in fileList)
-                {
-                    if (s.Contains($"{demoName.ToLower()}") || s.Contains($"{demoName}"))
-                    {
-                        demoFTPPath = s;
-                    }
-                }
-
-                //Get the BSP paths
-                string serverFTPBSPPath = $"{server.FTPPath}/maps/workshop/{workshopID}";
-                fileList = client.GetNameListing(serverFTPBSPPath);
-                string bspFTPPath = null;
-                foreach (string s in fileList)
-                {
-                    if (s.Contains(".bsp"))
-                        bspFTPPath = s;
-                }
-                string localPathBSPFile = $"{localPath}\\{Path.GetFileName(bspFTPPath)}";
-
-                //Download Demo and BSP
-                ChannelLog($"Getting Demo File From Playtest", $"{demoFTPPath}\n{localPathDemoFile}");
-                client.DownloadFile(localPathDemoFile, demoFTPPath);
-
-                ChannelLog($"Getting BSP File From Playtest", $"{bspFTPPath}\n{localPathBSPFile}");
-                client.DownloadFile(localPathBSPFile, bspFTPPath);
-
-                var listFiles = Directory.GetFiles(localPath);
-                ChannelLog($"Download complete!",$"{string.Join("\n", listFiles)}");
-            }
-        }
-
-        private static void OnValidateCertificate(FtpClient control, FtpSslValidationEventArgs e)
-        {
-            e.Accept = true;
         }
     }
 }
