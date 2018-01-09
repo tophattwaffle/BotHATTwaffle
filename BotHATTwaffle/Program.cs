@@ -137,26 +137,25 @@ public class Program
         if (!result.IsSuccess)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Boolean alert = true;
+            Boolean alert = false;
 
             if (result.ErrorReason == "Unknown command.")
             {
-                alert = false; //Don't tag me when someone does an unknown command.
+                //Do nothing
             }
             else if (result.ErrorReason == "The input text has too many parameters.")
             {
                 //Too many params, cut off the excess for the help reply.
                 await context.Channel.SendMessageAsync($"You provided too many parameters! Please consult `>help {context.Message.Content.Substring(1, context.Message.Content.IndexOf(" ") - 1)}`");
-                alert = false;
             }
             else if (result.ErrorReason == "The input text has too few parameters.")
             {
                 //Too few, just reply back with help
                 await context.Channel.SendMessageAsync($"You provided too few parameters! Please consult `>help {context.Message.Content.Substring(1)}`");
-                alert = false;
             }
             else
             {
+                alert = true;
                 await context.Channel.SendMessageAsync("Something bad happened! I logged the error for TopHATTwaffle.");
             }
 
