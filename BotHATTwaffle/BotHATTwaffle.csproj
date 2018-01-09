@@ -209,6 +209,9 @@
     <Compile Include="Modules\Moderation.cs" />
     <Compile Include="Modules\TimerService.cs" />
     <Compile Include="Modules\UtilityService.cs" />
+    <Compile Include="Objects\Downloader\Downloader.cs" />
+    <Compile Include="Objects\Downloader\FtpDownloader.cs" />
+    <Compile Include="Objects\Downloader\SftpDownloader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Objects\UserData.cs" />
