@@ -713,9 +713,9 @@ namespace BotHATTwaffle.Modules
         }
 
         [Command("shutdown")]
-        [Summary("`>shutdown [type]` shuts down or restarts bot services")]
-        [Remarks("Requirements: Moderator Role. `s` for shutdown `r` for restart")]
-        public async Task ShutdownAsync(char type)
+        [Summary("`>shutdown` shuts down the bot")]
+        [Remarks("Requirements: Moderator Role.")]
+        public async Task ShutdownAsync()
         {
             if (Context.IsPrivate)
             {
@@ -725,22 +725,9 @@ namespace BotHATTwaffle.Modules
 
             if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
             {
-                await Context.Message.DeleteAsync();
-                if(type == 's')
-                {
-                    await _dataServices.ChannelLog($"Shutting down! Invoked by {Context.Message.Author}");
-                    await Task.Delay(1000);
-                    Environment.Exit(0);
-                }
-                if(type == 'r')
-                {
-                    await _dataServices.ChannelLog($"Restarting! Invoked by {Context.Message.Author}");
-                    await Task.Delay(1000);
-                    Process secondProc = new Process();
-                    secondProc.StartInfo.FileName = "BotHATTwaffle.exe";
-                    secondProc.Start();
-                    Environment.Exit(0);
-                }
+                await _dataServices.ChannelLog($"Shutting down! Invoked by {Context.Message.Author}");
+                await Task.Delay(1000);
+                Environment.Exit(0);
             }
             else
             {
