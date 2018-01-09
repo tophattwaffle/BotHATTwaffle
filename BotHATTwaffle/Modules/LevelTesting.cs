@@ -34,6 +34,7 @@ namespace BotHATTwaffle.Modules
         private Random _random;
         private IAlbum featureAlbum;
         private Boolean canRandomImage = false;
+        private string preEmbedImg;
 
         public LevelTesting(DataServices dataServices, Random random)
         {
@@ -409,7 +410,20 @@ namespace BotHATTwaffle.Modules
                 try
                 {
                     if (canRandomImage)
-                        embedImage = featureAlbum.Images.ToArray()[(_random.Next(0, featureAlbum.ImagesCount))].Link;
+                    {
+                        Boolean unique = false;
+                        while (!unique)
+                        {
+                            embedImage = featureAlbum.Images.ToArray()[(_random.Next(0, featureAlbum.ImagesCount))].Link;
+
+                            if (embedImage != preEmbedImg)
+                            {
+                                preEmbedImg = embedImage;
+                                unique = true;
+                            }
+                        }
+                    }
+                        
                 }
                 catch{}
 

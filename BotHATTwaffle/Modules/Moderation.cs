@@ -62,19 +62,19 @@ namespace BotHATTwaffle.Modules
         private readonly LevelTesting _levelTesting;
         private readonly DataServices _dataServices;
         private readonly TimerService _timer;
-        private readonly DownloaderService downloaderSvc;
+        private readonly DownloaderService _downloaderService;
 
         public ModerationModule(ModerationServices mod,
                                 LevelTesting levelTesting,
                                 DataServices dataServices,
                                 TimerService timer,
-                                DownloaderService dlSvc)
+                                DownloaderService dlService)
         {
             _timer = timer;
             _dataServices = dataServices;
             _levelTesting = levelTesting;
             _mod = mod;
-            downloaderSvc = dlSvc;
+            _downloaderService = dlService;
         }
 
         [Command("announce", RunMode = RunMode.Async)]
@@ -687,7 +687,7 @@ namespace BotHATTwaffle.Modules
             await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
             // Starts downloading playtesting files in the background.
-            downloaderSvc.Start(_mod.TestInfo, server);
+            _downloaderService.Start(_mod.TestInfo, server);
 
             var splitUser = _mod.TestInfo[3].Split('#');
 
