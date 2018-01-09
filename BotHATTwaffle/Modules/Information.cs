@@ -355,7 +355,7 @@ namespace BotHATTwaffle.Modules
                 int lineNumber = _rand.Next(0, allLines.Length);
                 catFact = allLines[lineNumber];
 
-                Match match = Regex.Match(catFact, @"^Cat Fact \d*");
+                Match match = Regex.Match(catFact, @"^Cat Fact \d*", RegexOptions.IgnoreCase);
                 name = match.Value;
                 catFact = catFact.Substring(match.Length).Trim();
             }
