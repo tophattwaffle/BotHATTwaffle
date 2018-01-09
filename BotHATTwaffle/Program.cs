@@ -95,9 +95,8 @@ public class Program
         // Determine if the message is a command, based on if it starts with '>' or a mention prefix
         if (!(message.HasCharPrefix(prefixChar, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)))
         {
-#pragma warning disable CS4014 //The message isn't a command. Lets eavesdrop on it to see if we should do something else. We should not wait for this. Low priority.
-            _eavesdrop.Listen(messageParam);
-#pragma warning restore CS4014
+            //The message isn't a command. Lets eavesdrop on it to see if we should do something else. We should not wait for this. Low priority.
+            Task fireAndForget = _eavesdrop.Listen(messageParam);
             return;
         }
         // Create a Command Context
