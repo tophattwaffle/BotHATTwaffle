@@ -79,8 +79,12 @@ namespace BotHATTwaffle.Modules
 
         [Command("announce", RunMode = RunMode.Async)]
         [Summary("`>announce` Interactively create an embed message to be sent to any channel")]
+        [Remarks("You can also just dump and entire embed in one command using the following template:" +
+                 "\n{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}(t|f)" +
+                 "\n`{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}`" +
+                 "\nFields can be omitted if you do not want them. You can add multiple fields at a time if you want.")]
         [Alias("a")]
-        public async Task Test_NextMessageAsync()
+        public async Task Test_NextMessageAsync([Remainder] string inValue = null)
         {
             if (Context.IsPrivate)
             {
@@ -107,6 +111,198 @@ namespace BotHATTwaffle.Modules
                 string embedImageURL = null;
 
                 List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
+
+                if (inValue != null)
+                {
+                    Regex regex = new Regex("{([^}]*)}", RegexOptions.IgnoreCase);
+                    if (isValidTag(inValue, regex))
+                    {
+                        string errors = null;
+                        while (inValue.Length > 0)
+                        {
+                            if (inValue.ToLower().StartsWith("{author name}"))
+                            {
+                                inValue = inValue.Substring(13);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                authName = inValue.Substring(0, textLength);
+                                inValue = inValue.Substring(textLength);
+                            }
+
+                            if (inValue.ToLower().StartsWith("{thumbnail}"))
+                            {
+                                inValue = inValue.Substring(11);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                embedThumbUrl = inValue.Substring(0, textLength);
+                                if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
+                                {
+                                    embedThumbUrl = null;
+                                    errors += "THUMBNAIL URL NOT A PROPER URL. SET TO NULL\n";
+                                }
+
+                                inValue = inValue.Substring(textLength);
+                            }
+
+                            if (inValue.ToLower().StartsWith("{title}"))
+                            {
+                                inValue = inValue.Substring(7);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                embedTitle = inValue.Substring(0, textLength);
+                                inValue = inValue.Substring(textLength);
+                            }
+
+                            if (inValue.ToLower().StartsWith("{url}"))
+                            {
+                                inValue = inValue.Substring(5);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                embedURL = inValue.Substring(0, textLength);
+                                if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
+                                {
+                                    embedURL = null;
+                                    errors += "TITLE URL NOT A PROPER URL. SET TO NULL\n";
+                                }
+;
+                                inValue = inValue.Substring(textLength);
+                            }
+
+                            if (inValue.ToLower().StartsWith("{color}"))
+                            {
+                                inValue = inValue.Substring(7);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                string[] splitString = {null, null, null};
+                                splitString = inValue.Substring(0, textLength).Split(' ');
+                                try
+                                {
+                                    var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
+                                    embedColor = new Color(splitInts[0], splitInts[1], splitInts[2]);
+                                }
+                                catch
+                                {
+                                    errors += "INVALID RGB STRUCTURE. DEFUALT COLOR USED\n";
+                                }
+
+                                inValue = inValue.Substring(textLength);
+                            }
+
+                            if (inValue.ToLower().StartsWith("{description}"))
+                            {
+                                inValue = inValue.Substring(13);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                embedDescription = inValue.Substring(0, textLength);
+                                inValue = inValue.Substring(textLength);
+                            }
+
+                            if (inValue.ToLower().StartsWith("{image}"))
+                            {
+                                inValue = inValue.Substring(7);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                embedImageURL = inValue.Substring(0, textLength);
+                                if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
+                                {
+                                    embedImageURL = null;
+                                    errors += "IMAGE URL NOT A PROPER URL. SET TO NULL\n";
+                                }
+                                inValue = inValue.Substring(textLength);
+                            }
+
+                            if (inValue.ToLower().StartsWith("{footer text}"))
+                            {
+                                inValue = inValue.Substring(13);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                footText = inValue.Substring(0, textLength);
+                                inValue = inValue.Substring(textLength);
+                            }
+
+                            if (inValue.ToLower().StartsWith("{field}"))
+                            {
+                                inValue = inValue.Substring(7);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                string fieldTi = inValue.Substring(0, textLength);
+
+                                inValue = inValue.Substring(textLength + 2);
+
+                                //Match field text
+                                m = regex.Match(inValue);
+                                textLength = inValue.IndexOf(m.ToString());
+                                string fieldCo = inValue.Substring(0, textLength);
+
+                                inValue = inValue.Substring(textLength + 2);
+
+                                //Match field inline
+                                m = regex.Match(inValue);
+
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                string tfStr = inValue.Substring(0, textLength);
+
+                                bool fieldIn = tfStr.ToLower().StartsWith("t");
+
+                                inValue = inValue.Substring(textLength);
+
+                                fieldBuilder.Add(new EmbedFieldBuilder { Name = fieldTi, Value = fieldCo, IsInline = fieldIn });
+                            }
+                        }
+                        if (errors != null)
+                            await ReplyAndDeleteAsync($"```The following errors occurred:\n{errors}```", timeout: TimeSpan.FromSeconds(15));
+                    }
+                }
+
                 var authBuilder = new EmbedAuthorBuilder()
                 {
                     Name = authName,
@@ -133,7 +329,7 @@ namespace BotHATTwaffle.Modules
                 };
                 Boolean submit = false;
                 string instructionsStr = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
-                    "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Field` `Footer Text`" +
+                    "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
                     "\n`submit` to send it." +
                     "\n`cancel` to abort.";
                 var pic = await ReplyAsync("", false, embedLayout);
@@ -221,20 +417,18 @@ namespace BotHATTwaffle.Modules
                                     x.Content = "Enter Color in form of `R G B` Example: `250 120 50` :";
                                 });
                                 response = await NextMessageAsync();
-                                if (response != null)
+                                string[] splitString = { null, null, null };
+                                splitString = response.Content.Split(' ');
+                                try
                                 {
-                                    string[] splitString = { null, null, null };
-                                    splitString = response.Content.Split(' ');
-                                    try
-                                    {
-                                        var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
-                                        embedColor = new Color(splitInts[0], splitInts[1], splitInts[2]);
-                                    }
-                                    catch
-                                    {
-                                        await ReplyAndDeleteAsync("```INVALID R G B STRUCTURE!```", timeout: TimeSpan.FromSeconds(3));
-                                    }
+                                    var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
+                                    embedColor = new Color(splitInts[0], splitInts[1], splitInts[2]);
                                 }
+                                catch
+                                {
+                                    await ReplyAndDeleteAsync("```INVALID R G B STRUCTURE!```", timeout: TimeSpan.FromSeconds(3));
+                                }
+                                
                                 break;
 
                             case "description":
@@ -300,7 +494,7 @@ namespace BotHATTwaffle.Modules
                                         response = await NextMessageAsync();
                                         if (response != null)
                                         {
-                                            if (response.Content.ToLower() == "t" || response.Content.ToLower() == "true")
+                                            if (response.Content.ToLower().StartsWith("t"))
                                                 fInline = true;
 
                                             fieldBuilder.Add(new EmbedFieldBuilder { Name = fTitle, Value = fContent, IsInline = fInline });
@@ -442,6 +636,19 @@ namespace BotHATTwaffle.Modules
                 await _dataServices.ChannelLog($"{Context.User} is trying to announce from the bot.");
                 await ReplyAsync("```You cannot use this command with your current permission level!```");
             }
+        }
+
+        private bool isValidTag(string inString, Regex regex)
+        {
+            string[] validTags = { "{author name}", "{thumbnail}", "{title}", "{url}", "{color}", "{description}", "{image}", "{footer text}", "{field}", "{}" };
+            MatchCollection matches = regex.Matches(inString);
+            matches.Cast<Match>().Select(m => m.Value).Distinct().ToList();
+            foreach (var m in matches)
+            {
+                if (!validTags.Contains(m.ToString().ToLower()))
+                    return false;
+            }
+            return true;
         }
 
         [Command("rcon")]
@@ -725,6 +932,7 @@ namespace BotHATTwaffle.Modules
 
             if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
             {
+                await Context.Message.DeleteAsync();
                 await _dataServices.ChannelLog($"Shutting down! Invoked by {Context.Message.Author}");
                 await Task.Delay(1000);
                 Environment.Exit(0);
