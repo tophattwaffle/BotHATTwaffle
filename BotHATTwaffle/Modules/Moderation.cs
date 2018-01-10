@@ -80,8 +80,8 @@ namespace BotHATTwaffle.Modules
         [Command("announce", RunMode = RunMode.Async)]
         [Summary("`>announce` Interactively create an embed message to be sent to any channel")]
         [Remarks("You can also just dump and entire embed in one command using the following template:" +
-                 "\n{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}(t|f){submit}general" +
-                 "\n`{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}`" +
+                 "\n```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}(t|f){submit}general```" +
+                 "\n```{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}```" +
                  "\nFields can be omitted if you do not want them. You can add multiple fields at a time if you want.")]
         [Alias("a")]
         public async Task Test_NextMessageAsync([Remainder] string inValue = null)
