@@ -181,7 +181,7 @@ namespace BotHATTwaffle.Modules
                                     textLength = inValue.Length;
 
                                 embedURL = inValue.Substring(0, textLength);
-                                if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
+                                if (!Uri.IsWellFormedUriString(embedURL, UriKind.Absolute))
                                 {
                                     embedURL = null;
                                     errors += "TITLE URL NOT A PROPER URL. SET TO NULL\n";
@@ -240,7 +240,7 @@ namespace BotHATTwaffle.Modules
                                     textLength = inValue.Length;
 
                                 embedImageURL = inValue.Substring(0, textLength);
-                                if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
+                                if (!Uri.IsWellFormedUriString(embedImageURL, UriKind.Absolute))
                                 {
                                     embedImageURL = null;
                                     errors += "IMAGE URL NOT A PROPER URL. SET TO NULL\n";
