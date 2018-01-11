@@ -2,8 +2,8 @@
 
 namespace BotHATTwaffle.Modules.Json
 {
-    class JsonSeries
-    {
-        public List<JsonTutorial> tutorial { get; set; }
-    }
+	class JsonSeries
+	{
+		public List<JsonTutorial> tutorial { get; set; }
+	}
 }
