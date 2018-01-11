@@ -726,5 +726,30 @@ namespace BotHATTwaffle
             }
             return listResults;
         }
+        
+        public string GetRandomIMGFromUrl(string inUrl)
+        {
+            Random _random = new Random();
+            HtmlWeb htmlWeb = new HtmlWeb();
+            HtmlDocument htmlDocument = htmlWeb.Load(inUrl);
+            string title = null;
+
+            title = (from x in htmlDocument.DocumentNode.Descendants()
+                where x.Name.ToLower() == "title"
+                select x.InnerText).FirstOrDefault();
+
+            List<string> validIMG = new List<string>();
+
+            foreach (HtmlNode link in htmlDocument.DocumentNode.SelectNodes("//a[@href]"))
+            {
+                string url = link.GetAttributeValue("href", string.Empty).Replace(@"\", "").Replace("\"", "");
+                if (Path.HasExtension(url))
+                {
+                    validIMG.Add(url);
+                }
+            }
+
+            return inUrl + validIMG[(_random.Next(0, validIMG.Count))];
+        }
     }
 }

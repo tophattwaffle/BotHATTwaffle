@@ -373,7 +373,7 @@ namespace BotHATTwaffle.Modules
                     Text = "This was cat facts, you cannot unsubscribe."
                 },
 
-                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/cat.png",
+                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/catfacts/"),
                 Color = new Color(230, 235, 240),
 
                 Fields =
@@ -429,7 +429,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/penguin.png",
+                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/penguinfacts/"),
                 Color = new Color(230, 235, 240),
 
                 Description = penguinFact
@@ -469,7 +469,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/tanookisuit.png",
+                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
                 Color = new Color(230, 235, 240),
 
                 Description = tanookiFact
