@@ -344,7 +344,7 @@ namespace BotHATTwaffle.Modules
         [Command("catFact")]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]
-        [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "catfact", "cat fact", "catfacts", "cat facts")]
+        [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "cat fact", "catfacts", "cat facts")]
         public async Task CatFactAsync()
         {
             var catFact = "Did you know cats have big bushy tails?";
@@ -373,7 +373,7 @@ namespace BotHATTwaffle.Modules
                     Text = "This was cat facts, you cannot unsubscribe."
                 },
 
-                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/cat.png",
+                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/catfacts/"),
                 Color = new Color(230, 235, 240),
 
                 Fields =
@@ -401,7 +401,7 @@ namespace BotHATTwaffle.Modules
         [Command("PenguinFact")]
         [Summary("`>PenguinFact` Gives you a Penguin fact!")]
         [Remarks("Ever want to know more about Penguin? Now you can.")]
-        [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguinfact", "penguin fact", "penguinfacts", "penguin facts")]
+        [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact", "penguin fact", "penguinfacts", "penguin facts")]
         public async Task PenguinFactAsync()
         {
             Random _rand = new Random();
@@ -429,7 +429,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/penguin.png",
+                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/penguinfacts/"),
                 Color = new Color(230, 235, 240),
 
                 Description = penguinFact
@@ -441,7 +441,7 @@ namespace BotHATTwaffle.Modules
 		[Command("TanookiFact")]
         [Summary("`>tanookiFact` Gives you a Tanooki fact!")]
         [Remarks("Ever want to know more about Tanooki? Now you can.")]
-        [Alias("gimme a tanooki fact", "hit me with a tanooki fact", "hit a nigga with a tanooki fact", "tanookifact", "tanooki fact", "tanookifacts", "tanooki facts")]
+        [Alias("gimme a tanooki fact", "hit me with a tanooki fact", "hit a nigga with a tanooki fact", "tanooki fact", "tanookifacts", "tanooki facts", "@TanookiSuit3")]
         public async Task TanookiFactAsync()
         {
             Random _rand = new Random();
@@ -469,7 +469,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/penguin.png", //should be a Tanooki image
+                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
                 Color = new Color(230, 235, 240),
 
                 Description = tanookiFact

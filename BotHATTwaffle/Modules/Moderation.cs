@@ -80,8 +80,8 @@ namespace BotHATTwaffle.Modules
         [Command("announce", RunMode = RunMode.Async)]
         [Summary("`>announce` Interactively create an embed message to be sent to any channel")]
         [Remarks("You can also just dump and entire embed in one command using the following template:" +
-                 "\n{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}(t|f)" +
-                 "\n`{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}`" +
+                 "\n```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}(t|f){submit}general```" +
+                 "\n```{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}```" +
                  "\nFields can be omitted if you do not want them. You can add multiple fields at a time if you want.")]
         [Alias("a")]
         public async Task Test_NextMessageAsync([Remainder] string inValue = null)
@@ -99,6 +99,8 @@ namespace BotHATTwaffle.Modules
                 {
                     ImageUrl = "https://content.tophattwaffle.com/BotHATTwaffle/embed.png",
                 };
+
+                string quickSendChannel = null;
 
                 string embedDescription = null;
                 Color embedColor = new Color(243, 128, 72);
@@ -179,7 +181,7 @@ namespace BotHATTwaffle.Modules
                                     textLength = inValue.Length;
 
                                 embedURL = inValue.Substring(0, textLength);
-                                if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
+                                if (!Uri.IsWellFormedUriString(embedURL, UriKind.Absolute))
                                 {
                                     embedURL = null;
                                     errors += "TITLE URL NOT A PROPER URL. SET TO NULL\n";
@@ -238,7 +240,7 @@ namespace BotHATTwaffle.Modules
                                     textLength = inValue.Length;
 
                                 embedImageURL = inValue.Substring(0, textLength);
-                                if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
+                                if (!Uri.IsWellFormedUriString(embedImageURL, UriKind.Absolute))
                                 {
                                     embedImageURL = null;
                                     errors += "IMAGE URL NOT A PROPER URL. SET TO NULL\n";
@@ -297,6 +299,20 @@ namespace BotHATTwaffle.Modules
 
                                 fieldBuilder.Add(new EmbedFieldBuilder { Name = fieldTi, Value = fieldCo, IsInline = fieldIn });
                             }
+
+                            if (inValue.ToLower().StartsWith("{submit}"))
+                            {
+                                inValue = inValue.Substring(8);
+                                Match m = regex.Match(inValue);
+                                int textLength;
+                                if (m.ToString() != "")
+                                    textLength = inValue.IndexOf(m.ToString());
+                                else
+                                    textLength = inValue.Length;
+
+                                quickSendChannel = inValue.Substring(0, textLength);
+                                inValue = inValue.Substring(textLength);
+                            }
                         }
                         if (errors != null)
                             await ReplyAndDeleteAsync($"```The following errors occurred:\n{errors}```", timeout: TimeSpan.FromSeconds(15));
@@ -328,266 +344,255 @@ namespace BotHATTwaffle.Modules
 
                 };
                 Boolean submit = false;
-                string instructionsStr = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
-                    "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
-                    "\n`submit` to send it." +
-                    "\n`cancel` to abort.";
-                var pic = await ReplyAsync("", false, embedLayout);
-                var preview = await ReplyAsync("__**PREVIEW**__",false,builder);
-                var instructions = await ReplyAsync(instructionsStr);
-                Boolean run = true;
-                while (run)
+                if (quickSendChannel == null)
                 {
-                    var response = await NextMessageAsync();
-                    if (response != null)
+                    string instructionsStr = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
+                                             "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
+                                             "\n`submit` to send it." + "\n`cancel` to abort.";
+                    var pic = await ReplyAsync("", false, embedLayout);
+                    var preview = await ReplyAsync("__**PREVIEW**__", false, builder);
+                    var instructions = await ReplyAsync(instructionsStr);
+                    Boolean run = true;
+                    while (run)
                     {
-                        try
-                        {
-                            await response.DeleteAsync();
-                        }
-                        catch { }
-                        Boolean valid = true;
-                        switch (response.Content.ToLower())
-                        {
-                            case "author name":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Author Name text:";
-                                });
-                                response = await NextMessageAsync();
-                                if (response != null)
-                                {
-                                    authName = response.Content;
-                                }
-                                break;
-
-                            case "thumbnail":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Thumbnail URL:";
-                                });
-                                response = await NextMessageAsync();
-                                if (response != null)
-                                {
-                                    if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
-                                    {
-                                        embedThumbUrl = response.Content;
-                                    }
-                                    else
-                                    {
-                                        await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
-                                    }
-                                }
-                                break;
-
-                            case "title":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Title text:";
-                                });
-                                response = await NextMessageAsync();
-                                if (response != null)
-                                {
-                                    embedTitle = response.Content;
-                                }
-                                break;
-
-                            case "url":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Title URL:";
-                                });
-                                response = await NextMessageAsync();
-                                if (response != null)
-                                {
-                                    if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
-                                    {
-                                        embedURL = response.Content;
-                                    }
-                                    else
-                                    {
-                                        await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
-                                    }
-                                }
-                                break;
-
-                            case "color":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Color in form of `R G B` Example: `250 120 50` :";
-                                });
-                                response = await NextMessageAsync();
-                                string[] splitString = { null, null, null };
-                                splitString = response.Content.Split(' ');
-                                try
-                                {
-                                    var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
-                                    embedColor = new Color(splitInts[0], splitInts[1], splitInts[2]);
-                                }
-                                catch
-                                {
-                                    await ReplyAndDeleteAsync("```INVALID R G B STRUCTURE!```", timeout: TimeSpan.FromSeconds(3));
-                                }
-                                
-                                break;
-
-                            case "description":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Description text:";
-                                });
-                                response = await NextMessageAsync();
-                                if (response != null)
-                                {
-                                    embedDescription = response.Content;
-                                }
-                                break;
-
-                            case "image":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Image URL:";
-                                });
-                                response = await NextMessageAsync();
-                                if (response != null)
-                                {
-                                    if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
-                                    {
-                                        embedImageURL = response.Content;
-                                    }
-                                    else
-                                    {
-                                        await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
-                                    }
-                                }
-                                break;
-
-                            case "field":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Field Name text:";
-                                });
-
-                                response = await NextMessageAsync();
-                                if (response != null)
-                                {
-                                    string fTitle = response.Content;
-                                    await response.DeleteAsync();
-
-                                    await instructions.ModifyAsync(x =>
-                                    {
-                                        x.Content = "Enter Field Content text:";
-                                    });
-
-                                    response = await NextMessageAsync();
-                                    if (response != null)
-                                    {
-                                        string fContent = response.Content;
-                                        await response.DeleteAsync();
-
-                                        await instructions.ModifyAsync(x =>
-                                        {
-                                            x.Content = "Inline? [T]rue or [F]alse?";
-                                        });
-                                        Boolean fInline = false;
-
-                                        response = await NextMessageAsync();
-                                        if (response != null)
-                                        {
-                                            if (response.Content.ToLower().StartsWith("t"))
-                                                fInline = true;
-
-                                            fieldBuilder.Add(new EmbedFieldBuilder { Name = fTitle, Value = fContent, IsInline = fInline });
-                                        }
-                                    }
-                                }
-                                break;
-
-                            case "footer text":
-                                await instructions.ModifyAsync(x =>
-                                {
-                                    x.Content = "Enter Footer text:";
-                                });
-                                response = await NextMessageAsync();
-                                if (response != null)
-                                {
-                                    footText = response.Content;
-                                }
-                                break;
-
-                            case "submit":
-                                submit = true;
-                                await preview.DeleteAsync();
-                                await instructions.DeleteAsync();
-                                await pic.DeleteAsync();
-                                run = false;
-                                valid = false;
-                                break;
-
-                            case "cancel":
-                                await preview.DeleteAsync();
-                                await instructions.DeleteAsync();
-                                await pic.DeleteAsync();
-                                run = false;
-                                valid = false;
-                                break;
-                            default:
-                                await ReplyAndDeleteAsync("```UNKNOWN OPTION. PLEASE ENTER ONLY THE OPTIONS LISTED ABOVE.\nFor example \"title\"```", timeout: TimeSpan.FromSeconds(5));
-                                valid = false;
-                                break;
-                        }
-                        if (valid) //Unknown command was sent. Don't delete.
+                        var response = await NextMessageAsync();
+                        if (response != null)
                         {
                             try
                             {
                                 await response.DeleteAsync();
                             }
-                            catch { }
-                        }
-
-                        authBuilder = new EmbedAuthorBuilder()
-                        {
-                            Name = authName,
-                            IconUrl = Context.Message.Author.GetAvatarUrl()
-                        };
-                        footBuilder = new EmbedFooterBuilder()
-                        {
-                            Text = footText,
-                            IconUrl = Context.Message.Author.GetAvatarUrl()
-                        };
-                        builder = new EmbedBuilder()
-                        {
-                            Fields = fieldBuilder,
-                            Footer = footBuilder,
-                            Author = authBuilder,
-
-                            ImageUrl = embedImageURL,
-                            Url = embedURL,
-                            Title = embedTitle,
-                            ThumbnailUrl = embedThumbUrl,
-                            Color = embedColor,
-                            Description = embedDescription
-
-                        };
-                        if (valid)
-                        {
-                            await preview.ModifyAsync(x =>
+                            catch
                             {
-                                x.Content = "__**PREVIEW**__";
-                                x.Embed = builder.Build();
-                            });
-                            await instructions.ModifyAsync(x =>
+                            }
+
+                            Boolean valid = true;
+                            switch (response.Content.ToLower())
                             {
-                                x.Content = instructionsStr;
-                            });
+                                case "author name":
+                                    await instructions.ModifyAsync(x => { x.Content = "Enter Author Name text:"; });
+                                    response = await NextMessageAsync();
+                                    if (response != null)
+                                    {
+                                        authName = response.Content;
+                                    }
+
+                                    break;
+
+                                case "thumbnail":
+                                    await instructions.ModifyAsync(x => { x.Content = "Enter Thumbnail URL:"; });
+                                    response = await NextMessageAsync();
+                                    if (response != null)
+                                    {
+                                        if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
+                                        {
+                                            embedThumbUrl = response.Content;
+                                        }
+                                        else
+                                        {
+                                            await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
+                                        }
+                                    }
+
+                                    break;
+
+                                case "title":
+                                    await instructions.ModifyAsync(x => { x.Content = "Enter Title text:"; });
+                                    response = await NextMessageAsync();
+                                    if (response != null)
+                                    {
+                                        embedTitle = response.Content;
+                                    }
+
+                                    break;
+
+                                case "url":
+                                    await instructions.ModifyAsync(x => { x.Content = "Enter Title URL:"; });
+                                    response = await NextMessageAsync();
+                                    if (response != null)
+                                    {
+                                        if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
+                                        {
+                                            embedURL = response.Content;
+                                        }
+                                        else
+                                        {
+                                            await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
+                                        }
+                                    }
+
+                                    break;
+
+                                case "color":
+                                    await instructions.ModifyAsync(x =>
+                                    {
+                                        x.Content = "Enter Color in form of `R G B` Example: `250 120 50` :";
+                                    });
+                                    response = await NextMessageAsync();
+                                    string[] splitString = {null, null, null};
+                                    splitString = response.Content.Split(' ');
+                                    try
+                                    {
+                                        var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
+                                        embedColor = new Color(splitInts[0], splitInts[1], splitInts[2]);
+                                    }
+                                    catch
+                                    {
+                                        await ReplyAndDeleteAsync("```INVALID R G B STRUCTURE!```",
+                                            timeout: TimeSpan.FromSeconds(3));
+                                    }
+
+                                    break;
+
+                                case "description":
+                                    await instructions.ModifyAsync(x => { x.Content = "Enter Description text:"; });
+                                    response = await NextMessageAsync();
+                                    if (response != null)
+                                    {
+                                        embedDescription = response.Content;
+                                    }
+
+                                    break;
+
+                                case "image":
+                                    await instructions.ModifyAsync(x => { x.Content = "Enter Image URL:"; });
+                                    response = await NextMessageAsync();
+                                    if (response != null)
+                                    {
+                                        if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
+                                        {
+                                            embedImageURL = response.Content;
+                                        }
+                                        else
+                                        {
+                                            await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
+                                        }
+                                    }
+
+                                    break;
+
+                                case "field":
+                                    await instructions.ModifyAsync(x => { x.Content = "Enter Field Name text:"; });
+
+                                    response = await NextMessageAsync();
+                                    if (response != null)
+                                    {
+                                        string fTitle = response.Content;
+                                        await response.DeleteAsync();
+
+                                        await instructions.ModifyAsync(x => { x.Content = "Enter Field Content text:"; });
+
+                                        response = await NextMessageAsync();
+                                        if (response != null)
+                                        {
+                                            string fContent = response.Content;
+                                            await response.DeleteAsync();
+
+                                            await instructions.ModifyAsync(x => { x.Content = "Inline? [T]rue or [F]alse?"; });
+                                            Boolean fInline = false;
+
+                                            response = await NextMessageAsync();
+                                            if (response != null)
+                                            {
+                                                if (response.Content.ToLower().StartsWith("t"))
+                                                    fInline = true;
+
+                                                fieldBuilder.Add(new EmbedFieldBuilder
+                                                {
+                                                    Name = fTitle,
+                                                    Value = fContent,
+                                                    IsInline = fInline
+                                                });
+                                            }
+                                        }
+                                    }
+
+                                    break;
+
+                                case "footer text":
+                                    await instructions.ModifyAsync(x => { x.Content = "Enter Footer text:"; });
+                                    response = await NextMessageAsync();
+                                    if (response != null)
+                                    {
+                                        footText = response.Content;
+                                    }
+
+                                    break;
+
+                                case "submit":
+                                    submit = true;
+                                    await preview.DeleteAsync();
+                                    await instructions.DeleteAsync();
+                                    await pic.DeleteAsync();
+                                    run = false;
+                                    valid = false;
+                                    break;
+
+                                case "cancel":
+                                    await preview.DeleteAsync();
+                                    await instructions.DeleteAsync();
+                                    await pic.DeleteAsync();
+                                    run = false;
+                                    valid = false;
+                                    break;
+                                default:
+                                    await ReplyAndDeleteAsync(
+                                        "```UNKNOWN OPTION. PLEASE ENTER ONLY THE OPTIONS LISTED ABOVE.\nFor example \"title\"```",
+                                        timeout: TimeSpan.FromSeconds(5));
+                                    valid = false;
+                                    break;
+                            }
+
+                            if (valid) //Unknown command was sent. Don't delete.
+                            {
+                                try
+                                {
+                                    await response.DeleteAsync();
+                                }
+                                catch
+                                {
+                                }
+                            }
+
+                            authBuilder = new EmbedAuthorBuilder()
+                            {
+                                Name = authName,
+                                IconUrl = Context.Message.Author.GetAvatarUrl()
+                            };
+                            footBuilder = new EmbedFooterBuilder()
+                            {
+                                Text = footText,
+                                IconUrl = Context.Message.Author.GetAvatarUrl()
+                            };
+                            builder = new EmbedBuilder()
+                            {
+                                Fields = fieldBuilder,
+                                Footer = footBuilder,
+                                Author = authBuilder,
+                                ImageUrl = embedImageURL,
+                                Url = embedURL,
+                                Title = embedTitle,
+                                ThumbnailUrl = embedThumbUrl,
+                                Color = embedColor,
+                                Description = embedDescription
+                            };
+                            if (valid)
+                            {
+                                await preview.ModifyAsync(x =>
+                                {
+                                    x.Content = "__**PREVIEW**__";
+                                    x.Embed = builder.Build();
+                                });
+                                await instructions.ModifyAsync(x => { x.Content = instructionsStr; });
+                            }
                         }
-                    }
-                    else
-                    {
-                        await ReplyAsync("```Announce Builder Timed out after 120 seconds!!```");
-                        await instructions.DeleteAsync();
-                        await pic.DeleteAsync();
-                        await preview.DeleteAsync();
+                        else
+                        {
+                            await ReplyAsync("```Announce Builder Timed out after 120 seconds!!```");
+                            await instructions.DeleteAsync();
+                            await pic.DeleteAsync();
+                            await preview.DeleteAsync();
+                        }
                     }
                 }
 
@@ -630,6 +635,26 @@ namespace BotHATTwaffle.Modules
                         }
                     }
                 }
+
+                if (quickSendChannel != null)
+                {
+                    bool sent = false;
+                    foreach (SocketTextChannel s in Context.Guild.TextChannels)
+                    {
+                        if (s.Name.ToLower() == quickSendChannel)
+                        {
+                            await s.SendMessageAsync("", false, builder);
+                            await _dataServices.ChannelLog($"Embed created by {Context.User} was sent to {s.Name}!");
+                            await _dataServices.logChannel.SendMessageAsync("", false, builder);
+                            sent = true;
+                        }
+                    }
+
+                    if (!sent)
+                    {
+                        await ReplyAndDeleteAsync("```CHANNEL NOT FOUND```", timeout: TimeSpan.FromSeconds(3));
+                    }
+                }
             }
             else
             {
@@ -640,7 +665,7 @@ namespace BotHATTwaffle.Modules
 
         private bool isValidTag(string inString, Regex regex)
         {
-            string[] validTags = { "{author name}", "{thumbnail}", "{title}", "{url}", "{color}", "{description}", "{image}", "{footer text}", "{field}", "{}" };
+            string[] validTags = { "{author name}", "{thumbnail}", "{title}", "{url}", "{color}", "{description}", "{image}", "{footer text}", "{field}", "{}", "{submit}" };
             MatchCollection matches = regex.Matches(inString);
             matches.Cast<Match>().Select(m => m.Value).Distinct().ToList();
             foreach (var m in matches)
