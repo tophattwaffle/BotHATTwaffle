@@ -16,30 +16,30 @@ namespace BotHATTwaffle
 {
     public class DataServices
     {
-        public Dictionary<string, string> config;
+        public Dictionary<string, string> Config;
 
-        JObject searchData;
-        JObject serverData;
-        JsonRoot root;
-        List<JsonSeries> series;
-        List<JsonServer> servers;
-        Random _random;
+	    private JObject _searchData;
+	    private JObject _serverData;
+	    private JsonRoot _root;
+	    private List<JsonSeries> _series;
+	    private List<JsonServer> _servers;
+	    private readonly Random _random;
         public string DemoPath;
 
         //Channels and Role vars
-        string logChannelStr;
-        string playTesterRoleStr;
-        string announcementChannelStr;
-        string testingChannelStr;
-        string modRoleStr;
-        string mutedRoleStr;
-        string rconRoleStr;
-        string ActiveRoleStr;
-        string PatreonsRoleStr;
-        public SocketTextChannel logChannel { get; set; }
-        public SocketTextChannel announcementChannel  { get; set; }
-        public SocketTextChannel testingChannel  { get; set; }
-        public SocketRole playTesterRole { get; set; }
+	    private string _logChannelStr;
+	    private string _playTesterRoleStr;
+	    private string _announcementChannelStr;
+	    private string _testingChannelStr;
+	    private string _modRoleStr;
+	    private string _mutedRoleStr;
+	    private string _rconRoleStr;
+	    private string _activeRoleStr;
+	    private string _patreonsRoleStr;
+        public SocketTextChannel LogChannel { get; set; }
+        public SocketTextChannel AnnouncementChannel  { get; set; }
+        public SocketTextChannel TestingChannel  { get; set; }
+        public SocketRole PlayTesterRole { get; set; }
         public SocketRole MuteRole { get; set; }
         public SocketRole RconRole { get; set; }
         public SocketRole ModRole { get; set; }
@@ -47,89 +47,93 @@ namespace BotHATTwaffle
         public SocketRole PatreonsRole { get; set; }
 
         //Misc setting vars
-        public string[] pakRatEavesDrop;
-        public string[] howToPackEavesDrop;
-        public string[] carveEavesDrop;
-        public string[] propperEavesDrop;
-        public string[] vbEavesDrop;
-        public string[] yorkEavesDrop;
-        public string tanookiEavesDrop;
-        public string[] agreeEavesDrop;
-        public string[] agreeStrings;
-        public string[] roleMeWhiteList;
-        public string catFactPath;
-        public string penguinFactPath;
-        public string tanookiFactPath;
-        public string alertUser;
+        public string[] PakRatEavesDrop;
+        public string[] HowToPackEavesDrop;
+        public string[] CarveEavesDrop;
+        public string[] PropperEavesDrop;
+        public string[] VbEavesDrop;
+        public string[] YorkEavesDrop;
+        public string TanookiEavesDrop;
+        public string[] AgreeEavesDrop;
+        public string[] AgreeStrings;
+        public string[] RoleMeWhiteList;
+        public string CatFactPath;
+        public string PenguinFactPath;
+        public string TanookiFactPath;
+        public string AlertUser;
 
         //TimerService Vars
-        public int startDelay = 10;
-        public int updateInterval = 60;
-        public string[] playingStrings;
+        public int StartDelay = 10;
+        public int UpdateInterval = 60;
+        public string[] PlayingStrings;
 
         //Moderation Vars
-        public string casualConfig;
-        public string compConfig;
-        public string postConfig;
+        public string CasualConfig;
+        public string CompConfig;
+        public string PostConfig;
 
         //LevelTesting Vars
-        public string[] publicCommandWhiteList;
-        public int calUpdateTicks = 2;
-        public string imgurAPI;
+        public string[] PublicCommandWhiteList;
+        public int CalUpdateTicks = 2;
+        public string ImgurApi;
 
         public DataServices(Random random)
         {
-            config = ReadSettings(); //Needed when the data is first DI'd
+            Config = ReadSettings(); //Needed when the data is first DI'd
             VariableAssignment();
             _random = random;
         }
 
-        public void ReadData()
+		/// <summary>
+		/// Loads/Reloads all settings from settings.ini file. 
+		/// </summary>
+        public void ReloadSettings()
         {
-            config = ReadSettings();
-            RoleChannelAssignments();
-            VariableAssignment();
-            string searchDataPath = "searchData.json";
-            searchData = JObject.Parse(File.ReadAllText(searchDataPath));
-            root = searchData.ToObject<JsonRoot>();
-            series = root.series;
+			//Read the text file
+            Config = ReadSettings();
 
-            string serverDataPath = "servers.json";
-            serverData = JObject.Parse(File.ReadAllText(serverDataPath));
-            root = serverData.ToObject<JsonRoot>();
-            servers = root.servers;
+			//Reassign roles / Channels
+            RoleChannelAssignments();
+
+			//Assign the rest of the variables
+            VariableAssignment();
+
+			//Read in the search JSON data
+            const string SEARCH_DATA_PATH = "searchData.json";
+            _searchData = JObject.Parse(File.ReadAllText(SEARCH_DATA_PATH));
+            _root = _searchData.ToObject<JsonRoot>();
+            _series = _root.series;
+
+			//Read in the server JSON data
+            const string SERVER_DATA_PATH = "servers.json";
+            _serverData = JObject.Parse(File.ReadAllText(SERVER_DATA_PATH));
+            _root = _serverData.ToObject<JsonRoot>();
+            _servers = _root.servers;
 
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
             Console.ResetColor();
         }
 
-        private Dictionary<string, string> ReadSettings()
+		/// <summary>
+		/// Handles the Settings.ini file.
+		/// Creates keys with default settings if they do not exist.
+		/// Reads in present keys and values.
+		/// </summary>
+		/// <returns>Dictionary with all the program's settings</returns>
+		private Dictionary<string, string> ReadSettings()
         {
             string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
             Dictionary<string, string> mainConfig;
-            string configPath = "settings.ini";
-            if (File.Exists(configPath))
+            const string CONFIG_PATH = "settings.ini";
+            if (File.Exists(CONFIG_PATH))
             {
-                mainConfig = File.ReadAllLines(configPath).ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
+                mainConfig = File.ReadAllLines(CONFIG_PATH).ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
             }
             else
             {
                 // Config doesn't exist, so we'll make it
                 mainConfig = new Dictionary<string, string>();
-
-                //Get INT
-                //if (config.ContainsKey("clockDelay"))
-                //int.TryParse(config["clockDelay"], out clockDelay);
-
-                //Get String
-                //if (config.ContainsKey("botToken"))
-                //botToken = (config["botToken"]);
-
-
-                //Get Char
-                //if (config.ContainsKey("prefixChar"))
-                //prefixChar = config["prefixChar"][0];
             }
 
             #region Add existing settings at their default
@@ -185,118 +189,120 @@ namespace BotHATTwaffle
             #endregion
 
             // Save new config file
-            File.WriteAllLines(configPath, mainConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}").ToArray());
+            File.WriteAllLines(CONFIG_PATH, mainConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}").ToArray());
             return mainConfig;
         }
 
-        private void VariableAssignment()
+		/// <summary>
+		/// Assigns program variables to their values based on values in the config Dictionary
+		/// </summary>
+		private void VariableAssignment()
         {
-            if (config.ContainsKey("DemoPath"))
-                DemoPath = (config["DemoPath"]);
-            if (config.ContainsKey("pakRatEavesDropCSV"))
-                pakRatEavesDrop = (config["pakRatEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("howToPackEavesDropCSV"))
-                howToPackEavesDrop = (config["howToPackEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("carveEavesDropCSV"))
-                carveEavesDrop = (config["carveEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("propperEavesDropCSV"))
-                propperEavesDrop = (config["propperEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("vbEavesDropCSV"))
-                vbEavesDrop = (config["vbEavesDropCSV"]).Split(',');
-            if (config.ContainsKey("yorkCSV"))
-                yorkEavesDrop = (config["yorkCSV"]).Split(',');
-            if (config.ContainsKey("tanookiID"))
-                tanookiEavesDrop = (config["tanookiID"]);
-            if (config.ContainsKey("agreeUserCSV"))
-                agreeEavesDrop = (config["agreeUserCSV"]).Split(',');
-            if (config.ContainsKey("roleMeWhiteListCSV"))
-                roleMeWhiteList = (config["roleMeWhiteListCSV"]).Split(',');
-            if ((config.ContainsKey("startDelay") && !int.TryParse(config["startDelay"], out startDelay)))
-            {
-                Console.WriteLine($"Key \"startDelay\" not found or valid. Using default {startDelay}.");
-            }
-            if ((config.ContainsKey("updateInterval") && !int.TryParse(config["updateInterval"], out updateInterval)))
-            {
-                Console.WriteLine($"Key \"updateInterval\" not found or valid. Using default {updateInterval}.");
-            }
-            if (config.ContainsKey("casualConfig"))
-                casualConfig = (config["casualConfig"]);
-            if (config.ContainsKey("compConfig"))
-                compConfig = (config["compConfig"]);
-            if (config.ContainsKey("postConfig"))
-                postConfig = (config["postConfig"]);
-            if (config.ContainsKey("publicCommandWhiteListCSV"))
-                publicCommandWhiteList = (config["publicCommandWhiteListCSV"]).Split(',');
-            if (config.ContainsKey("catFactPath"))
-                catFactPath = (config["catFactPath"]);
-            if (config.ContainsKey("penguinFactPath"))
-                penguinFactPath = (config["penguinFactPath"]);
-            if (config.ContainsKey("tanookiFactPath"))
-                tanookiFactPath = (config["tanookiFactPath"]);
-            if ((config.ContainsKey("calUpdateTicks") && !int.TryParse(config["calUpdateTicks"], out calUpdateTicks)))
-            {
-                Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {calUpdateTicks}.");
-            }
+            if (Config.ContainsKey("DemoPath"))
+                DemoPath = Config["DemoPath"];
+            if (Config.ContainsKey("pakRatEavesDropCSV"))
+                PakRatEavesDrop = Config["pakRatEavesDropCSV"].Split(',');
+            if (Config.ContainsKey("howToPackEavesDropCSV"))
+                HowToPackEavesDrop = Config["howToPackEavesDropCSV"].Split(',');
+            if (Config.ContainsKey("carveEavesDropCSV"))
+                CarveEavesDrop = Config["carveEavesDropCSV"].Split(',');
+            if (Config.ContainsKey("propperEavesDropCSV"))
+                PropperEavesDrop = Config["propperEavesDropCSV"].Split(',');
+            if (Config.ContainsKey("vbEavesDropCSV"))
+                VbEavesDrop = Config["vbEavesDropCSV"].Split(',');
+            if (Config.ContainsKey("yorkCSV"))
+                YorkEavesDrop = Config["yorkCSV"].Split(',');
+            if (Config.ContainsKey("tanookiID"))
+                TanookiEavesDrop = Config["tanookiID"];
+            if (Config.ContainsKey("agreeUserCSV"))
+                AgreeEavesDrop = Config["agreeUserCSV"].Split(',');
+            if (Config.ContainsKey("roleMeWhiteListCSV"))
+                RoleMeWhiteList = Config["roleMeWhiteListCSV"].Split(',');
+            if (Config.ContainsKey("startDelay") && !int.TryParse(Config["startDelay"], out StartDelay))
+	            Console.WriteLine($"Key \"startDelay\" not found or valid. Using default {StartDelay}.");
 
-            calUpdateTicks = calUpdateTicks - 1;
+	        if (Config.ContainsKey("updateInterval") && !int.TryParse(Config["updateInterval"], out UpdateInterval))
+		        Console.WriteLine($"Key \"updateInterval\" not found or valid. Using default {UpdateInterval}.");
 
-            if (config.ContainsKey("playingStringsCSV"))
-                playingStrings = (config["playingStringsCSV"]).Split(',');
-            if (config.ContainsKey("alertUser"))
-                alertUser = (config["alertUser"]);
-            if (config.ContainsKey("imgurAPI"))
-                imgurAPI = (config["imgurAPI"]);
+	        if (Config.ContainsKey("casualConfig"))
+                CasualConfig = Config["casualConfig"];
+            if (Config.ContainsKey("compConfig"))
+                CompConfig = Config["compConfig"];
+            if (Config.ContainsKey("postConfig"))
+                PostConfig = Config["postConfig"];
+            if (Config.ContainsKey("publicCommandWhiteListCSV"))
+                PublicCommandWhiteList = Config["publicCommandWhiteListCSV"].Split(',');
+            if (Config.ContainsKey("catFactPath"))
+                CatFactPath = Config["catFactPath"];
+            if (Config.ContainsKey("penguinFactPath"))
+                PenguinFactPath = Config["penguinFactPath"];
+            if (Config.ContainsKey("tanookiFactPath"))
+                TanookiFactPath = Config["tanookiFactPath"];
+            if (Config.ContainsKey("calUpdateTicks") && !int.TryParse(Config["calUpdateTicks"], out CalUpdateTicks))
+	            Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {CalUpdateTicks}.");
+
+	        CalUpdateTicks = CalUpdateTicks - 1;
+
+            if (Config.ContainsKey("playingStringsCSV"))
+                PlayingStrings = Config["playingStringsCSV"].Split(',');
+            if (Config.ContainsKey("alertUser"))
+                AlertUser = Config["alertUser"];
+            if (Config.ContainsKey("imgurAPI"))
+                ImgurApi = Config["imgurAPI"];
             
         }
 
+		/// <summary>
+		/// Assigns roles and channels to variables
+		/// </summary>
         private void RoleChannelAssignments()
         {
-            if (config.ContainsKey("announcementChannel"))
-                announcementChannelStr = (config["announcementChannel"]);
+	        if (Config.ContainsKey("announcementChannel"))
+		        _announcementChannelStr = Config["announcementChannel"];
 
-            if (config.ContainsKey("logChannel"))
-                logChannelStr = (config["logChannel"]);
+	        if (Config.ContainsKey("logChannel"))
+		        _logChannelStr = Config["logChannel"];
 
-            if (config.ContainsKey("testingChannel"))
-                testingChannelStr = (config["testingChannel"]);
+	        if (Config.ContainsKey("testingChannel"))
+		        _testingChannelStr = Config["testingChannel"];
 
-            if (config.ContainsKey("playTesterRole"))
-                playTesterRoleStr = (config["playTesterRole"]);
+	        if (Config.ContainsKey("playTesterRole"))
+		        _playTesterRoleStr = Config["playTesterRole"];
 
-            if (config.ContainsKey("moderatorRoleName"))
-                modRoleStr = (config["moderatorRoleName"]);
+	        if (Config.ContainsKey("moderatorRoleName"))
+		        _modRoleStr = Config["moderatorRoleName"];
 
-            if (config.ContainsKey("mutedRoleName"))
-                mutedRoleStr = (config["mutedRoleName"]);
+	        if (Config.ContainsKey("mutedRoleName"))
+		        _mutedRoleStr = Config["mutedRoleName"];
 
-            if (config.ContainsKey("rconRoleName"))
-                rconRoleStr = (config["rconRoleName"]);
+	        if (Config.ContainsKey("rconRoleName"))
+		        _rconRoleStr = Config["rconRoleName"];
 
-            if (config.ContainsKey("activeMemberRole"))
-                ActiveRoleStr = (config["activeMemberRole"]);
+	        if (Config.ContainsKey("activeMemberRole"))
+		        _activeRoleStr = Config["activeMemberRole"];
 
-            if (config.ContainsKey("patreonsRole"))
-                PatreonsRoleStr = (config["patreonsRole"]);
+	        if (Config.ContainsKey("patreonsRole"))
+		        _patreonsRoleStr = Config["patreonsRole"];
 
-            var arg = Program._client.Guilds.FirstOrDefault();
+            var arg = Program.Client.Guilds.FirstOrDefault();
 
             Console.ForegroundColor = ConsoleColor.Green;
             //Iterate all channels
             foreach (SocketTextChannel s in arg.TextChannels)
             {
-                if (s.Name == logChannelStr)
+                if (s.Name == _logChannelStr)
                 {
-                    logChannel = s;
+                    LogChannel = s;
                     Console.WriteLine($"\nLog Channel Found! Logging to: {s.Name}");
                 }
-                if (s.Name == announcementChannelStr)
+                if (s.Name == _announcementChannelStr)
                 {
-                    announcementChannel = s;
+                    AnnouncementChannel = s;
                     Console.WriteLine($"\nAnnouncement Channel Found! Announcing to: {s.Name}");
                 }
-                if (s.Name == testingChannelStr)
+                if (s.Name == _testingChannelStr)
                 {
-                    testingChannel = s;
+                    TestingChannel = s;
                     Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {s.Name}");
 
                 }
@@ -304,33 +310,33 @@ namespace BotHATTwaffle
 
             foreach (SocketRole r in arg.Roles)
             {
-                if (r.Name == playTesterRoleStr)
+                if (r.Name == _playTesterRoleStr)
                 {
-                    playTesterRole = r;
+                    PlayTesterRole = r;
                     Console.WriteLine($"\nPlaytester role found!: {r.Name}");
                 }
-                if (r.Name == modRoleStr)
+                if (r.Name == _modRoleStr)
                 {
 
                     ModRole = r;
                     Console.WriteLine($"\nModerator role found!: {r.Name}");
                 }
-                if (r.Name == rconRoleStr)
+                if (r.Name == _rconRoleStr)
                 {
                     RconRole = r;
                     Console.WriteLine($"\nRCON role found!: {r.Name}");
                 }
-                if (r.Name == mutedRoleStr)
+                if (r.Name == _mutedRoleStr)
                 {
                     MuteRole = r;
                     Console.WriteLine($"\nMuted role found!: {r.Name}");
                 }
-                if (r.Name == ActiveRoleStr)
+                if (r.Name == _activeRoleStr)
                 {
                     ActiveRole = r;
                     Console.WriteLine($"\nActive Memeber role found!: {r.Name}"); //That isn't a spelling mistake :kappa:
                 }
-                if (r.Name == this.PatreonsRoleStr)
+                if (r.Name == this._patreonsRoleStr)
                 {
                     PatreonsRole = r;
                     Console.WriteLine($"\nPatreons role found!: {r.Name}");
@@ -340,40 +346,60 @@ namespace BotHATTwaffle
             Console.ResetColor();
         }
 
-        public Task ChannelLog(string message, Boolean mention = false)
+		/// <summary>
+		/// Logs a message to the log channel
+		/// </summary>
+		/// <param name="message">Message to log</param>
+		/// <param name="mention">Alert TopHATTwaffle?</param>
+		/// <returns>Task</returns>
+        public Task ChannelLog(string message, bool mention = false)
         {
             string alert = null;
             if (mention)
             {
-                var splitUser = alertUser.Split('#');
-                alert = Program._client.GetUser(splitUser[0], splitUser[1]).Mention;
+                var splitUser = AlertUser.Split('#');
+                alert = Program.Client.GetUser(splitUser[0], splitUser[1]).Mention;
             }
 
-            logChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{message}```");
+            LogChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{message}```");
             Console.WriteLine($"{DateTime.Now}: {message}\n");
             return Task.CompletedTask;
         }
 
-        public Task ChannelLog(string title, string message, Boolean mention = false)
+		/// <summary>
+		/// Logs a message to the log channel
+		/// </summary>
+		/// <param name="title">Title of log</param>
+		/// <param name="message">Message to log</param>
+		/// <param name="mention">Alert TopHATTwaffle?</param>
+		/// <returns>Task</returns>
+		public Task ChannelLog(string title, string message, Boolean mention = false)
         {
             string alert = null;
             if (mention)
             {
-                var splitUser = alertUser.Split('#');
-                alert = Program._client.GetUser(splitUser[0], splitUser[1]).Mention;
+                var splitUser = AlertUser.Split('#');
+                alert = Program.Client.GetUser(splitUser[0], splitUser[1]).Mention;
             }
 
-            logChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{title}\n{message}```");
+            LogChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{title}\n{message}```");
             Console.WriteLine($"{DateTime.Now}: {title}\n{message}\n");
             return Task.CompletedTask;
         }
 
-        public JsonServer GetServer(string serverStr)
-        {
-            return servers.Find(x => x.Name == serverStr.ToLower());
-        }
+		/// <summary>
+		/// Takes a 3 letter server prefix to find the correct server
+		/// </summary>
+		/// <param name="serverStr">3 letter server code</param>
+		/// <returns>Server object that was located in JSON file</returns>
+        public JsonServer GetServer(string serverStr) => _servers.Find(x => x.Name == serverStr.ToLower());
 
-        public Embed GetAllServers()
+		/// <summary>
+		/// Gets all the servers that exist in the servers JSON file
+		/// and gives you an embed that lets you visualize their information.
+		/// </summary>
+		/// <returns>Embed object with server information</returns>
+	    public Embed GetAllServers()
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -382,7 +408,7 @@ namespace BotHATTwaffle
             };
 
             List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-            foreach (var s in servers)
+            foreach (var s in _servers)
             {
                 fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{s.Address}", Value = $"Prefix: `{s.Name}`\n{s.Description}", IsInline = false });
             }
@@ -399,11 +425,18 @@ namespace BotHATTwaffle
             return builder;
         }
 
-
-        async public Task<string> RconCommand(string command, JsonServer server)
+		/// <summary>
+		/// Sends a RCON command to a server
+		/// </summary>
+		/// <param name="command">Command to send</param>
+		/// <param name="server">3 letter server code</param>
+		/// <returns>Output from RCON command</returns>
+        public async Task<string> RconCommand(string command, JsonServer server)
         {
             string reply = null;
-            string botIP = new WebClient().DownloadString("http://icanhazip.com").Trim();
+
+			//Get the bots IP, typically my IP
+            string botIp = new WebClient().DownloadString("http://icanhazip.com").Trim();
             IPHostEntry iPHostEntry = null;
             try
             {
@@ -414,33 +447,47 @@ namespace BotHATTwaffle
                 return "HOST_NOT_FOUND";
             }
 
+			//Setup new RCON object
             var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password,1000);
 
-            reply = await rcon.SendCommandAsync(command);
+			//Send the RCON command to the server
+			reply = await rcon.SendCommandAsync(command);
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"RCON COMMAND: {server.Address}\nCommand: {command}\n");
             Console.ResetColor();
 
-            //If you re-set the rcon_password all RCON connections are closed.
-            //By not awaiting this, we are able to set the rcon password back to the same value closing the connection.
-            //This will automatically timeout and dispose of the rcon connection when it tries to conncect again.
-            Task fireAndForget = rcon.SendCommandAsync($"rcon_password {server.Password}");
+			//If you re-set the rcon_password all RCON connections are closed.
+			//By not awaiting this, we are able to set the RCON password back to the same value closing the connection.
+			//This will automatically timeout and dispose of the RCON connection when it tries to connect again.
+			Task fireAndForget = rcon.SendCommandAsync($"rcon_password {server.Password}");
 
-            reply = reply.Replace($"{botIP}", "69.420.MLG.1337"); //Remove the Bot's public IP from the string.
+	        //Remove the Bot's public IP from the string.
+			reply = reply.Replace($"{botIp}", "69.420.MLG.1337");
 
             return reply;
         }
 
+		/// <summary>
+		/// Searches for a tutorial or the FAQ
+		/// </summary>
+		/// <param name="searchSeries">What series to search</param>
+		/// <param name="searchTerm">What term to search</param>
+		/// <param name="isPrivate">Was this invoked from a DM?</param>
+		/// <returns>Returns a 2D list of strings</returns>
         public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
         {
             List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
             List<List<string>> listResults = new List<List<string>>();
+
+			//Let's us search on multiple terms at a time
             string[] searchTermArray = searchTerm.Split(' ');
 
+			//Did we search FAQ?
             if (searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
-                return SearchFAQ(searchTerm, isPrivate);
+                return SearchFaq(searchTerm, isPrivate);
 
+			//Did we ask for a link dump?
             if (searchTerm.ToLower() == "dump" || searchTerm.ToLower() == "all")
                 return DumpSearch(searchSeries);
 
@@ -449,7 +496,7 @@ namespace BotHATTwaffle
             {
                 foreach (string s in searchTermArray)
                 {
-                    foundTutorials.AddRange(series[0].tutorial.FindAll(x => x.tags.Contains(s)));
+                    foundTutorials.AddRange(_series[0].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
             //Bootcamp 1
@@ -457,7 +504,7 @@ namespace BotHATTwaffle
             {
                 foreach (string s in searchTermArray)
                 {
-                    foundTutorials.AddRange(series[1].tutorial.FindAll(x => x.tags.Contains(s)));
+                    foundTutorials.AddRange(_series[1].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
             //3dsmax 2
@@ -465,7 +512,7 @@ namespace BotHATTwaffle
             {
                 foreach (string s in searchTermArray)
                 {
-                    foundTutorials.AddRange(series[2].tutorial.FindAll(x => x.tags.Contains(s)));
+                    foundTutorials.AddRange(_series[2].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
             //Writtentutorials 3
@@ -473,7 +520,7 @@ namespace BotHATTwaffle
             {
                 foreach (string s in searchTermArray)
                 {
-                    foundTutorials.AddRange(series[3].tutorial.FindAll(x => x.tags.Contains(s)));
+                    foundTutorials.AddRange(_series[3].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
             //legacy 5
@@ -481,7 +528,7 @@ namespace BotHATTwaffle
             {
                 foreach (string s in searchTermArray)
                 {
-                    foundTutorials.AddRange(series[5].tutorial.FindAll(x => x.tags.Contains(s)));
+                    foundTutorials.AddRange(_series[5].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
             //troubleshooting 4
@@ -489,18 +536,20 @@ namespace BotHATTwaffle
             {
                 foreach (string s in searchTermArray)
                 {
-                    foundTutorials.AddRange(series[4].tutorial.FindAll(x => x.tags.Contains(s)));
+                    foundTutorials.AddRange(_series[4].tutorial.FindAll(x => x.tags.Contains(s)));
                 }
             }
 
-            //Remove douplicates from list.
+            //Remove duplicates from list.
             List<JsonTutorial> noDoups = foundTutorials.Distinct().ToList();
 
+			//Process each result that was located
             foreach (var result in noDoups)
             {
                 List<string> singleResult = new List<string>();
 
-                //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page. Only limit for non-DM
+				//Limit to 3 FAQ results.
+	            //Then let's add another one with a direct link to the page. Only limit for non-DM
                 if (listResults.Count >= 2 && searchSeries == "all" && !isPrivate)
                 {
                     singleResult.Clear();
@@ -512,49 +561,46 @@ namespace BotHATTwaffle
                     break;
                 }
 
+				//Create a HTML client so we can get info about the link
                 HtmlWeb htmlWeb = new HtmlWeb();
                 HtmlDocument htmlDocument = htmlWeb.Load(result.url);
                 string title = null;
+
+				//Processing for non-YouTube URLs
                 if (!result.url.Contains("youtube"))
                 {
+					//Get the page title
                     title = (from x in htmlDocument.DocumentNode.Descendants()
                              where x.Name.ToLower() == "title"
                              select x.InnerText).FirstOrDefault();
                 }
-                else if (result.url.Contains("youtube"))//Is a youtube URL
-                {
-                    title = GetTitle(result.url);
-                }
+                //Processing for YouTube URLs
+				else if (result.url.ToLower().Contains("youtube"))
+	                title = GetYouTubeTitle(result.url);
 
-                string description = null;
-                //Get atricle content, this is by ID. Only works for my site.
+	            string description = null;
+                //Get article content, this is by ID. Only works for my site.
                 if (result.url.ToLower().Contains("tophattwaffle"))
-                {
-                    description = htmlDocument.GetElementbyId("content-area").InnerText;
-                }
+	                description = htmlDocument.GetElementbyId("content-area").InnerText;
                 else if(result.url.ToLower().Contains("youtube"))
-                {
-                    description = result.url;
-                }
-                //Fix the bad characters that get pulled from the web page.
-                if (description != null)
-                    description = description.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+	                description = result.url;
 
-                title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+	            //Only if not Null - Fix the bad characters that get pulled from the web page.
+	            description = description?.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+	            title = title?.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
 
                 //Limit length if needed
                 if (description != null && description.Length >= 250)
-                {
-                    description = description.Substring(0, 250) + "...";
-                }
-                List<string> imgs = null;
-                //Get images on the page
+	                description = description.Substring(0, 250) + "...";
 
-                if (!result.url.ToLower().Contains("youtube"))
+				//Get images on the page
+				List<string> imgs = null;
+
+				if (!result.url.ToLower().Contains("youtube"))
                 {
                 imgs = (from x in htmlDocument.DocumentNode.Descendants()
                                      where x.Name.ToLower() == "img"
-                                     select x.Attributes["src"].Value).ToList<String>();
+                                     select x.Attributes["src"].Value).ToList<string>();
                 }
 
                 //Set image to the first non-header image if it exists.
@@ -567,6 +613,7 @@ namespace BotHATTwaffle
                     finalImg = GetYouTubeImage(result.url);
                 }
 
+				//Add results to list
                 singleResult.Add(title);
                 singleResult.Add(result.url);
                 singleResult.Add(description);
@@ -576,8 +623,12 @@ namespace BotHATTwaffle
             return listResults;
         }
 
-        //Youtube info
-        public static string GetTitle(string url)
+        /// <summary>
+		/// Gets a title from a YouTube URL
+		/// </summary>
+		/// <param name="url">Video URL</param>
+		/// <returns>YouTube Video Title</returns>
+        public static string GetYouTubeTitle(string url)
         {
             var api = $"http://youtube.com/get_video_info?video_id={GetArgs(url, "v", '?')}";
             return GetArgs(new WebClient().DownloadString(api), "title", '&');
@@ -592,7 +643,12 @@ namespace BotHATTwaffle
                     ? args.Substring(iqs + 1) : string.Empty)[key];
         }
 
-        public static string GetYouTubeImage(string videoUrl)
+		/// <summary>
+		/// Gets the thumbnail for a youtube URL
+		/// </summary>
+		/// <param name="videoUrl">Video URL</param>
+		/// <returns>Path to Thumbnail Image</returns>
+		public static string GetYouTubeImage(string videoUrl)
         {
             int mInd = videoUrl.IndexOf("/watch?v=");
             if (mInd != -1)
@@ -604,6 +660,11 @@ namespace BotHATTwaffle
                 return "";
         }
 
+		/// <summary>
+		/// Dumps all links for the requested series.
+		/// </summary>
+		/// <param name="searchSeries">Series to dump</param>
+		/// <returns>2D list of tutorial dump</returns>
         public List<List<string>> DumpSearch(string searchSeries)
         {
             List<List<string>> listResults = new List<List<string>>();
@@ -612,73 +673,75 @@ namespace BotHATTwaffle
             //V2 0
             if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
             {
-                foundTutorials.AddRange(series[0].tutorial);
+                foundTutorials.AddRange(_series[0].tutorial);
             }
             //Bootcamp 1
             if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2" || searchSeries.ToLower() == "all")
             {
-                foundTutorials.AddRange(series[1].tutorial);
+                foundTutorials.AddRange(_series[1].tutorial);
             }
             //3dsmax 2
             if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3" || searchSeries.ToLower() == "all")
             {
-                foundTutorials.AddRange(series[2].tutorial);
+                foundTutorials.AddRange(_series[2].tutorial);
             }
             //Writtentutorials 3
             if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4" || searchSeries.ToLower() == "all")
             {
-                foundTutorials.AddRange(series[3].tutorial);
+                foundTutorials.AddRange(_series[3].tutorial);
             }
             //legacy 5
             if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5" || searchSeries.ToLower() == "all")
             {
-               foundTutorials.AddRange(series[5].tutorial);
+               foundTutorials.AddRange(_series[5].tutorial);
 
             }
             //troubleshooting 4
             if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "misc" || searchSeries.ToLower() == "all")
             {
-                foundTutorials.AddRange(series[4].tutorial);
+                foundTutorials.AddRange(_series[4].tutorial);
             }
 
             foreach (var result in foundTutorials)
             {
-                List<string> singleResult = new List<string>();
-
-                //Doing a web request times the bot out at times. Not worth it.
-                /*
-                HtmlWeb htmlWeb = new HtmlWeb();
-                HtmlDocument htmlDocument = htmlWeb.Load(result.url);
-
-                string title = (from x in htmlDocument.DocumentNode.Descendants()
-                                where x.Name.ToLower() == "title"
-                                select x.InnerText).FirstOrDefault();
-                title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
-                */
-
-                singleResult.Add(result.url.Replace("https://www.tophattwaffle.com/","").Replace("/",""));
-                singleResult.Add(result.url);
-                singleResult.Add(string.Join(", ", result.tags));
-                listResults.Add(singleResult);
+				//Add items to list
+				List<string> singleResult = new List<string>
+				{
+					result.url.Replace("https://www.tophattwaffle.com/", "").Replace("/", ""),
+					result.url,
+					string.Join(", ", result.tags)
+				};
+				listResults.Add(singleResult);
             }
 
             return listResults;
         }
 
-        public List<List<string>> SearchFAQ(string searchTerm, bool isPrivate)
+		/// <summary>
+		/// Searches FAQ
+		/// </summary>
+		/// <param name="searchTerm">Term to search</param>
+		/// <param name="isPrivate">Is in DM?</param>
+		/// <returns>Returns a 2D list of strings</returns>
+		public List<List<string>> SearchFaq(string searchTerm, bool isPrivate)
         {
             List<List<string>> listResults = new List<List<string>>();
 
-            string faqurl = "https://www.tophattwaffle.com/wp-admin/admin-ajax.php?action=epkb-search-kb&epkb_kb_id=1&search_words=";
+            const string FAQURL = "https://www.tophattwaffle.com/wp-admin/admin-ajax.php?action=epkb-search-kb&epkb_kb_id=1&search_words=";
             try
             {
+				//New web client
                 HtmlWeb faqWeb = new HtmlWeb();
-                HtmlDocument faqDocument = faqWeb.Load($"{faqurl}{searchTerm}");
+
+				//Let's load the search
+                HtmlDocument faqDocument = faqWeb.Load($"{FAQURL}{searchTerm}");
+
+				//Look at all links that the page has on it
                 foreach (HtmlNode link in faqDocument.DocumentNode.SelectNodes("//a[@href]"))
                 {
                     List<string> singleResult = new List<string>();
 
-                    //Limit to 3 FAQ resusults. Let's add another one with a direct link to the page.  Only limit for non-DM.
+                    //Limit to 3 FAQ results. Let's add another one with a direct link to the page.  Only limit for non-DM.
                     if (listResults.Count >= 2 && !isPrivate)
                     {
                         singleResult.Clear();
@@ -700,24 +763,22 @@ namespace BotHATTwaffle
                                     where x.Name.ToLower() == "title"
                                     select x.InnerText).FirstOrDefault();
 
-                    //Get atricle content, this is by ID. Only works for my site.
+                    //Get article content, this is by ID. Only works for my site.
                     string description = null;
-                    //Get atricle content, this is by ID. Only works for my site.
                     if (finalUrl.ToLower().Contains("tophattwaffle"))
                     {
                         description = htmlDocument.GetElementbyId("kb-article-content").InnerText;
                     }
 
-                    description = description.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
-                    title = title.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+	                //Only if not Null - Fix the bad characters that get pulled from the web page.
+	                description = description?.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
+	                title = title?.Replace(@"&#8211;", "-").Replace("\n", "").Replace(" | TopHATTwaffle", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
 
-                    //Limit length if needed
-                    if (description.Length >= 180)
-                    {
-                        description = description.Substring(0, 180) + "...";
-                    }
+					//Limit length if needed
+					if (description != null && description.Length >= 180)
+						description = description.Substring(0, 180) + "...";
 
-                    //Get images on the page
+	                //Get images on the page
                     List<string> imgs = (from x in htmlDocument.DocumentNode.Descendants()
                                          where x.Name.ToLower() == "img"
                                          select x.Attributes["src"].Value).ToList<String>();
@@ -741,30 +802,27 @@ namespace BotHATTwaffle
             }
             return listResults;
         }
-        
-        public string GetRandomIMGFromUrl(string inUrl)
+
+		/// <summary>
+		/// Provided a URL, will scan the page for all files that end in a file
+		/// It then picks one at random and returns that
+		/// Example Page: https://content.tophattwaffle.com/BotHATTwaffle/catfacts/
+		/// </summary>
+		/// <param name="inUrl">URL to look at</param>
+		/// <returns>inUrl + ImageName.ext</returns>
+		public string GetRandomImgFromUrl(string inUrl)
         {
-            Random _random = new Random();
+			//New web client
             HtmlWeb htmlWeb = new HtmlWeb();
+
+			//Load page
             HtmlDocument htmlDocument = htmlWeb.Load(inUrl);
-            string title = null;
 
-            title = (from x in htmlDocument.DocumentNode.Descendants()
-                where x.Name.ToLower() == "title"
-                select x.InnerText).FirstOrDefault();
+			//Add each image to a list
+            List<string> validImg = htmlDocument.DocumentNode.SelectNodes("//a[@href]").Select(link => 
+	            link.GetAttributeValue("href", string.Empty).Replace(@"\", "").Replace("\"", "")).Where(Path.HasExtension).ToList();
 
-            List<string> validIMG = new List<string>();
-
-            foreach (HtmlNode link in htmlDocument.DocumentNode.SelectNodes("//a[@href]"))
-            {
-                string url = link.GetAttributeValue("href", string.Empty).Replace(@"\", "").Replace("\"", "");
-                if (Path.HasExtension(url))
-                {
-                    validIMG.Add(url);
-                }
-            }
-
-            return inUrl + validIMG[(_random.Next(0, validIMG.Count))];
+	        return inUrl + validImg[(_random.Next(0, validImg.Count))];
         }
     }
 }

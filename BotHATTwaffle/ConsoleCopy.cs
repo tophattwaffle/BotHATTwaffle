@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace BotHATTwaffle
 {
+	/// <summary>
+	/// Got this code offline
+	/// TODO: Document this
+	/// </summary>
     class ConsoleCopy : IDisposable
     {
 

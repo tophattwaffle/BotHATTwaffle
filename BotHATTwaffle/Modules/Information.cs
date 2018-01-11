@@ -68,7 +68,7 @@ namespace BotHATTwaffle.Modules
             footBuilder = new EmbedFooterBuilder()
             {
                 Text = "Thanks for using the VDC search!",
-                IconUrl = Program._client.CurrentUser.GetAvatarUrl()
+                IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
             };
 
             builder = new EmbedBuilder()
@@ -216,7 +216,7 @@ namespace BotHATTwaffle.Modules
             string authTitle = null;
             string authImgUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png";
             string footText = null;
-            string footImgUrl = Program._client.CurrentUser.GetAvatarUrl();
+            string footImgUrl = Program.Client.CurrentUser.GetAvatarUrl();
             string bodyTitle = "Click Here!";
             string bodyUrl = null;
             string bodyThumbUrl = null;  //"https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png"
@@ -350,11 +350,11 @@ namespace BotHATTwaffle.Modules
             var catFact = "Did you know cats have big bushy tails?";
             var name = "Cat Fact 0";
 
-            if (File.Exists(_dataServices.catFactPath))
+            if (File.Exists(_dataServices.CatFactPath))
             {
                 var _rand = new Random();
 
-                string[] allLines = File.ReadAllLines(_dataServices.catFactPath);
+                string[] allLines = File.ReadAllLines(_dataServices.CatFactPath);
                 int lineNumber = _rand.Next(0, allLines.Length);
                 catFact = allLines[lineNumber];
 
@@ -373,7 +373,7 @@ namespace BotHATTwaffle.Modules
                     Text = "This was cat facts, you cannot unsubscribe."
                 },
 
-                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/catfacts/"),
+                ThumbnailUrl = this._dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/catfacts/"),
                 Color = new Color(230, 235, 240),
 
                 Fields =
@@ -407,9 +407,9 @@ namespace BotHATTwaffle.Modules
             Random _rand = new Random();
 
             string penguinFact = "Did you know penguins have big bushy tails?";
-            if (File.Exists(_dataServices.penguinFactPath))
+            if (File.Exists(_dataServices.PenguinFactPath))
             {
-                var allLines = File.ReadAllLines(_dataServices.penguinFactPath);
+                var allLines = File.ReadAllLines(_dataServices.PenguinFactPath);
                 var lineNumber = _rand.Next(0, allLines.Length);
                 penguinFact = allLines[lineNumber];
             }
@@ -429,7 +429,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/penguinfacts/"),
+                ThumbnailUrl = this._dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/penguinfacts/"),
                 Color = new Color(230, 235, 240),
 
                 Description = penguinFact
@@ -447,9 +447,9 @@ namespace BotHATTwaffle.Modules
             Random _rand = new Random();
 
             string tanookiFact = "Did you know Tanooki has a big bushy tail?";
-            if (File.Exists(_dataServices.tanookiFactPath))
+            if (File.Exists(_dataServices.TanookiFactPath))
             {
-                var allLines = File.ReadAllLines(_dataServices.tanookiFactPath);
+                var allLines = File.ReadAllLines(_dataServices.TanookiFactPath);
                 var lineNumber = _rand.Next(0, allLines.Length);
                 tanookiFact = allLines[lineNumber];
             }
@@ -469,7 +469,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
+                ThumbnailUrl = this._dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
                 Color = new Color(230, 235, 240),
 
                 Description = tanookiFact

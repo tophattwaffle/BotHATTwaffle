@@ -35,8 +35,8 @@ namespace BotHATTwaffle.Modules
                 ChangePlaying();
             },
             null,
-            TimeSpan.FromSeconds(_dataServices.startDelay),  // Time that message should fire after bot has started
-            TimeSpan.FromSeconds(_dataServices.updateInterval)); // Time after which message should repeat (`Timeout.Infinite` for no repeat)
+            TimeSpan.FromSeconds(_dataServices.StartDelay),  // Time that message should fire after bot has started
+            TimeSpan.FromSeconds(_dataServices.UpdateInterval)); // Time after which message should repeat (`Timeout.Infinite` for no repeat)
         }
 
         public void Stop()
@@ -47,15 +47,15 @@ namespace BotHATTwaffle.Modules
 
         public void Restart()
         {
-            _timer.Change(TimeSpan.FromSeconds(_dataServices.startDelay), TimeSpan.FromSeconds(_dataServices.updateInterval));
+            _timer.Change(TimeSpan.FromSeconds(_dataServices.StartDelay), TimeSpan.FromSeconds(_dataServices.UpdateInterval));
             Console.WriteLine($"Timer restarted" +
-                              $"\nStart Delay: {_dataServices.startDelay}" +
-                              $"\nUpdate Interval {_dataServices.updateInterval}\n");
+                              $"\nStart Delay: {_dataServices.StartDelay}" +
+                              $"\nUpdate Interval {_dataServices.UpdateInterval}\n");
         }
 
         public void ChangePlaying()
         {
-            _client.SetGameAsync(_dataServices.playingStrings[_random.Next(0, _dataServices.playingStrings.Length)]);
+            _client.SetGameAsync(_dataServices.PlayingStrings[_random.Next(0, _dataServices.PlayingStrings.Length)]);
         }
     }
 

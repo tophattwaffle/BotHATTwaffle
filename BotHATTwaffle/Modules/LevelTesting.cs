@@ -60,7 +60,7 @@ namespace BotHATTwaffle.Modules
                 Console.WriteLine("Titles match! Attempting to reattach!");
                 try
                 {
-                    AnnounceMessage = await _dataServices.announcementChannel.GetMessageAsync(announceID) as IUserMessage;
+                    AnnounceMessage = await _dataServices.AnnouncementChannel.GetMessageAsync(announceID) as IUserMessage;
                     Console.WriteLine("SUCCESS!");
                 }
                 catch (Exception)
@@ -75,7 +75,7 @@ namespace BotHATTwaffle.Modules
                 Console.WriteLine("Titles do not match. Attempting to delete old message!");
                 try
                 {
-                    AnnounceMessage = await _dataServices.announcementChannel.GetMessageAsync(announceID) as IUserMessage;
+                    AnnounceMessage = await _dataServices.AnnouncementChannel.GetMessageAsync(announceID) as IUserMessage;
                     await AnnounceMessage.DeleteAsync();
                     AnnounceMessage = null;
                     Console.WriteLine("Old message Deleted!\nForcing refresh to post new message.");
@@ -100,7 +100,7 @@ namespace BotHATTwaffle.Modules
                 GetPreviousAnnounceAsync();
             }
             caltick++;
-            if (_dataServices.calUpdateTicks < caltick)
+            if (_dataServices.CalUpdateTicks < caltick)
             {
                 caltick = 0;
                 currentEventInfo = _googleCalendar.GetEvents();
@@ -129,7 +129,7 @@ namespace BotHATTwaffle.Modules
             {
                 string albumURL = currentEventInfo[5];
                 string albumID = albumURL.Substring(albumURL.IndexOf("/a/") + 3);
-                var client = new ImgurClient(_dataServices.imgurAPI);
+                var client = new ImgurClient(_dataServices.ImgurApi);
                 var endpoint = new AlbumEndpoint(client);
 
                 featureAlbum = await endpoint.GetAlbumAsync(albumID);
@@ -155,7 +155,7 @@ namespace BotHATTwaffle.Modules
 
         private async Task PostAnnounce(Embed embed)
         {
-            AnnounceMessage = await _dataServices.announcementChannel.SendMessageAsync("",false,embed) as IUserMessage;
+            AnnounceMessage = await _dataServices.AnnouncementChannel.SendMessageAsync("",false,embed) as IUserMessage;
             await GetAlbum();
             //If the file exists, just delete it so it can be remade with the new test info.
             if (File.Exists(announcePath))
@@ -251,7 +251,7 @@ namespace BotHATTwaffle.Modules
 
                     Description = $"**{server.Description}**\n\n{currentEventInfo[9]}"
                 };
-                await _dataServices.testingChannel.SendMessageAsync("", false, builder);
+                await _dataServices.TestingChannel.SendMessageAsync("", false, builder);
                 await _dataServices.ChannelLog("Setting postgame config", $"'exec postgame' on {server.Address}");
                 await _dataServices.RconCommand($"exec postgame", server);
             }
@@ -300,14 +300,14 @@ namespace BotHATTwaffle.Modules
                     if(!userCall && !alertedStart) //Prevents user calls for upcoming from sending alert message.
                     {
                         alertedStart = true;
-                        await  _dataServices.playTesterRole.ModifyAsync(x =>
+                        await  _dataServices.PlayTesterRole.ModifyAsync(x =>
                         {
                             x.Mentionable = true;
                         });
 
                         //Display the map to be tested.
-                        await _dataServices.testingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(currentEventInfo, true));
-                        await _dataServices.testingChannel.SendMessageAsync($"{_dataServices.playTesterRole.Mention}" +
+                        await _dataServices.TestingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(currentEventInfo, true));
+                        await _dataServices.TestingChannel.SendMessageAsync($"{_dataServices.PlayTesterRole.Mention}" +
                         $"\n**Playtest starting now!** `connect {eventInfo[10]}`" +
                         $"\n*Type `>playtester` to unsubscribe*");
 
@@ -315,7 +315,7 @@ namespace BotHATTwaffle.Modules
 
                         alertedStart = true;
 
-                        await _dataServices.playTesterRole.ModifyAsync(x =>
+                        await _dataServices.PlayTesterRole.ModifyAsync(x =>
                         {
                             x.Mentionable = false;
                         });
@@ -336,21 +336,21 @@ namespace BotHATTwaffle.Modules
                     await ClearServerReservations();
 
                     alertedHour = true;
-                    await _dataServices.playTesterRole.ModifyAsync(x =>
+                    await _dataServices.PlayTesterRole.ModifyAsync(x =>
                     {
                         x.Mentionable = true;
                     });
 
                     //Display the map to be tested.
-                    await _dataServices.testingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(currentEventInfo, true));
+                    await _dataServices.TestingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(currentEventInfo, true));
 
-                    await _dataServices.testingChannel.SendMessageAsync($"{_dataServices.playTesterRole.Mention}" +
+                    await _dataServices.TestingChannel.SendMessageAsync($"{_dataServices.PlayTesterRole.Mention}" +
                             $"\n**Playtest starting in 1 hour**" +
                             $"\n*Type `>playtester` to unsubscribe*");
 
                     await _dataServices.ChannelLog($"Posing 1 hour playtest message for {currentEventInfo[2]}");
 
-                    await _dataServices.playTesterRole.ModifyAsync(x =>
+                    await _dataServices.PlayTesterRole.ModifyAsync(x =>
                     {
                         x.Mentionable = false;
                     });
@@ -381,7 +381,7 @@ namespace BotHATTwaffle.Modules
                 var splitUser = currentEventInfo[3].Split('#');
                 try
                 {
-                    thumbURL = Program._client.GetUser(splitUser[0], splitUser[1]).GetAvatarUrl();
+                    thumbURL = Program.Client.GetUser(splitUser[0], splitUser[1]).GetAvatarUrl();
                 }
                 catch { }
 
@@ -402,7 +402,7 @@ namespace BotHATTwaffle.Modules
                 footBuilder = new EmbedFooterBuilder()
                 {
                     Text = $"connect {eventInfo[10]}",
-                    IconUrl = Program._client.CurrentUser.GetAvatarUrl()
+                    IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
                 };
 
                 //If possible, use a random image from the imgur album.
@@ -460,7 +460,7 @@ namespace BotHATTwaffle.Modules
                 footBuilder = new EmbedFooterBuilder()
                 {
                     Text = "https://www.tophattwaffle.com/playtesting/",
-                    IconUrl = Program._client.CurrentUser.GetAvatarUrl()
+                    IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
                 };
 
                 builder = new EmbedBuilder()
@@ -495,7 +495,7 @@ namespace BotHATTwaffle.Modules
                     var footBuilder = new EmbedFooterBuilder()
                     {
                         Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-                        IconUrl = Program._client.CurrentUser.GetAvatarUrl()
+                        IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
                     };
 
                     var builder = new EmbedBuilder()
@@ -514,7 +514,7 @@ namespace BotHATTwaffle.Modules
                     }
                     catch
                     {
-                        await _dataServices.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
+                        await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
                     }
 
                     await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
@@ -550,7 +550,7 @@ namespace BotHATTwaffle.Modules
                 var footBuilder = new EmbedFooterBuilder()
                 {
                     Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-                    IconUrl = Program._client.CurrentUser.GetAvatarUrl()
+                    IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
                 };
 
                 var builder = new EmbedBuilder()
@@ -570,7 +570,7 @@ namespace BotHATTwaffle.Modules
                 }
                 catch
                 {
-                    await _dataServices.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
+                    await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
                 }
 
                 await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
@@ -600,7 +600,7 @@ namespace BotHATTwaffle.Modules
                     var footBuilder = new EmbedFooterBuilder()
                     {
                         Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-                        IconUrl = Program._client.CurrentUser.GetAvatarUrl()
+                        IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
                     };
 
                     var builder = new EmbedBuilder()
@@ -620,7 +620,7 @@ namespace BotHATTwaffle.Modules
                     }
                     catch
                     {
-                        await _dataServices.testingChannel.SendMessageAsync(u.User.Mention, false, builder);
+                        await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
                     }
 
                     await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
@@ -765,7 +765,7 @@ namespace BotHATTwaffle.Modules
                     var footBuilder = new EmbedFooterBuilder()
                     {
                         Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-                        IconUrl = Program._client.CurrentUser.GetAvatarUrl()
+                        IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
                     };
                     List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
                     fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {server.Address}`", IsInline = false });
@@ -857,7 +857,7 @@ namespace BotHATTwaffle.Modules
                 if (command == null)
                 {
                     string reply = null;
-                    foreach (string s in _dataServices.publicCommandWhiteList)
+                    foreach (string s in _dataServices.PublicCommandWhiteList)
                     {
                         reply += $"{s}, ";
                     }
@@ -882,7 +882,7 @@ namespace BotHATTwaffle.Modules
                         return;
                     }
                     Boolean valid = false;
-                    foreach (string s in _dataServices.publicCommandWhiteList)
+                    foreach (string s in _dataServices.PublicCommandWhiteList)
                     {
                         
                         if (command.ToLower().Contains(s))
@@ -1027,17 +1027,17 @@ namespace BotHATTwaffle.Modules
             }
             var user = Context.User as SocketGuildUser;
 
-            if (user.Roles.Contains(_dataServices.playTesterRole))
+            if (user.Roles.Contains(_dataServices.PlayTesterRole))
             {
                 await _dataServices.ChannelLog($"{Context.User} has unsubscribed from playtest notifications!");
                 await ReplyAsync($"Sorry to see you go from playtest notifications {Context.User.Mention}!");
-                await (user as IGuildUser).RemoveRoleAsync(_dataServices.playTesterRole);
+                await (user as IGuildUser).RemoveRoleAsync(_dataServices.PlayTesterRole);
             }
             else
             {
                 await _dataServices.ChannelLog($"{Context.User} has subscribed to playtest notifications!");
                 await ReplyAsync($"Thanks for subscribing to playtest notifications {Context.User.Mention}!");
-                await (user as IGuildUser).AddRoleAsync(_dataServices.playTesterRole);
+                await (user as IGuildUser).AddRoleAsync(_dataServices.PlayTesterRole);
             }
         }
 

@@ -39,7 +39,7 @@ namespace BotHATTwaffle.Modules
         [Remarks("It's a ping command.")]
         public async Task PingAsync()
         {
-            var replyTime = Program._client.Latency;
+            var replyTime = Program.Client.Latency;
             var builder = new EmbedBuilder()
             {
                 Color = new Color(47, 111, 146),
@@ -67,14 +67,14 @@ namespace BotHATTwaffle.Modules
             //Display roles, or modify role state
             if (inRoleStr.ToLower() == "display")
             {
-                await ReplyAsync($"Valid roles are:```\n{string.Join("\n", _dataServices.roleMeWhiteList)}```");
+                await ReplyAsync($"Valid roles are:```\n{string.Join("\n", _dataServices.RoleMeWhiteList)}```");
             }
             else
             {
                 //Validate that we can apply the role
                 Boolean valid = false;
                 string reply = null;
-                foreach (string s in _dataServices.roleMeWhiteList)
+                foreach (string s in _dataServices.RoleMeWhiteList)
                 {
                     if (inRoleStr.ToLower().Contains(s.ToLower()))
                     {

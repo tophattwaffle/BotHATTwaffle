@@ -4,30 +4,31 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 
 namespace BotHATTwaffle
 {
+	/// <summary>
+	/// I'd love to document this code, but I copy and pasted it
+	/// from the Google site and modded it for my needs.
+	/// </summary>
     public class GoogleCalendar
     {
         static string[] Scopes = { CalendarService.Scope.CalendarReadonly };
-        static string ApplicationName = "Google Calendar API .NET Quickstart";
+        static readonly string ApplicationName = "Google Calendar API .NET Quickstart";
         static string calID;
-        DataServices _dataServices;
+	    readonly DataServices _dataServices;
 
         public GoogleCalendar(DataServices dataServices)
         {
             _dataServices = dataServices;
 
             calID = null;
-            if (_dataServices.config.ContainsKey("testCalID"))
-                calID = (_dataServices.config["testCalID"]);
+            if (_dataServices.Config.ContainsKey("testCalID"))
+                calID = (_dataServices.Config["testCalID"]);
         }
 
 
@@ -61,6 +62,8 @@ namespace BotHATTwaffle
 
             // Define parameters of request.
             EventsResource.ListRequest request = service.Events.List(calID);
+
+			//This will limit all search requests to ONLY get playtest events.
             request.Q = " by ";
 
             request.TimeMin = DateTime.Now;
@@ -108,7 +111,7 @@ namespace BotHATTwaffle
                     }
                     catch(Exception e)
                     {
-                        _dataServices.ChannelLog($"There is an issue with the description on the next playtest event." +
+	                    this._dataServices.ChannelLog($"There is an issue with the description on the next playtest event." +
                             $"This is likely caused by HTML formatting on the description. \n{e}");
                         finalEvent[0] = "BAD_DESCRIPTION";
                         finalEvent[1] = null;

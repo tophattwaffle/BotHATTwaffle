@@ -614,7 +614,7 @@ namespace BotHATTwaffle.Modules
                                 {
                                     await s.SendMessageAsync("", false, builder);
                                     await _dataServices.ChannelLog($"Embed created by {Context.User} was sent to {s.Name}!");
-                                    await _dataServices.logChannel.SendMessageAsync("", false, builder);
+                                    await _dataServices.LogChannel.SendMessageAsync("", false, builder);
                                     sent = true;
                                     await msg.ModifyAsync(x =>
                                     {
@@ -645,7 +645,7 @@ namespace BotHATTwaffle.Modules
                         {
                             await s.SendMessageAsync("", false, builder);
                             await _dataServices.ChannelLog($"Embed created by {Context.User} was sent to {s.Name}!");
-                            await _dataServices.logChannel.SendMessageAsync("", false, builder);
+                            await _dataServices.LogChannel.SendMessageAsync("", false, builder);
                             sent = true;
                         }
                     }
@@ -787,9 +787,9 @@ namespace BotHATTwaffle.Modules
                     server = _dataServices.GetServer(serverStr);
 
                 if (_levelTesting.currentEventInfo[7].ToLower() == "competitive" || _levelTesting.currentEventInfo[7].ToLower() == "comp")
-                    config = _dataServices.compConfig;
+                    config = _dataServices.CompConfig;
                 else
-                    config = _dataServices.casualConfig; //If not comp, casual.
+                    config = _dataServices.CasualConfig; //If not comp, casual.
 
                 if (action.ToLower() == "pre")
                 {
@@ -840,7 +840,7 @@ namespace BotHATTwaffle.Modules
                     //Fire and forget. Start the post tasks and don't wait for them to complete.
                     Task fireAndForget = PostTasks(server);
 
-                    await _dataServices.ChannelLog($"Playtest Post on {server.Name}", $"exec {_dataServices.postConfig}" +
+                    await _dataServices.ChannelLog($"Playtest Post on {server.Name}", $"exec {_dataServices.PostConfig}" +
                         $"\nsv_voiceenable 0" +
                         $"\nGetting Demo and BSP file and moving into DropBox");
                 }
@@ -908,7 +908,7 @@ namespace BotHATTwaffle.Modules
             var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
             await _dataServices.RconCommand($"host_workshop_map {result}", server);
             await Task.Delay(15000);
-            await _dataServices.RconCommand($"exec {_dataServices.postConfig}; say Please join the Level Testing voice channel for feedback!", server);
+            await _dataServices.RconCommand($"exec {_dataServices.PostConfig}; say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
             await _dataServices.RconCommand($"sv_voiceenable 0; say Please join the Level Testing voice channel for feedback!", server);
             await Task.Delay(3000);
@@ -926,22 +926,22 @@ namespace BotHATTwaffle.Modules
             try
             {
                 //Try to DM them the information to get their demos.
-                await Program._client.GetUser(splitUser[0], splitUser[1]).SendMessageAsync("", false, builder);
+                await Program.Client.GetUser(splitUser[0], splitUser[1]).SendMessageAsync("", false, builder);
             }
             catch
             {
                 try
                 {
                     //If they don't accepts DMs, tag them in level testing.
-                    await _dataServices.testingChannel.SendMessageAsync($"{Program._client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
+                    await _dataServices.TestingChannel.SendMessageAsync($"{Program.Client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
                 }
                 catch
                 {
                     //If it cannot get the name from the event info, nag them in level testing.
-                    await _dataServices.testingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
+                    await _dataServices.TestingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
                 }
             }
-            await _dataServices.testingChannel.SendMessageAsync($"", false, builder);
+            await _dataServices.TestingChannel.SendMessageAsync($"", false, builder);
         }
 
         [Command("shutdown")]
@@ -970,7 +970,7 @@ namespace BotHATTwaffle.Modules
         }
 
         [Command("reload")]
-        [Summary("`>reload]` Reloads data from settings files.")]
+        [Summary("`>reload` Reloads data from settings files.")]
         [Remarks("Requirements: Moderator Role.")]
         public async Task ReloadAsync(string arg = null)
         {
@@ -985,9 +985,9 @@ namespace BotHATTwaffle.Modules
                 if (arg == "dump")
                 {
                     await Context.Message.DeleteAsync();
-                    var lines = _dataServices.config.Select(kvp => kvp.Key + ": " + kvp.Value.ToString());
+                    var lines = _dataServices.Config.Select(kvp => kvp.Key + ": " + kvp.Value.ToString());
                     var reply = string.Join(Environment.NewLine, lines);
-                    reply = reply.Replace((_dataServices.config["botToken"]), "[TOKEN HIDDEN]");
+                    reply = reply.Replace((_dataServices.Config["botToken"]), "[TOKEN HIDDEN]");
                     try
                     {
                         await Context.Message.Author.SendMessageAsync($"```{reply}```");
@@ -998,7 +998,7 @@ namespace BotHATTwaffle.Modules
                 {
                     await ReplyAsync("```Reloading Data!```");
                     await _dataServices.ChannelLog($"{Context.User} reloaded bot data!");
-                    _dataServices.ReadData();
+                    _dataServices.ReloadSettings();
                     _timer.Restart();
                 }
             }
