@@ -127,7 +127,7 @@ namespace BotHATTwaffle.Modules
             fieldBuilder.Add(new EmbedFieldBuilder
             {
                 Name = "With Help From",
-                Value = "[BenBlodgi](https://github.com/BenVlodgi)\n[Mark](https://github.com/MarkKoz)",
+                Value = "[BenBlodgi](https://github.com/BenVlodgi)\n[Mark](https://github.com/MarkKoz)\n[JimWood](https://github.com/JamesT-W)",
                 IsInline = true
             });
             fieldBuilder.Add(new EmbedFieldBuilder
