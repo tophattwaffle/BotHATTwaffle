@@ -11,18 +11,16 @@ namespace BotHATTwaffle.Modules
         
         public Timer _timer;
         private LevelTesting _levelTesting;
-        private UtilityService _utility;
         private ModerationServices _mod;
         private DiscordSocketClient _client;
         private Random _random;
         DataServices _dataServices;
 
-        public TimerService(DiscordSocketClient client, ModerationServices mod, UtilityService utility, LevelTesting levelTesting, Random rand, DataServices dataServices)
+        public TimerService(DiscordSocketClient client, ModerationServices mod, LevelTesting levelTesting, Random rand, DataServices dataServices)
         {
             _dataServices = dataServices;
             _client = client;
             _mod = mod;
-            _utility = utility;
             _levelTesting = levelTesting;
             _random = rand;
 

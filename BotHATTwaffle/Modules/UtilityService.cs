@@ -13,27 +13,23 @@ namespace BotHATTwaffle.Modules
     {
         public UtilityService()
         {
-            
-        }
-
-        public void Cycle()
-        {
-            //We'll loop utility things here each tick
+            //Nothing happens here, yet
         }
     }
 
     public class UtilityModule : ModuleBase<SocketCommandContext>
     {
-        private readonly UtilityService _utility;
-        DataServices _dataServices;
+	    private readonly DataServices _dataServices;
 
-        public UtilityModule(UtilityService utility, DataServices dataServices)
+        public UtilityModule(DataServices dataServices)
         {
             _dataServices = dataServices;
-            _utility = utility;
-            
         }
 
+		/// <summary>
+		/// Ping command with response time from API
+		/// </summary>
+		/// <returns></returns>
         [Command("ping")]
         [Summary("`>ping` Replies with a message")]
         [Remarks("It's a ping command.")]
@@ -49,6 +45,11 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("", false, builder);
         }
 
+		/// <summary>
+		/// Allows users to give/remove a role from themselves to display what skills they have.
+		/// </summary>
+		/// <param name="inRoleStr">List of roles to toggle</param>
+		/// <returns></returns>
         [Command("roleme")]
         [Summary("`>roleme [role names]` Toggles roles on a user")]
         [Remarks("This will let you add roles to yourself. Typically for saying you have a skill like 3D Modeling, or level design." +
@@ -56,6 +57,8 @@ namespace BotHATTwaffle.Modules
             "\nYou can type `>roleme` to show all roles available")]
         public async Task RolemeAsync([Remainder]string inRoleStr = "display")
         {
+			//Currently, we don't have the framework to get user roles in DM.
+			//Just don't allow it in a DM.
             if (Context.IsPrivate)
             {
                 await ReplyAsync("**This command can not be used in a DM**");
@@ -72,36 +75,38 @@ namespace BotHATTwaffle.Modules
             else
             {
                 //Validate that we can apply the role
-                Boolean valid = false;
+                bool valid = false;
                 string reply = null;
                 foreach (string s in _dataServices.RoleMeWhiteList)
                 {
-                    if (inRoleStr.ToLower().Contains(s.ToLower()))
-                    {
-                        valid = true; //We applied at least 1 role.
+	                if (!inRoleStr.ToLower().Contains(s.ToLower())) continue;
+	                valid = true; //We applied at least 1 role.
 
-                        var inRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == s);
+	                var inRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == s);
 
-                        if (user.Roles.Contains(inRole))
-                        {
-                            reply += $"{Context.User.Username} lost the **{inRole}** role.\n";
-                            await (user as IGuildUser).RemoveRoleAsync(inRole);
-                        }
-                        else
-                        {
-                            reply += $"{Context.User.Username} now has the role **{inRole}**. Enjoy the flair!\n";
-                            await (user as IGuildUser).AddRoleAsync(inRole);
-                        }
-                    }
+	                if (user.Roles.Contains(inRole))
+	                {
+						//Remove role
+		                reply += $"{Context.User.Username} lost the **{inRole}** role.\n";
+		                await ((IGuildUser)user).RemoveRoleAsync(inRole);
+	                }
+	                else
+	                {
+						//Add role
+		                reply += $"{Context.User.Username} now has the role **{inRole}**. Enjoy the flair!\n";
+		                await ((IGuildUser)user).AddRoleAsync(inRole);
+	                }
                 }
 
                 if(valid)
                 {
+					//Something actually happened - Reply with the changes.
                     await ReplyAsync($"{reply}");
                     await _dataServices.ChannelLog($"{Context.User}\n{reply}");
                 }
                 else
                 {
+					//Nothing was changed - bad input provided.
                     await ReplyAsync($"{Context.User.Mention}\n```You cannot assign yourself the role of **{inRoleStr}** because it does not exist, " +
                         $"or it is not allowed.```");
                     await _dataServices.ChannelLog($"{Context.User} attempted to roleMe the role of: {inRoleStr} and it failed. Either due to the " +

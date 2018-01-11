@@ -11,11 +11,9 @@ namespace BotHATTwaffle.Modules
 {
     public class InformationService
     {
-        private DataServices _data;
-
-        public InformationService(DataServices data)
+        public InformationService()
         {
-            _data = data;
+			//Nothing happens here, yet.
         }
     }
 
@@ -28,6 +26,12 @@ namespace BotHATTwaffle.Modules
             _dataServices = data;
         }
 
+		/// <summary>
+		/// Searches the VDC for the provided term.
+		/// Then replies with what it found.
+		/// </summary>
+		/// <param name="searchTerm">Search Term</param>
+		/// <returns></returns>
         [Command("vdc")]
         [Summary("`>vdc [Search]` Quick link back to a VDC search")]
         [Remarks("Does a search on the VDC and gives you the link back. Try to use the proper full term, for instance: " +
@@ -40,55 +44,56 @@ namespace BotHATTwaffle.Modules
             searchTerm = searchTerm.Replace(' ','+');
             string builtUrl = $"https://developer.valvesoftware.com/w/index.php?search={searchTerm}&title=Special%3ASearch&go=Go";
 
-
-
-            //Download webpage title and store to string
+            //Download web page title and store to string
             WebClient x = new WebClient();
             string siteTitle = x.DownloadString(builtUrl);
             string regex = @"(?<=<title.*>)([\s\S]*)(?=</title>)";
             Regex ex = new Regex(regex, RegexOptions.IgnoreCase);
             siteTitle = ex.Match(siteTitle).Value.Trim();
 
-            //If the URL isn't properly formatted, default
+            //If the URL isn't properly formatted, default it
             if (!Uri.IsWellFormedUriString(builtUrl, UriKind.Absolute))
             {
                 builtUrl = "https://developer.valvesoftware.com/wiki/Main_Page";
                 searchTerm = "Valve Developer Community";
             }
 
-            var builder = new EmbedBuilder();
-            var authBuilder = new EmbedAuthorBuilder();
-            var footBuilder = new EmbedFooterBuilder();
-            authBuilder = new EmbedAuthorBuilder()
+	        var authBuilder = new EmbedAuthorBuilder()
+	        {
+		        Name = $"This is what I was able to find for {searchTerm}",
+		        IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+	        };
+
+	        var footBuilder = new EmbedFooterBuilder()
             {
-                Name = $"This is what I was able to find for {searchTerm}",
-                IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+	            Text = "Thanks for using the VDC search!",
+	            IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
             };
 
-            footBuilder = new EmbedFooterBuilder()
+            var builder = new EmbedBuilder()
             {
-                Text = "Thanks for using the VDC search!",
-                IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
-            };
+	            Author = authBuilder,
+	            Footer = footBuilder,
 
-            builder = new EmbedBuilder()
-            {
-                Author = authBuilder,
-                Footer = footBuilder,
+	            Title = $"**Search Results**",
+	            Url = builtUrl,
+	            ImageUrl = "https://developer.valvesoftware.com/w/skins/valve/images-valve/logo.png",
+	            Color = new Color(71, 126, 159),
 
-                Title = $"**Search Results**",
-                Url = builtUrl,
-                ImageUrl = "https://developer.valvesoftware.com/w/skins/valve/images-valve/logo.png",
-                //ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-                Color = new Color(71, 126, 159),
-
-                Description = siteTitle
+	            Description = siteTitle
             };
 
             await ReplyAsync("",false,builder);
         }
 
-        //RunMode Async so the bot does not hang making a web request. We lose exceptions, but that is fine.
+        /// <summary>
+        /// Searches the SearchData JSON for a term in a series and replies with what was found.
+        /// Responses are limited in DMs
+		/// RunMode is Async to prevent blocking the gateway on larger searches.
+		/// </summary>
+		/// <param name="series">Series to search</param>
+		/// <param name="search">Search terms</param>
+		/// <returns></returns>
         [Command("search", RunMode = RunMode.Async)]
         [Summary("`>search [series] [SearchTerm]` searches a tutorial series.")]
         [Remarks("`>search [series] [SearchTerm]` searches our tutorial database for a result." +
@@ -108,14 +113,16 @@ namespace BotHATTwaffle.Modules
         public async Task SearchAsync(string series, [Remainder]string search)
         {
             var wait = await ReplyAsync($":eyes: Searching for **{search}** in **{series}**. This may take a moment! :eyes:");
+
             await _dataServices.ChannelLog($"{Context.User} ran a search",$"Series: {series}\nSearch Term: {search}");
-            bool isPrivate = false;
 
-            if (Context.IsPrivate)
-                isPrivate = true;
+			//Is the message a DM?
+            bool isPrivate = Context.IsPrivate;
 
+			//Preform the search
             List<List<string>> results = _dataServices.Search(series, search, isPrivate);
 
+			//A dump was requested
             if (search.ToLower() == "dump" || search.ToLower() == "all")
             {
                 //[0]title
@@ -134,7 +141,7 @@ namespace BotHATTwaffle.Modules
                     }
                 }
 
-                if (text != null && text.Length != 0)
+                if (!string.IsNullOrEmpty(text))
                     reply.Add(text);
 
                 try //If we cannot send a DM to the user, let them know.
@@ -161,6 +168,7 @@ namespace BotHATTwaffle.Modules
                 return;
             }
 
+			//There are no search results. Build a reply letting them know.
             if (results.Count == 0)
             {
                 List<string> singleResult = new List<string>
@@ -175,24 +183,22 @@ namespace BotHATTwaffle.Modules
 
             foreach (var r in results)
             {
-                var builder = new EmbedBuilder();
-                var authBuilder = new EmbedAuthorBuilder();
-                authBuilder = new EmbedAuthorBuilder()
+	            var authBuilder = new EmbedAuthorBuilder()
+	            {
+		            Name = r[0],
+		            IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+	            };
+
+                var builder = new EmbedBuilder()
                 {
-                    Name = r[0],
-                    IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
-                };
+	                Author = authBuilder,
 
-                builder = new EmbedBuilder()
-                {
-                    Author = authBuilder,
+	                Title = $"Click Here",
+	                Url = r[1],
+	                ThumbnailUrl = r[3],
+	                Color = new Color(243,128,72),
 
-                    Title = $"Click Here",
-                    Url = r[1],
-                    ThumbnailUrl = r[3],
-                    Color = new Color(243,128,72),
-
-                    Description = r[2]
+	                Description = r[2]
                 };
                 await ReplyAsync("",false,builder);
             }
@@ -200,6 +206,11 @@ namespace BotHATTwaffle.Modules
                 await wait.DeleteAsync();
         }
 
+		/// <summary>
+		/// Displays tutorial series
+		/// </summary>
+		/// <param name="searchSeries">Specific series to get info for</param>
+		/// <returns></returns>
         [Command("tutorials")]
         [Summary("`>tutorials [Optional series]` Displays links to tutorial series")]
         [Remarks("`>tutorials [Optional series]` Example: `>tutorials` `>tutorials v2`" +
@@ -222,125 +233,136 @@ namespace BotHATTwaffle.Modules
             string bodyThumbUrl = null;  //"https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png"
             string bodyImageUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/header.png";
             string bodyDescription = null;
-            #region TutorialsIf
-            //V2
-            if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1")
-            {
-                authTitle = "Version 2 Tutorial Series";
 
-                bodyUrl = "https://goo.gl/XoVXzd";
+            //What series?
+            switch (searchSeries.ToLower()) {
+	            case "v2series":
+	            case "v2":
+	            case "1":
+		            authTitle = "Version 2 Tutorial Series";
 
-                bodyDescription = "The Version 2 Tutorial series was created with the knowledge that I gained from creating the " +
-                    "Version 1(Now Legacy) series of tutorials.The goal is to help someone who hasn’t ever touched the tools " +
-                    "get up and running in Source Engine level design. You can watch them in any order, " +
-                    "but they have been designed to build upon each other.";
+		            bodyUrl = "https://goo.gl/XoVXzd";
+
+		            bodyDescription = "The Version 2 Tutorial series was created with the knowledge that I gained from creating the " +
+		                              "Version 1(Now Legacy) series of tutorials.The goal is to help someone who hasn’t ever touched the tools " +
+		                              "get up and running in Source Engine level design. You can watch them in any order, " +
+		                              "but they have been designed to build upon each other.";
+
+		            break;
+	            case "csgobootcamp":
+	            case "bc":
+	            case "2":
+		            authTitle = "CSGO Level Design Bootcamp";
+
+		            bodyUrl = "https://goo.gl/srFBxe";
+
+		            bodyDescription = "The CSGO Boot Camp series was created for ECS to air during their Twitch streams between matches." +
+		                              " It is created to help someone with no experience with the level design tools learn everything they need to" +
+		                              " create a competitive CSGO level. Most these tutorials apply to every Source Engine game," +
+		                              " but a handful are specific to CSGO.";
+
+		            break;
+	            case "3dsmax":
+	            case "3ds":
+	            case "3":
+		            authTitle = "3dsmax Tutorials";
+
+		            bodyUrl = "https://goo.gl/JGg48X";
+
+		            bodyDescription = "There are a few sub series in the 3dsmax section. If you’re looking to create and export your very first Source Engine prop, check out the **My First Prop** series." +
+		                              "\nIf you’re getting start with 3dsmax look at the **Beginners Guide** series, which is like the Version 2 Tutorial series but for 3dsmax." +
+		                              "\nThere are a few one - off tutorials listed on the page as well covering WallWorm functions";
+
+		            break;
+	            case "writtentutorials":
+	            case "written":
+	            case "4":
+		            authTitle = "Written Tutorials";
+
+		            bodyUrl = "https://goo.gl/i4aAqh";
+
+		            bodyDescription = "My library of written tutorials is typically about 1 off things that I want to cover. They are usually independent of any specific game.";
+
+		            break;
+	            case "legacyseries":
+	            case "v1":
+	            case "lg":
+	            case "5":
+		            authTitle = "Legacy Series";
+
+		            bodyUrl = "https://goo.gl/aHFcvX";
+
+		            bodyDescription = "Hammer Troubleshooting is a smaller series that is created off user questions that I see come up quite often.y are usually independent of any specific game.";
+
+		            break;
+	            case "hammertroubleshooting":
+	            case "ht":
+	            case "6":
+		            authTitle = "Hammer Troubleshooting";
+
+		            bodyUrl = "https://goo.gl/tBh7jT";
+
+		            bodyDescription = "The First tutorial series was my launching point for getting better at mapping. Not only did I learn a lot from making it, but I like to " +
+		                              "think that many others learned something from the series as well. The series was flawed in that it was not structured, and lacked quality control. But" +
+		                              " you may notice that the further along in the series you are, the better quality they get. Example is the 100th tutorial, it heavily reflects how the " +
+		                              "V2 series was created. You can view the entire series below. Just be warned that some of the information in these videos may not be correct, or even " +
+		                              "work any longer. Please watch at your own risk. I attempt to support these tutorials, but cannot due to time. Please watch the V2 series";
+
+		            break;
+	            case "all":
+		            authTitle = "All Tutorial Series Information";
+
+		            bodyUrl = "https://www.tophattwaffle.com/tutorials/";
+
+		            bodyDescription = $"Over the years I've built up quite the collection of tutorial series! " +
+		                              $"\n__Here they all are__" +
+		                              $"\n[Version 2 Series](https://goo.gl/XoVXzd)" +
+		                              $"\n[CSGO Bootcamp](https://goo.gl/srFBxe)" +
+		                              $"\n[3dsmax](https://goo.gl/JGg48X)" +
+		                              $"\n[Written Tutorials](https://goo.gl/i4aAqh)" +
+		                              $"\n[Hammer Troubleshooting](https://goo.gl/tBh7jT)" +
+		                              $"\n[Legacy Series V1](https://goo.gl/aHFcvX)";
+
+		            break;
+	            default:
+		            await ReplyAsync("Unknown series. Please try `>help tutorials` to see all the options.");
+		            return;
             }
-            //Bootcamp
-            else if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2")
+
+			//Build and send message
+	        var authBuilder = new EmbedAuthorBuilder()
             {
-                authTitle = "CSGO Level Design Bootcamp";
-
-                bodyUrl = "https://goo.gl/srFBxe";
-
-                bodyDescription = "The CSGO Boot Camp series was created for ECS to air during their Twitch streams between matches." +
-                    " It is created to help someone with no experience with the level design tools learn everything they need to" +
-                    " create a competitive CSGO level. Most these tutorials apply to every Source Engine game," +
-                    " but a handful are specific to CSGO.";
-            }
-            //3dsmax
-            else if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3")
-            {
-                authTitle = "3dsmax Tutorials";
-
-                bodyUrl = "https://goo.gl/JGg48X";
-
-                bodyDescription = "There are a few sub series in the 3dsmax section. If you’re looking to create and export your very first Source Engine prop, check out the **My First Prop** series." +
-                    "\nIf you’re getting start with 3dsmax look at the **Beginners Guide** series, which is like the Version 2 Tutorial series but for 3dsmax." +
-                    "\nThere are a few one - off tutorials listed on the page as well covering WallWorm functions";
-            }
-            //Writtentutorials
-            else if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4")
-            {
-                authTitle = "Written Tutorials";
-
-                bodyUrl = "https://goo.gl/i4aAqh";
-
-                bodyDescription = "My library of written tutorials is typically about 1 off things that I want to cover. They are usually independent of any specific game.";
-            }
-            //legacy
-            else if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5")
-            {
-                authTitle = "Legacy Series";
-
-                bodyUrl = "https://goo.gl/aHFcvX";
-
-                bodyDescription = "Hammer Troubleshooting is a smaller series that is created off user questions that I see come up quite often.y are usually independent of any specific game.";
-            }
-            //Hammer Troubleshooting
-            else if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6")
-            {
-                authTitle = "Hammer Troubleshooting";
-
-                bodyUrl = "https://goo.gl/tBh7jT";
-
-                bodyDescription = "The First tutorial series was my launching point for getting better at mapping. Not only did I learn a lot from making it, but I like to " +
-                    "think that many others learned something from the series as well. The series was flawed in that it was not structured, and lacked quality control. But" +
-                    " you may notice that the further along in the series you are, the better quality they get. Example is the 100th tutorial, it heavily reflects how the " +
-                    "V2 series was created. You can view the entire series below. Just be warned that some of the information in these videos may not be correct, or even " +
-                    "work any longer. Please watch at your own risk. I attempt to support these tutorials, but cannot due to time. Please watch the V2 series";
-            }
-            else if (searchSeries.ToLower() == "all")
-            {
-                authTitle = "All Tutorial Series Information";
-
-                bodyUrl = "https://www.tophattwaffle.com/tutorials/";
-
-                bodyDescription = $"Over the years I've built up quite the collection of tutorial series! " +
-                    $"\n__Here they all are__" +
-                    $"\n[Version 2 Series](https://goo.gl/XoVXzd)" +
-                    $"\n[CSGO Bootcamp](https://goo.gl/srFBxe)" +
-                    $"\n[3dsmax](https://goo.gl/JGg48X)" +
-                    $"\n[Written Tutorials](https://goo.gl/i4aAqh)" +
-                    $"\n[Hammer Troubleshooting](https://goo.gl/tBh7jT)" +
-                    $"\n[Legacy Series V1](https://goo.gl/aHFcvX)";
-            }
-            else {
-                await ReplyAsync("Unknown series. Please try `>help tutorials` to see all the options.");
-                return; }
-            #endregion
-            var builder = new EmbedBuilder();
-            var authBuilder = new EmbedAuthorBuilder();
-            var footBuilder = new EmbedFooterBuilder();
-            authBuilder = new EmbedAuthorBuilder()
-            {
-                Name = authTitle,
-                IconUrl = authImgUrl
+	            Name = authTitle,
+	            IconUrl = authImgUrl
             };
 
-            footBuilder = new EmbedFooterBuilder()
+            var footBuilder = new EmbedFooterBuilder()
             {
-                Text = footText,
-                IconUrl = footImgUrl
+	            Text = footText,
+	            IconUrl = footImgUrl
             };
 
-            builder = new EmbedBuilder()
+            var builder = new EmbedBuilder()
             {
-                Author = authBuilder,
-                Footer = footBuilder,
+	            Author = authBuilder,
+	            Footer = footBuilder,
 
-                Title = bodyTitle,
-                Url = bodyUrl,
-                ImageUrl = bodyImageUrl,
-                ThumbnailUrl = bodyThumbUrl,
-                Color = new Color(243,128,72),
+	            Title = bodyTitle,
+	            Url = bodyUrl,
+	            ImageUrl = bodyImageUrl,
+	            ThumbnailUrl = bodyThumbUrl,
+	            Color = new Color(243,128,72),
 
-                Description = bodyDescription
+	            Description = bodyDescription
             };
             await ReplyAsync("",false,builder);
 
         }
 
-
+		/// <summary>
+		/// CAT FACTS THAT YOU CANNOT UNSUBSCRIBE FROM
+		/// </summary>
+		/// <returns></returns>
         [Command("catFact", RunMode = RunMode.Async)]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]
@@ -350,6 +372,7 @@ namespace BotHATTwaffle.Modules
             var catFact = "Did you know cats have big bushy tails?";
             var name = "Cat Fact 0";
 
+			//Get a fact from the file
             if (File.Exists(_dataServices.CatFactPath))
             {
                 var _rand = new Random();
@@ -358,11 +381,13 @@ namespace BotHATTwaffle.Modules
                 int lineNumber = _rand.Next(0, allLines.Length);
                 catFact = allLines[lineNumber];
 
+				//Match on title for a fancy title
                 Match match = Regex.Match(catFact, @"^\w+ Fact \d*", RegexOptions.IgnoreCase);
                 name = match.Value;
                 catFact = catFact.Substring(match.Length).Trim();
             }
 
+			//Build and send
             var builder = new EmbedBuilder
             {
                 Author = new EmbedAuthorBuilder {
@@ -398,22 +423,28 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("You cannot unsubscribe from cat facts...");
         }
 
+		/// <summary>
+		/// Penguin Facts!
+		/// </summary>
+		/// <returns></returns>
         [Command("PenguinFact", RunMode = RunMode.Async)]
         [Summary("`>PenguinFact` Gives you a Penguin fact!")]
         [Remarks("Ever want to know more about Penguin? Now you can.")]
         [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact", "penguinfacts", "penguin facts")]
         public async Task PenguinFactAsync()
         {
-            Random _rand = new Random();
+            Random rand = new Random();
 
-            string penguinFact = "Did you know penguins have big bushy tails?";
+	        //Get a fact from the file
+			string penguinFact = "Did you know penguins have big bushy tails?";
             if (File.Exists(_dataServices.PenguinFactPath))
             {
                 var allLines = File.ReadAllLines(_dataServices.PenguinFactPath);
-                var lineNumber = _rand.Next(0, allLines.Length);
+                var lineNumber = rand.Next(0, allLines.Length);
                 penguinFact = allLines[lineNumber];
             }
 
+			//Build and send
             var authBuilder = new EmbedAuthorBuilder()
             {
                 Name = $"PENGUIN FACTS!",
@@ -438,6 +469,10 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("", false, builder.Build());
         }
 		
+		/// <summary>
+		/// Tanooki Facts!
+		/// </summary>
+		/// <returns></returns>
 		[Command("TanookiFact", RunMode = RunMode.Async)]
         [Summary("`>tanookiFact` Gives you a Tanooki fact!")]
         [Remarks("Ever want to know more about Tanooki? Now you can.")]
@@ -446,7 +481,8 @@ namespace BotHATTwaffle.Modules
         {
             Random _rand = new Random();
 
-            string tanookiFact = "Did you know Tanooki has a big bushy tail?";
+	        //Get a fact from the file
+			string tanookiFact = "Did you know Tanooki has a big bushy tail?";
             if (File.Exists(_dataServices.TanookiFactPath))
             {
                 var allLines = File.ReadAllLines(_dataServices.TanookiFactPath);
@@ -454,6 +490,7 @@ namespace BotHATTwaffle.Modules
                 tanookiFact = allLines[lineNumber];
             }
 
+			//Build and send
             var authBuilder = new EmbedAuthorBuilder()
             {
                 Name = $"TANOOKI FACTS!",
@@ -478,11 +515,16 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("", false, builder.Build());
         }
 
+		/// <summary>
+		/// Shows a picture of glorious leader!
+		/// </summary>
+		/// <returns></returns>
 	    [Command("tanookiirl", RunMode = RunMode.Async)]
 	    [Summary("`>tanookiirl` Shows you Tanooki looking at stuff!")]
 		[Alias("tanookilooksatthings")]
 	    public async Task TanookiLookAsync()
 	    {
+			//Build and send
 		    var builder = new EmbedBuilder()
 		    {
 			    ImageUrl = this._dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/kimjongillookingatthings/"),

@@ -21,13 +21,19 @@ namespace BotHATTwaffle.Modules
             //_config = config;
         }
 
+		/// <summary>
+		/// Sends a DM with general help message if possible. If not, replies with it.
+		/// </summary>
+		/// <returns></returns>
         [Command("help")]
         [Summary("`>help` Displays this message")]
         [Alias("h")]
         public async Task HelpAsync()
         {
+			//If in a DM, don't try to delete their message
             if (!Context.IsPrivate)
                 await Context.Message.DeleteAsync();
+
             //string prefix = _config["prefix"];
             var builder = new EmbedBuilder()
             {
@@ -35,8 +41,10 @@ namespace BotHATTwaffle.Modules
                 Description = "These are the commands you can use"
             };
 
+			//Loop through all of our modules
             foreach (var module in _service.Modules)
             {
+				//Build the help string
                 string description = null;
                 foreach (var cmd in module.Commands)
                 {
@@ -56,6 +64,7 @@ namespace BotHATTwaffle.Modules
                 }
             }
 
+			//Try to DM, if we can't reply
             try
             {
                 await Context.User.SendMessageAsync("", false, builder.Build());
@@ -66,6 +75,11 @@ namespace BotHATTwaffle.Modules
             }
         }
 
+		/// <summary>
+		/// Gives a help message for a specific command with more detail.
+		/// </summary>
+		/// <param name="command"></param>
+		/// <returns></returns>
         [Command("help")]
         [Summary("`>help [command]` Displays help message for a specific command")]
         [Alias("h")]
@@ -87,9 +101,11 @@ namespace BotHATTwaffle.Modules
                 Description = $"Here are some commands like **{command}**"
             };
 
-            foreach (var match in result.Commands)
+	        //Loop through all of our commands that match the search
+			foreach (var match in result.Commands)
             {
-                var cmd = match.Command;
+	            //Build the help string
+				var cmd = match.Command;
                 builder.AddField(x =>
                 {
                     x.Name = string.Join(", ", cmd.Aliases);
@@ -101,8 +117,9 @@ namespace BotHATTwaffle.Modules
                 });
             }
 
-            try
-            {
+	        //Try to DM, if we can't reply
+			try
+			{
                 await Context.User.SendMessageAsync("", false, builder.Build());
             }
             catch
@@ -111,6 +128,10 @@ namespace BotHATTwaffle.Modules
             }
         }
 
+		/// <summary>
+		/// Displays the about message.
+		/// </summary>
+		/// <returns></returns>
         [Command("about")]
         [Summary("`>about` Displays information about the bot")]
         public async Task AboutAsync()
