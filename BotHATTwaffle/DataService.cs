@@ -35,6 +35,7 @@ namespace BotHATTwaffle
         string mutedRoleStr;
         string rconRoleStr;
         string ActiveRoleStr;
+        string PatreonsRoleStr;
         public SocketTextChannel logChannel { get; set; }
         public SocketTextChannel announcementChannel  { get; set; }
         public SocketTextChannel testingChannel  { get; set; }
@@ -43,6 +44,7 @@ namespace BotHATTwaffle
         public SocketRole RconRole { get; set; }
         public SocketRole ModRole { get; set; }
         public SocketRole ActiveRole { get; set; }
+        public SocketRole PatreonsRole { get; set; }
 
         //Misc setting vars
         public string[] pakRatEavesDrop;
@@ -171,6 +173,7 @@ namespace BotHATTwaffle
             mainConfig.AddKeyIfMissing("mutedRoleName", "Muted");
             mainConfig.AddKeyIfMissing("rconRoleName", "RconAccess");
             mainConfig.AddKeyIfMissing("publicCommandWhiteListCSV", "[CONFIGME]");
+            mainConfig.AddKeyIfMissing("patreonsRole", "Patreons");
             #endregion
 
             #region  Shitpost vars
@@ -272,6 +275,9 @@ namespace BotHATTwaffle
             if (config.ContainsKey("activeMemberRole"))
                 ActiveRoleStr = (config["activeMemberRole"]);
 
+            if (config.ContainsKey("patreonsRole"))
+                PatreonsRoleStr = (config["patreonsRole"]);
+
             var arg = Program._client.Guilds.FirstOrDefault();
 
             Console.ForegroundColor = ConsoleColor.Green;
@@ -323,6 +329,11 @@ namespace BotHATTwaffle
                 {
                     ActiveRole = r;
                     Console.WriteLine($"\nActive Memeber role found!: {r.Name}"); //That isn't a spelling mistake :kappa:
+                }
+                if (r.Name == this.PatreonsRoleStr)
+                {
+                    PatreonsRole = r;
+                    Console.WriteLine($"\nPatreons role found!: {r.Name}");
                 }
             }
             Console.WriteLine();

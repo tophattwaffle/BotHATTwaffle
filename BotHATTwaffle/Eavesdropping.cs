@@ -133,7 +133,7 @@ namespace BotHATTwaffle
             }
             foreach (string s in _dataServices.agreeEavesDrop)
             {
-                if (message.Content.Equals("^") && message.Author.Username.Equals(s))
+                if (message.Content.Equals("^") && message.Author.Username.Equals(s) || ((SocketGuildUser)message.Author).Roles.Contains(_dataServices.PatreonsRole) && message.Content.Equals("^"))
                 {
                         await message.Channel.SendMessageAsync(_dataServices.agreeStrings[_random.Next(0, _dataServices.agreeStrings.Length)]);
                         return;
