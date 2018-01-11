@@ -344,7 +344,7 @@ namespace BotHATTwaffle.Modules
         [Command("catFact")]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]
-        [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "catfacts", "cat facts")]
+        [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "catfact", "cat fact", "catfacts", "cat facts")]
         public async Task CatFactAsync()
         {
             var catFact = "Did you know cats have big bushy tails?";
@@ -401,13 +401,13 @@ namespace BotHATTwaffle.Modules
         [Command("PenguinFact")]
         [Summary("`>PenguinFact` Gives you a Penguin fact!")]
         [Remarks("Ever want to know more about Penguin? Now you can.")]
-        [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact", "penguinfacts", "penguin facts")]
+        [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguinfact", "penguin fact", "penguinfacts", "penguin facts")]
         public async Task PenguinFactAsync()
         {
             Random _rand = new Random();
 
             string penguinFact = "Did you know penguins have big bushy tails?";
-            if (File.Exists(_dataServices.catFactPath))
+            if (File.Exists(_dataServices.penguinFactPath))
             {
                 var allLines = File.ReadAllLines(_dataServices.penguinFactPath);
                 var lineNumber = _rand.Next(0, allLines.Length);
@@ -435,6 +435,46 @@ namespace BotHATTwaffle.Modules
                 Description = penguinFact
             };
             await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
+            await ReplyAsync("", false, builder.Build());
+        }
+		
+		[Command("TanookiFact")]
+        [Summary("`>tanookiFact` Gives you a Tanooki fact!")]
+        [Remarks("Ever want to know more about Tanooki? Now you can.")]
+        [Alias("gimme a tanooki fact", "hit me with a tanooki fact", "hit a nigga with a tanooki fact", "tanookifact", "tanooki fact", "tanookifacts", "tanooki facts", "@TanookiSuit3")]
+        public async Task TanookiFactAsync()
+        {
+            Random _rand = new Random();
+
+            string tanookiFact = "Did you know Tanooki has a big bushy tail?";
+            if (File.Exists(_dataServices.tanookiFactPath))
+            {
+                var allLines = File.ReadAllLines(_dataServices.tanookiFactPath);
+                var lineNumber = _rand.Next(0, allLines.Length);
+                tanookiFact = allLines[lineNumber];
+            }
+
+            var authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = $"TANOOKI FACTS!",
+                IconUrl = Context.Message.Author.GetAvatarUrl(),
+            };
+
+            var footBuilder = new EmbedFooterBuilder()
+            {
+                Text = "This was Tanooki facts, you cannot unsubscribe."
+            };
+            var builder = new EmbedBuilder()
+            {
+                Author = authBuilder,
+                Footer = footBuilder,
+
+                ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/penguin.png", //should be a Tanooki image
+                Color = new Color(230, 235, 240),
+
+                Description = tanookiFact
+            };
+            await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A TANOOKI FACT");
             await ReplyAsync("", false, builder.Build());
         }
     }
