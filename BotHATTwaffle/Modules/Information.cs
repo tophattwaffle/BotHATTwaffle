@@ -477,5 +477,17 @@ namespace BotHATTwaffle.Modules
             await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A TANOOKI FACT");
             await ReplyAsync("", false, builder.Build());
         }
-    }
+
+	    [Command("tanookilooksatthings")]
+	    [Summary("`>tanookilooksatthings` Shows you Tanooki looking at stuff!")]
+	    public async Task TanookiLookAsync()
+	    {
+		    var builder = new EmbedBuilder()
+		    {
+			    ImageUrl = this._dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/kimjongillookingatthings/"),
+			    Color = new Color(138, 43, 226),
+		    };
+		    await ReplyAsync("", false, builder.Build());
+	    }
+	}
 }
