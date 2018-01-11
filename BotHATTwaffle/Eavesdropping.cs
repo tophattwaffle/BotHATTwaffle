@@ -115,7 +115,7 @@ namespace BotHATTwaffle
             {
                 var builder = new EmbedBuilder()
                 {
-                    ImageUrl = "https://content.tophattwaffle.com/BotHATTwaffle/doit.jpg",
+                    ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/doit.jpg",
                 };
                 await message.Channel.SendMessageAsync("",false, builder);
                 return;
