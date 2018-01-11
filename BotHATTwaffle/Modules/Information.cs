@@ -447,11 +447,16 @@ namespace BotHATTwaffle.Modules
             Random _rand = new Random();
 
             string tanookiFact = "Did you know Tanooki has a big bushy tail?";
+            string furryFact = "";  //left blank, so it doesn't add any text onto the GetRandomImgFromURL filepath unless necessary
             if (File.Exists(_dataServices.TanookiFactPath))
             {
                 var allLines = File.ReadAllLines(_dataServices.TanookiFactPath);
                 var lineNumber = _rand.Next(0, allLines.Length);
                 tanookiFact = allLines[lineNumber];
+                if (lineNumber == 0)
+                {
+                    furryFact = "Tanooki_image_furry.png";  //if it is a furry fact, the image is set to the furry image
+                }
             }
 
             var authBuilder = new EmbedAuthorBuilder()
@@ -469,7 +474,7 @@ namespace BotHATTwaffle.Modules
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = this._dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
+                ThumbnailUrl = this._dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/" + furryFact), //hopefully this works fine in c#, since if/else statements don't work inside this var, so this is a workaround
                 Color = new Color(230, 235, 240),
 
                 Description = tanookiFact
