@@ -341,7 +341,7 @@ namespace BotHATTwaffle.Modules
         }
 
 
-        [Command("catFact")]
+        [Command("catFact", RunMode = RunMode.Async)]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]
         [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "catfacts", "cat facts")]
@@ -398,7 +398,7 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("You cannot unsubscribe from cat facts...");
         }
 
-        [Command("PenguinFact")]
+        [Command("PenguinFact", RunMode = RunMode.Async)]
         [Summary("`>PenguinFact` Gives you a Penguin fact!")]
         [Remarks("Ever want to know more about Penguin? Now you can.")]
         [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact", "penguinfacts", "penguin facts")]
@@ -438,7 +438,7 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("", false, builder.Build());
         }
 		
-		[Command("TanookiFact")]
+		[Command("TanookiFact", RunMode = RunMode.Async)]
         [Summary("`>tanookiFact` Gives you a Tanooki fact!")]
         [Remarks("Ever want to know more about Tanooki? Now you can.")]
         [Alias("gimme a tanooki fact", "hit me with a tanooki fact", "hit a nigga with a tanooki fact", "tanooki fact", "tanookifacts", "tanooki facts", "@TanookiSuit3")]
@@ -478,8 +478,9 @@ namespace BotHATTwaffle.Modules
             await ReplyAsync("", false, builder.Build());
         }
 
-	    [Command("tanookilooksatthings")]
-	    [Summary("`>tanookilooksatthings` Shows you Tanooki looking at stuff!")]
+	    [Command("tanookiirl", RunMode = RunMode.Async)]
+	    [Summary("`>tanookiirl` Shows you Tanooki looking at stuff!")]
+		[Alias("tanookilooksatthings")]
 	    public async Task TanookiLookAsync()
 	    {
 		    var builder = new EmbedBuilder()
