@@ -56,6 +56,7 @@ namespace BotHATTwaffle
         public string[] roleMeWhiteList;
         public string catFactPath;
         public string penguinFactPath;
+        public string tanookiFactPath;
         public string alertUser;
 
         //TimerService Vars
@@ -173,6 +174,7 @@ namespace BotHATTwaffle
             #region  Shitpost vars
             mainConfig.AddKeyIfMissing("catFactPath", $"X:\\Scripts\\catfacts.txt");
             mainConfig.AddKeyIfMissing("penguinFactPath", $"X:\\Scripts\\penguinfacts.txt");
+            mainConfig.AddKeyIfMissing("tanookiFactPath", $"X:\\Scripts\\tanookifacts.txt");
             #endregion
 
             #endregion
@@ -222,6 +224,8 @@ namespace BotHATTwaffle
                 catFactPath = (config["catFactPath"]);
             if (config.ContainsKey("penguinFactPath"))
                 penguinFactPath = (config["penguinFactPath"]);
+			if (config.ContainsKey("tanookiFactPath"))
+                tanookiFactPath = (config["tanookiFactPath"]);
             if ((config.ContainsKey("calUpdateTicks") && !int.TryParse(config["calUpdateTicks"], out calUpdateTicks)))
             {
                 Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {calUpdateTicks}.");
