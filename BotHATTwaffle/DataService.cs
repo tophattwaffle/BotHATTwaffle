@@ -162,7 +162,7 @@ namespace BotHATTwaffle
             mainConfig.AddKeyIfMissing("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
             mainConfig.AddKeyIfMissing("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
             mainConfig.AddKeyIfMissing("yorkCSV", "de_york,de york");
-            mainConfig.AddKeyIfMissing("tanookiCSV", "@tanooki");
+            mainConfig.AddKeyIfMissing("tanookiID", "<@147497265592795136>");
             #endregion
 
             #region Command Dependent
@@ -202,8 +202,8 @@ namespace BotHATTwaffle
                 vbEavesDrop = (config["vbEavesDropCSV"]).Split(',');
             if (config.ContainsKey("yorkCSV"))
                 yorkEavesDrop = (config["yorkCSV"]).Split(',');
-            if (config.ContainsKey("tanookiCSV"))
-                tanookiEavesDrop = (config["tanookiCSV"]).Split(',');
+            if (config.ContainsKey("tanookiID"))
+                tanookiEavesDrop = (config["tanookiID"]).Split(',');
             if (config.ContainsKey("agreeUserCSV"))
                 agreeEavesDrop = (config["agreeUserCSV"]).Split(',');
             if (config.ContainsKey("roleMeWhiteListCSV"))
