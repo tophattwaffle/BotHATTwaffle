@@ -51,6 +51,7 @@ namespace BotHATTwaffle
         public string[] propperEavesDrop;
         public string[] vbEavesDrop;
         public string[] yorkEavesDrop;
+        public string[] tanookiEavesDrop;
         public string[] agreeEavesDrop;
         public string[] agreeStrings;
         public string[] roleMeWhiteList;
@@ -161,6 +162,7 @@ namespace BotHATTwaffle
             mainConfig.AddKeyIfMissing("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
             mainConfig.AddKeyIfMissing("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
             mainConfig.AddKeyIfMissing("yorkCSV", "de_york,de york");
+            mainConfig.AddKeyIfMissing("tanookiID", "<@147497265592795136>");
             #endregion
 
             #region Command Dependent
@@ -200,6 +202,8 @@ namespace BotHATTwaffle
                 vbEavesDrop = (config["vbEavesDropCSV"]).Split(',');
             if (config.ContainsKey("yorkCSV"))
                 yorkEavesDrop = (config["yorkCSV"]).Split(',');
+            if (config.ContainsKey("tanookiID"))
+                tanookiEavesDrop = (config["tanookiID"]).Split(',');
             if (config.ContainsKey("agreeUserCSV"))
                 agreeEavesDrop = (config["agreeUserCSV"]).Split(',');
             if (config.ContainsKey("roleMeWhiteListCSV"))
@@ -224,7 +228,7 @@ namespace BotHATTwaffle
                 catFactPath = (config["catFactPath"]);
             if (config.ContainsKey("penguinFactPath"))
                 penguinFactPath = (config["penguinFactPath"]);
-			if (config.ContainsKey("tanookiFactPath"))
+            if (config.ContainsKey("tanookiFactPath"))
                 tanookiFactPath = (config["tanookiFactPath"]);
             if ((config.ContainsKey("calUpdateTicks") && !int.TryParse(config["calUpdateTicks"], out calUpdateTicks)))
             {

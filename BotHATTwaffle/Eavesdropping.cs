@@ -187,6 +187,14 @@ namespace BotHATTwaffle
                     return;
                 }
             }
+            foreach (string s in _dataServices.tanookiEavesDrop)
+            {
+                if (message.Content.ToLower().Contains(s))
+                {
+                    await Tanooki(message);
+                    return;
+                }
+            }
         }
 
         private Task PakRat(SocketMessage message)
@@ -359,6 +367,40 @@ namespace BotHATTwaffle
                 Color = new Color(243, 128, 72),
 
                 Description = $"I see that we both share the same love for amazing levels."
+            };
+
+            message.Channel.SendMessageAsync("", false, builder);
+
+            return Task.CompletedTask;
+        }
+
+        private Task Tanooki(SocketMessage message)
+        {
+            Random _rand = new Random();
+            string[] tanookiUrls = new string[]{
+                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_01.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_02.png",
+                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_03.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_04.jpg",
+                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_05.png",
+            };
+
+            _dataServices.ChannelLog($"{message.Author} posted about Tanooki #{message.Channel}. You should go meme them.");
+            var authBuilder = new EmbedAuthorBuilder()
+            {
+                Name = $"Hey there {message.Author.Username}!",
+                IconUrl = message.Author.GetAvatarUrl(),
+            };
+
+            var builder = new EmbedBuilder()
+            {
+                Author = authBuilder,
+                Title = $"You talking about the worst csgo player ever?",
+
+                ImageUrl = tanookiUrls[_rand.Next(0, tanookiUrls.Length)],
+                Color = new Color(243, 128, 72),
+
+                Description = $"I see that we both share the same love for terrible admins."
             };
 
             message.Channel.SendMessageAsync("", false, builder);
