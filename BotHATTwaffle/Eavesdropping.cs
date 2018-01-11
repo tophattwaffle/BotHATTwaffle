@@ -187,13 +187,10 @@ namespace BotHATTwaffle
                     return;
                 }
             }
-            foreach (string s in _dataServices.tanookiEavesDrop)
+            if (message.Content.ToLower().Contains(_dataServices.tanookiEavesDrop))
             {
-                if (message.Content.ToLower().Contains(s))
-                {
-                    await Tanooki(message);
-                    return;
-                }
+                await Tanooki(message);
+                return;
             }
         }
 
@@ -337,20 +334,6 @@ namespace BotHATTwaffle
 
         private Task DeYork(SocketMessage message)
         {
-            Random _rand = new Random();
-            string[] yorkUrls = new string[]{
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014230815_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014230840_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014230850_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014230941_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231005_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231026_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231046_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231116_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231156_1.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/york/20161014231204_1.jpg",
-            };
-
             _dataServices.ChannelLog($"{message.Author} posted about de_york #{message.Channel}. You should go meme them.");
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -363,7 +346,7 @@ namespace BotHATTwaffle
                 Author = authBuilder,
                 Title = $"You talking about the best level ever?",
                 
-                ImageUrl = yorkUrls[_rand.Next(0, yorkUrls.Length)],
+                ImageUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/york/"),
                 Color = new Color(243, 128, 72),
 
                 Description = $"I see that we both share the same love for amazing levels."
@@ -376,15 +359,6 @@ namespace BotHATTwaffle
 
         private Task Tanooki(SocketMessage message)
         {
-            Random _rand = new Random();
-            string[] tanookiUrls = new string[]{
-                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_01.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_02.png",
-                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_03.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_04.jpg",
-                "https://content.tophattwaffle.com/BotHATTwaffle/Tanooki/Tanooki_image_05.png",
-            };
-
             _dataServices.ChannelLog($"{message.Author} posted about Tanooki #{message.Channel}. You should go meme them.");
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -397,7 +371,7 @@ namespace BotHATTwaffle
                 Author = authBuilder,
                 Title = $"You talking about the worst csgo player ever?",
 
-                ImageUrl = tanookiUrls[_rand.Next(0, tanookiUrls.Length)],
+                ThumbnailUrl = this._dataServices.GetRandomIMGFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
                 Color = new Color(243, 128, 72),
 
                 Description = $"I see that we both share the same love for terrible admins."

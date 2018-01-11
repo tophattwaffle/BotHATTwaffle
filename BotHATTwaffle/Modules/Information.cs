@@ -344,7 +344,7 @@ namespace BotHATTwaffle.Modules
         [Command("catFact")]
         [Summary("`>catFact` Gives you a cat fact!")]
         [Remarks("Ever want to know more about cats? Now you can.")]
-        [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "cat fact", "catfacts", "cat facts")]
+        [Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "catfacts", "cat facts")]
         public async Task CatFactAsync()
         {
             var catFact = "Did you know cats have big bushy tails?";
@@ -401,7 +401,7 @@ namespace BotHATTwaffle.Modules
         [Command("PenguinFact")]
         [Summary("`>PenguinFact` Gives you a Penguin fact!")]
         [Remarks("Ever want to know more about Penguin? Now you can.")]
-        [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact", "penguin fact", "penguinfacts", "penguin facts")]
+        [Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact", "penguinfacts", "penguin facts")]
         public async Task PenguinFactAsync()
         {
             Random _rand = new Random();

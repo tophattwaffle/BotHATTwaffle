@@ -51,7 +51,7 @@ namespace BotHATTwaffle
         public string[] propperEavesDrop;
         public string[] vbEavesDrop;
         public string[] yorkEavesDrop;
-        public string[] tanookiEavesDrop;
+        public string tanookiEavesDrop;
         public string[] agreeEavesDrop;
         public string[] agreeStrings;
         public string[] roleMeWhiteList;
@@ -203,7 +203,7 @@ namespace BotHATTwaffle
             if (config.ContainsKey("yorkCSV"))
                 yorkEavesDrop = (config["yorkCSV"]).Split(',');
             if (config.ContainsKey("tanookiID"))
-                tanookiEavesDrop = (config["tanookiID"]).Split(',');
+                tanookiEavesDrop = (config["tanookiID"]);
             if (config.ContainsKey("agreeUserCSV"))
                 agreeEavesDrop = (config["agreeUserCSV"]).Split(',');
             if (config.ContainsKey("roleMeWhiteListCSV"))
