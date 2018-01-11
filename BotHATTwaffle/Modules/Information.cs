@@ -441,7 +441,7 @@ namespace BotHATTwaffle.Modules
 		[Command("TanookiFact")]
         [Summary("`>tanookiFact` Gives you a Tanooki fact!")]
         [Remarks("Ever want to know more about Tanooki? Now you can.")]
-        [Alias("gimme a tanooki fact", "hit me with a tanooki fact", "hit a nigga with a tanooki fact", "tanookifact", "tanooki fact", "tanookifacts", "tanooki facts", "@TanookiSuit3")]
+        [Alias("gimme a tanooki fact", "hit me with a tanooki fact", "hit a nigga with a tanooki fact", "tanookifact", "tanooki fact", "tanookifacts", "tanooki facts")]
         public async Task TanookiFactAsync()
         {
             Random _rand = new Random();
