@@ -464,12 +464,20 @@ namespace BotHATTwaffle.Modules
             {
                 Text = "This was Tanooki facts, you cannot unsubscribe."
             };
+
+            string thumbString = null;
+
+            if (tanookiFact.Contains("furry"))
+                thumbString = "https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/Tanooki_image_furry.png";
+            else
+                thumbString = _dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/");
+
             var builder = new EmbedBuilder()
             {
                 Author = authBuilder,
                 Footer = footBuilder,
 
-                ThumbnailUrl = this._dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
+                ThumbnailUrl = thumbString,
                 Color = new Color(230, 235, 240),
 
                 Description = tanookiFact
