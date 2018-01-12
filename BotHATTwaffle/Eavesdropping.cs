@@ -155,8 +155,9 @@ namespace BotHATTwaffle
             Summer.WorkshopItem item = new Summer.WorkshopItem();
             await item.Load(workshopUrl);
 
-            if (!item.IsValid)
+			if (!item.IsValid)
                 return false;
+
 
             EmbedBuilder builder = new EmbedBuilder();
             builder.WithImageUrl(item.Image);
@@ -185,12 +186,27 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		internal async Task Listen(SocketMessage message)
 		{
+			if (message.Content.Contains("BOT_KEY-A2F3D6"))
+			{
+				string type = "Casual";
+
+				if (message.Content.Contains("Competitive"))
+					type = "Competitive";
+
+				string messagestr = message.Content.Replace("BOT_KEY-A2F3D6", "");
+
+				var splitUser = messagestr.Substring(0, message.Content.IndexOf("#") + 5).Split('#');
+				await message.Channel.SendMessageAsync($"New {type} Playtest Request Submitted by {Program.Client.GetUser(splitUser[0], splitUser[1]).Mention}. Check it out!\n" +
+				$"Additional Map Images: <{message.Content.Split(',')[1]}>");
+				await HandleWorkshopEmbeds(message);
+				await message.DeleteAsync();
+				
+				return;
+			}
+
 			//If the message is from a bot, just return.
 			if (message.Author.IsBot)
 				return;
-
-            if (await HandleWorkshopEmbeds(message))
-                return;
 
             //Is a shit post.
             if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
@@ -277,6 +293,9 @@ namespace BotHATTwaffle
 
 				return;
 			}
+
+			if (await HandleWorkshopEmbeds(message))
+				return;
 		}
 
 		/// <summary>
