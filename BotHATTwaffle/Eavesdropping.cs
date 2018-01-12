@@ -162,7 +162,10 @@ namespace BotHATTwaffle
             builder.WithImageUrl(item.Image);
             builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
             builder.AddField("Game", item.AppName);
-            builder.AddField("Type", Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type));
+            string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
+            if (type == "Mod")
+                type = "Map/Mod";
+            builder.AddField("Type", type);
             builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j));
             builder.AddField("Description", item.Description);
             builder.WithUrl(item.Url);
