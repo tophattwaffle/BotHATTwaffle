@@ -9,12 +9,12 @@ namespace BotHATTwaffle.Modules
 	public class TimerService
 	{
 
-		public Timer _timer;
-		private LevelTesting _levelTesting;
-		private ModerationServices _mod;
-		private DiscordSocketClient _client;
-		private Random _random;
-		DataServices _dataServices;
+		public Timer Timer;
+		private readonly LevelTesting _levelTesting;
+		private readonly ModerationServices _mod;
+		private readonly DiscordSocketClient _client;
+		private readonly Random _random;
+		private readonly DataServices _dataServices;
 
 		public TimerService(DiscordSocketClient client, ModerationServices mod, LevelTesting levelTesting, Random rand, DataServices dataServices)
 		{
@@ -25,7 +25,7 @@ namespace BotHATTwaffle.Modules
 			_random = rand;
 
 			//Code inside this will fire ever {updateInterval} seconds
-			_timer = new Timer(_ =>
+			Timer = new Timer(_ =>
 			{
 				_levelTesting.Announce();
 				_levelTesting.CheckServerReservations();
@@ -39,22 +39,19 @@ namespace BotHATTwaffle.Modules
 
 		public void Stop()
 		{
-			_timer.Change(Timeout.Infinite, Timeout.Infinite);
+			Timer.Change(Timeout.Infinite, Timeout.Infinite);
 			Console.WriteLine($"Timer stopped!\n");
 		}
 
 		public void Restart()
 		{
-			_timer.Change(TimeSpan.FromSeconds(_dataServices.StartDelay), TimeSpan.FromSeconds(_dataServices.UpdateInterval));
+			Timer.Change(TimeSpan.FromSeconds(_dataServices.StartDelay), TimeSpan.FromSeconds(_dataServices.UpdateInterval));
 			Console.WriteLine($"Timer restarted" +
 							  $"\nStart Delay: {_dataServices.StartDelay}" +
 							  $"\nUpdate Interval {_dataServices.UpdateInterval}\n");
 		}
 
-		public void ChangePlaying()
-		{
-			_client.SetGameAsync(_dataServices.PlayingStrings[_random.Next(0, _dataServices.PlayingStrings.Length)]);
-		}
+		public void ChangePlaying() => _client.SetGameAsync(_dataServices.PlayingStrings[_random.Next(0, _dataServices.PlayingStrings.Length)]);
 	}
 
 	public class TimerModule : ModuleBase

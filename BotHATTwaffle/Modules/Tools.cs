@@ -18,9 +18,12 @@ namespace BotHATTwaffle.Modules
 		}
 	}
 
+	/// <summary>
+	/// This entire class just displays back information to the user.
+	/// TODO: Is it possible to make these commands just pull from a JSON? This would allow for dynamic commands when we need them.
+	/// </summary>
 	public class ToolsModule : ModuleBase<SocketCommandContext>
 	{
-
 		public ToolsModule()
 		{
 

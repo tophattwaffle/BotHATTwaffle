@@ -15,7 +15,7 @@ namespace BotHATTwaffle.Modules
 {
 	public class ModerationServices
 	{
-		public List<UserData> muteList = new List<UserData>();
+		public List<UserData> MuteList = new List<UserData>();
 		public string[] TestInfo { get; set; }
 		private readonly DataServices _dataServices;
 
@@ -27,29 +27,28 @@ namespace BotHATTwaffle.Modules
 		public void Cycle()
 		{
 			//Check for unmutes
-			foreach (UserData u in muteList.ToList())
+			foreach (UserData u in MuteList.ToList())
 			{
 				if (!(u.User).Roles.Contains(_dataServices.MuteRole))
 				{
 					_dataServices.ChannelLog($"{u.User} was manually unmuted from someone removing the role.","Removing them from the mute list.");
-					muteList.Remove(u);
+					MuteList.Remove(u);
 				}
-				if (u.CanUnmute())
-				{
 
-					u.User.RemoveRoleAsync(_dataServices.MuteRole);
-					u.User.SendMessageAsync("You have been unmuted!");
-					muteList.Remove(u);
-					_dataServices.ChannelLog($"{u.User} Has been unmuted.");
-					Task.Delay(1000);
-				}
+				if (!u.CanUnmute()) continue;
+
+				u.User.RemoveRoleAsync(_dataServices.MuteRole);
+				u.User.SendMessageAsync("You have been unmated!");
+				MuteList.Remove(u);
+				_dataServices.ChannelLog($"{u.User} Has been unmuted.");
+				Task.Delay(1000);
 			}
 		}
 
 		public void AddMute(SocketGuildUser inUser, DateTime inUnmuteTime)
 		{
 			Console.WriteLine($"ADD MUTE {inUser} {inUnmuteTime}");
-			muteList.Add(new UserData() {
+			MuteList.Add(new UserData() {
 				User = inUser,
 				UnmuteTime = inUnmuteTime
 			});
@@ -80,18 +79,20 @@ namespace BotHATTwaffle.Modules
 		[Command("announce", RunMode = RunMode.Async)]
 		[Summary("`>announce` Interactively create an embed message to be sent to any channel")]
 		[Remarks("You can also just dump and entire embed in one command using the following template:" +
-				 "\n```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}(t|f){submit}general```" +
+				 "\n```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}" +
+		         "255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}" +
+		         "(t|f){submit}general```" +
 				 "\n```{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}```" +
 				 "\nFields can be omitted if you do not want them. You can add multiple fields at a time if you want.")]
 		[Alias("a")]
-		public async Task Test_NextMessageAsync([Remainder] string inValue = null)
+		public async Task AnnounceAsync([Remainder] string inValue = null)
 		{
 			if (Context.IsPrivate)
 			{
 				await ReplyAsync("```This command can not be used in a DM```");
 				return;
 			}
-			if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
+			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				await Context.Message.DeleteAsync();
 
@@ -106,31 +107,34 @@ namespace BotHATTwaffle.Modules
 				Color embedColor = new Color(243, 128, 72);
 				string embedThumbUrl = null;
 				string embedTitle = null;
-				string embedURL = null;
+				string embedUrl = null;
 				string footText = null;
 				string authName = null;
-				string footIconURL = null;
-				string embedImageURL = null;
+				string footIconUrl = null;
+				string embedImageUrl = null;
 
 				List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
 
 				if (inValue != null)
 				{
+					//Reg ex match for {TAGNAME}
 					Regex regex = new Regex("{([^}]*)}", RegexOptions.IgnoreCase);
-					if (isValidTag(inValue, regex))
+					if (IsValidTag(inValue, regex))
 					{
 						string errors = null;
+
+						/*
+						 * While the string isn't Null, the beginning will always contain a tag like {title}
+						 * The tag is removed and the following text is consumed until either the next tag is found
+						 * or the end of the string is hit.
+						 */
 						while (inValue.Length > 0)
 						{
 							if (inValue.ToLower().StartsWith("{author name}"))
 							{
 								inValue = inValue.Substring(13);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								authName = inValue.Substring(0, textLength);
 								inValue = inValue.Substring(textLength);
@@ -140,11 +144,7 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(11);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								embedThumbUrl = inValue.Substring(0, textLength);
 								if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
@@ -160,11 +160,7 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(7);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								embedTitle = inValue.Substring(0, textLength);
 								inValue = inValue.Substring(textLength);
@@ -174,16 +170,12 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(5);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
-								embedURL = inValue.Substring(0, textLength);
-								if (!Uri.IsWellFormedUriString(embedURL, UriKind.Absolute))
+								embedUrl = inValue.Substring(0, textLength);
+								if (!Uri.IsWellFormedUriString(embedUrl, UriKind.Absolute))
 								{
-									embedURL = null;
+									embedUrl = null;
 									errors += "TITLE URL NOT A PROPER URL. SET TO NULL\n";
 								}
 ;
@@ -194,11 +186,7 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(7);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								string[] splitString = {null, null, null};
 								splitString = inValue.Substring(0, textLength).Split(' ');
@@ -219,11 +207,7 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(13);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								embedDescription = inValue.Substring(0, textLength);
 								inValue = inValue.Substring(textLength);
@@ -233,16 +217,12 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(7);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
-								embedImageURL = inValue.Substring(0, textLength);
-								if (!Uri.IsWellFormedUriString(embedImageURL, UriKind.Absolute))
+								embedImageUrl = inValue.Substring(0, textLength);
+								if (!Uri.IsWellFormedUriString(embedImageUrl, UriKind.Absolute))
 								{
-									embedImageURL = null;
+									embedImageUrl = null;
 									errors += "IMAGE URL NOT A PROPER URL. SET TO NULL\n";
 								}
 								inValue = inValue.Substring(textLength);
@@ -252,11 +232,7 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(13);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								footText = inValue.Substring(0, textLength);
 								inValue = inValue.Substring(textLength);
@@ -266,11 +242,7 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(7);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								string fieldTi = inValue.Substring(0, textLength);
 
@@ -286,10 +258,7 @@ namespace BotHATTwaffle.Modules
 								//Match field inline
 								m = regex.Match(inValue);
 
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								string tfStr = inValue.Substring(0, textLength);
 
@@ -304,11 +273,7 @@ namespace BotHATTwaffle.Modules
 							{
 								inValue = inValue.Substring(8);
 								Match m = regex.Match(inValue);
-								int textLength;
-								if (m.ToString() != "")
-									textLength = inValue.IndexOf(m.ToString());
-								else
-									textLength = inValue.Length;
+								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
 
 								quickSendChannel = inValue.Substring(0, textLength);
 								inValue = inValue.Substring(textLength);
@@ -327,7 +292,7 @@ namespace BotHATTwaffle.Modules
 				var footBuilder = new EmbedFooterBuilder()
 				{
 					Text = footText,
-					IconUrl = footIconURL
+					IconUrl = footIconUrl
 				};
 				var builder = new EmbedBuilder()
 				{
@@ -335,24 +300,26 @@ namespace BotHATTwaffle.Modules
 					Footer = footBuilder,
 					Author = authBuilder,
 
-					ImageUrl = embedImageURL,
-					Url = embedURL,
+					ImageUrl = embedImageUrl,
+					Url = embedUrl,
 					Title = embedTitle,
 					ThumbnailUrl = embedThumbUrl,
 					Color = embedColor,
 					Description = embedDescription
 
 				};
-				Boolean submit = false;
+				bool submit = false;
+
+				//We aren't quick sending the message. Enter wizard mode.
 				if (quickSendChannel == null)
 				{
-					string instructionsStr = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
-											 "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
-											 "\n`submit` to send it." + "\n`cancel` to abort.";
+					const string INSTRUCTIONS_STR = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
+					                               "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
+					                               "\n`submit` to send it." + "\n`cancel` to abort.";
 					var pic = await ReplyAsync("", false, embedLayout);
 					var preview = await ReplyAsync("__**PREVIEW**__", false, builder);
-					var instructions = await ReplyAsync(instructionsStr);
-					Boolean run = true;
+					var instructions = await ReplyAsync(INSTRUCTIONS_STR);
+					bool run = true;
 					while (run)
 					{
 						var response = await NextMessageAsync();
@@ -364,9 +331,10 @@ namespace BotHATTwaffle.Modules
 							}
 							catch
 							{
+								// ignored
 							}
 
-							Boolean valid = true;
+							bool valid = true;
 							switch (response.Content.ToLower())
 							{
 								case "author name":
@@ -413,7 +381,7 @@ namespace BotHATTwaffle.Modules
 									{
 										if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
 										{
-											embedURL = response.Content;
+											embedUrl = response.Content;
 										}
 										else
 										{
@@ -461,7 +429,7 @@ namespace BotHATTwaffle.Modules
 									{
 										if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
 										{
-											embedImageURL = response.Content;
+											embedImageUrl = response.Content;
 										}
 										else
 										{
@@ -489,7 +457,7 @@ namespace BotHATTwaffle.Modules
 											await response.DeleteAsync();
 
 											await instructions.ModifyAsync(x => { x.Content = "Inline? [T]rue or [F]alse?"; });
-											Boolean fInline = false;
+											bool fInline = false;
 
 											response = await NextMessageAsync();
 											if (response != null)
@@ -551,6 +519,7 @@ namespace BotHATTwaffle.Modules
 								}
 								catch
 								{
+									// ignored
 								}
 							}
 
@@ -569,8 +538,8 @@ namespace BotHATTwaffle.Modules
 								Fields = fieldBuilder,
 								Footer = footBuilder,
 								Author = authBuilder,
-								ImageUrl = embedImageURL,
-								Url = embedURL,
+								ImageUrl = embedImageUrl,
+								Url = embedUrl,
 								Title = embedTitle,
 								ThumbnailUrl = embedThumbUrl,
 								Color = embedColor,
@@ -583,7 +552,7 @@ namespace BotHATTwaffle.Modules
 									x.Content = "__**PREVIEW**__";
 									x.Embed = builder.Build();
 								});
-								await instructions.ModifyAsync(x => { x.Content = instructionsStr; });
+								await instructions.ModifyAsync(x => { x.Content = INSTRUCTIONS_STR; });
 							}
 						}
 						else
@@ -596,10 +565,11 @@ namespace BotHATTwaffle.Modules
 					}
 				}
 
+				//Where do send the message, my dudes.
 				if(submit)
 				{
 					var msg = await ReplyAsync("Send this to what channel?", false, builder);
-					Boolean sent = false;
+					bool sent = false;
 					while (!sent)
 					{
 						var response = await NextMessageAsync();
@@ -636,6 +606,7 @@ namespace BotHATTwaffle.Modules
 					}
 				}
 
+				//There was a {submit} just send it.
 				if (quickSendChannel != null)
 				{
 					bool sent = false;
@@ -663,7 +634,7 @@ namespace BotHATTwaffle.Modules
 			}
 		}
 
-		private bool isValidTag(string inString, Regex regex)
+		private bool IsValidTag(string inString, Regex regex)
 		{
 			string[] validTags = { "{author name}", "{thumbnail}", "{title}", "{url}", "{color}", "{description}", "{image}", "{footer text}", "{field}", "{}", "{submit}" };
 			MatchCollection matches = regex.Matches(inString);
@@ -690,7 +661,7 @@ namespace BotHATTwaffle.Modules
 				return;
 			}
 
-			if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_dataServices.RconRole))
+			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_dataServices.RconRole))
 			{
 				//Display list of servers
 				if (serverString == null && command == null)
@@ -699,7 +670,8 @@ namespace BotHATTwaffle.Modules
 					return;
 				}
 
-				//Return if we use these commands.
+				//Command Blacklist
+				//TODO: Move to a config file.
 				if (command.ToLower().Contains("rcon_password") || command.ToLower().Contains("exit"))
 				{
 					await ReplyAsync("```This command cannot be run from here. Ask TopHATTwaffle to do it.```");
@@ -707,6 +679,7 @@ namespace BotHATTwaffle.Modules
 					return;
 				}
 
+				//Get the server we are going to use
 				var server = _dataServices.GetServer(serverString);
 				string reply = null;
 				try
@@ -771,30 +744,28 @@ namespace BotHATTwaffle.Modules
 				return;
 			}
 
-			if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
+			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
-				if(_levelTesting.currentEventInfo[0] == "NO_EVENT_FOUND")
+				if(_levelTesting.CurrentEventInfo[0] == "NO_EVENT_FOUND")
 				{
 					await ReplyAsync("```Cannot use this command unless a test is scheduled```");
 					return;
 				}
 				string config = null;
 				JsonServer server = null;
-				//Get the right server. If null, use the server in the event info. Else we'll use what was provided.
-				if (serverStr == "nothing")
-					server = _dataServices.GetServer(_levelTesting.currentEventInfo[10].Substring(0, 3));
-				else
-					server = _dataServices.GetServer(serverStr);
 
-				if (_levelTesting.currentEventInfo[7].ToLower() == "competitive" || _levelTesting.currentEventInfo[7].ToLower() == "comp")
+				//Get the right server. If null, use the server in the event info. Else we'll use what was provided.
+				server = _dataServices.GetServer(serverStr == "nothing" ? _levelTesting.CurrentEventInfo[10].Substring(0, 3) : serverStr);
+
+				if (_levelTesting.CurrentEventInfo[7].ToLower() == "competitive" || _levelTesting.CurrentEventInfo[7].ToLower() == "comp")
 					config = _dataServices.CompConfig;
 				else
 					config = _dataServices.CasualConfig; //If not comp, casual.
 
 				if (action.ToLower() == "pre")
 				{
-					_mod.TestInfo = _levelTesting.currentEventInfo; //Set the test info so we can use it when getting the demo back.
-					var result = Regex.Match(_levelTesting.currentEventInfo[6], @"\d+$").Value;
+					_mod.TestInfo = _levelTesting.CurrentEventInfo; //Set the test info so we can use it when getting the demo back.
+					var result = Regex.Match(_levelTesting.CurrentEventInfo[6], @"\d+$").Value;
 
 					await _dataServices.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
 						$"\nhost_workshop_map {result}");
@@ -808,14 +779,14 @@ namespace BotHATTwaffle.Modules
 				}
 				else if (action.ToLower() == "start")
 				{
-					_mod.TestInfo = _levelTesting.currentEventInfo; //Set the test info so we can use it when getting the demo back.
+					_mod.TestInfo = _levelTesting.CurrentEventInfo; //Set the test info so we can use it when getting the demo back.
 
-					DateTime testTime = Convert.ToDateTime(_levelTesting.currentEventInfo[1]);
-					string demoName = $"{testTime.ToString("MM_dd_yyyy")}_{_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))}_{_levelTesting.currentEventInfo[7]}";
+					DateTime testTime = Convert.ToDateTime(_levelTesting.CurrentEventInfo[1]);
+					string demoName = $"{testTime:MM_dd_yyyy}_{_levelTesting.CurrentEventInfo[2].Substring(0, _levelTesting.CurrentEventInfo[2].IndexOf(" "))}_{_levelTesting.CurrentEventInfo[7]}";
 
 					await _dataServices.ChannelLog($"Playtest Start on {server.Name}", $"exec {config}" +
 						$"\ntv_record {demoName}" +
-						$"\nsay Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!");
+						$"\nsay Playtest of {_levelTesting.CurrentEventInfo[2].Substring(0, _levelTesting.CurrentEventInfo[2].IndexOf(" "))} is now live! Be respectiful and GLHF!");
 
 					await ReplyAsync($"```Playtest Start on {server.Name}" +
 						$"\nexec {config}" +
@@ -827,17 +798,18 @@ namespace BotHATTwaffle.Modules
 					await Task.Delay(1000);
 					await _dataServices.RconCommand($"say Demo started! {demoName}", server);
 					await Task.Delay(1000);
-					await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
+					await _dataServices.RconCommand($"say Playtest of {_levelTesting.CurrentEventInfo[2].Substring(0, _levelTesting.CurrentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
 					await Task.Delay(1000);
-					await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
+					await _dataServices.RconCommand($"say Playtest of {_levelTesting.CurrentEventInfo[2].Substring(0, _levelTesting.CurrentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
 					await Task.Delay(1000);
-					await _dataServices.RconCommand($"say Playtest of {_levelTesting.currentEventInfo[2].Substring(0, _levelTesting.currentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
+					await _dataServices.RconCommand($"say Playtest of {_levelTesting.CurrentEventInfo[2].Substring(0, _levelTesting.CurrentEventInfo[2].IndexOf(" "))} is now live! Be respectful and GLHF!", server);
 				}
 				else if (action.ToLower() == "post")
 				{
 					await ReplyAsync($"```Playtest post started. Begin feedback!```");
 
 					//Fire and forget. Start the post tasks and don't wait for them to complete.
+					//Waiting can cause bot to drop from Discord.
 					Task fireAndForget = PostTasks(server);
 
 					await _dataServices.ChannelLog($"Playtest Post on {server.Name}", $"exec {_dataServices.PostConfig}" +
@@ -884,6 +856,11 @@ namespace BotHATTwaffle.Modules
 			}
 		}
 
+		/// <summary>
+		/// Post takes are here so we can just fire and forget them. Nothing relies on them so we can forget about waiting.
+		/// </summary>
+		/// <param name="server">Server Object</param>
+		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private async Task PostTasks(JsonServer server)
 		{
 			var authBuilder = new EmbedAuthorBuilder()
@@ -955,11 +932,11 @@ namespace BotHATTwaffle.Modules
 				return;
 			}
 
-			if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
+			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				await Context.Message.DeleteAsync();
 				await _dataServices.ChannelLog($"Shutting down! Invoked by {Context.Message.Author}");
-				await Task.Delay(1000);
+				await Task.Delay(2000); //Without the delay the bot never logs the shutdown.
 				Environment.Exit(0);
 			}
 			else
@@ -980,8 +957,9 @@ namespace BotHATTwaffle.Modules
 				return;
 			}
 
-			if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
+			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
+				//Lets you see the currently loaded settings in a DM only.
 				if (arg == "dump")
 				{
 					await Context.Message.DeleteAsync();
@@ -1022,7 +1000,7 @@ namespace BotHATTwaffle.Modules
 				return;
 			}
 
-			if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
+			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				DateTime unmuteTime = DateTime.Now.AddMinutes(durationInMinutes);
 				_mod.AddMute(user, unmuteTime);
@@ -1049,7 +1027,7 @@ namespace BotHATTwaffle.Modules
 				return;
 			}
 
-			if ((Context.User as SocketGuildUser).Roles.Contains(_dataServices.ModRole))
+			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				if(serverStr == null)
 					await _levelTesting.ClearServerReservations();
