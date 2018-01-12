@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -239,8 +238,8 @@ namespace BotHATTwaffle
 
 			Console.ForegroundColor = ConsoleColor.Red;
 			var alert = false; // Set to true if the log message should mention the appropriate users to alert them of the error.
-			var logMessage = new StringBuilder(
-				$"Invoking User: {context.Message.Author}\nChannel: {context.Message.Channel}\nError Reason: {result.ErrorReason}");
+			string logMessage =
+				$"Invoking User: {context.Message.Author}\nChannel: {context.Message.Channel}\nError Reason: {result.ErrorReason}";
 
 			switch (result.Error)
 			{
@@ -264,8 +263,7 @@ namespace BotHATTwaffle
 
 					Exception e = ((ExecuteResult)result).Exception;
 
-					logMessage.AppendLine($"\nException: {e.GetType()}");
-					logMessage.Append($"Method: {e.TargetSite.Name}");
+					logMessage += $"\nException: {e.GetType()}\nMethod: {e.TargetSite.Name}";
 					Console.WriteLine($"{e.GetType()}\n{e.StackTrace}\n");
 
 					break;
@@ -278,7 +276,7 @@ namespace BotHATTwaffle
 
 			await _dataServices.ChannelLog(
 				$"An error occurred!\nInvoking command: {context.Message}",
-				logMessage.ToString(),
+				logMessage,
 				alert);
 			Console.ResetColor();
 		}
