@@ -36,8 +36,7 @@ namespace BotHATTwaffle.Modules
 			fieldBuilder.Add(new EmbedFieldBuilder
 			{
 				Name = "Shader Language",
-				Value = $"[High-Level Shader Language](https://en.wikipedia.org/wiki/High-Level_Shading_Language)" + 
-				        $"\n[OpenGL Shading Language](https://en.wikipedia.org/wiki/OpenGL_Shading_Language)",
+				Value = $"[High-Level Shader Language](https://en.wikipedia.org/wiki/High-Level_Shading_Language)",
 				IsInline = false
 			});
 			fieldBuilder.Add(new EmbedFieldBuilder
