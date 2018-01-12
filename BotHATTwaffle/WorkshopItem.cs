@@ -76,9 +76,9 @@ namespace Summer
             if (htmlDoc.DocumentNode.SelectSingleNode("//div[@class='subscribeOption']") != null)
                 Type = ItemType.Other;
 
-            Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImage")?.Attributes?.Single(x => x.Name == "src")?.Value;
+            Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImage")?.Attributes?.FirstOrDefault(x => x.Name == "src")?.Value;
             if (Image == null)
-                Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImageMain")?.Attributes?.Single(x => x.Name == "src")?.Value;
+                Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImageMain")?.Attributes?.FirstOrDefault(x => x.Name == "src")?.Value;
 
             AppId = 0;
 
