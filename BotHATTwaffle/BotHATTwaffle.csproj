@@ -208,6 +208,7 @@
     <Compile Include="DataService.cs" />
     <Compile Include="Modules\Help.cs" />
     <Compile Include="Modules\Json\JsonServer.cs" />
+    <Compile Include="Modules\Shaders.cs" />
     <Compile Include="Modules\Tools.cs" />
     <Compile Include="Modules\Information.cs" />
     <Compile Include="Modules\Json\JsonRoot.cs" />
