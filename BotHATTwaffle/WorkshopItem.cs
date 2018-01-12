@@ -76,11 +76,13 @@ namespace Summer
             if (htmlDoc.DocumentNode.SelectSingleNode("//div[@class='subscribeOption']") != null)
                 Type = ItemType.Other;
 
-            Image = htmlDoc.DocumentNode.Descendants("img")?.Single(d => d.Id == "previewImageMain")?.Attributes["src"]?.Value;
+            Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImage")?.Attributes?.Single(x => x.Name == "src")?.Value;
+            if (Image == null)
+                Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImageMain")?.Attributes?.Single(x => x.Name == "src")?.Value;
 
             AppId = 0;
 
-            string shareclick = htmlDoc.DocumentNode.Descendants("span")?.Single(d => d.Id == "ShareItemBtn")?.Attributes["onclick"]?.Value;
+            string shareclick = htmlDoc.DocumentNode.Descendants("span")?.FirstOrDefault(d => d.Id == "ShareItemBtn")?.Attributes["onclick"]?.Value;
             if (shareclick != null)
             {
                 int startAppId = shareclick.IndexOf(", '") + 3;
@@ -115,7 +117,7 @@ namespace Summer
                 AuthorName = AuthorName.Substring(0, AuthorName.IndexOf("\n"));
 
             AuthorUrl = htmlDoc.DocumentNode.SelectSingleNode("//a[@class='friendBlockLinkOverlay']")?.Attributes["href"]?.Value;
-            AuthorImageUrl = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='creatorsBlock']")?.Descendants("div")?.First()?.Descendants("div")?.Single(x => x.HasClass("playerAvatar"))?.Descendants("img")?.First()?.Attributes["src"].Value;
+            AuthorImageUrl = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='creatorsBlock']")?.Descendants("div")?.First()?.Descendants("div")?.FirstOrDefault(x => x.HasClass("playerAvatar"))?.Descendants("img")?.First()?.Attributes["src"].Value;
 
             IsValid = true;
         }
