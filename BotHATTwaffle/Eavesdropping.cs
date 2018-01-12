@@ -161,12 +161,12 @@ namespace BotHATTwaffle
             EmbedBuilder builder = new EmbedBuilder();
             builder.WithImageUrl(item.Image);
             builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
-            builder.AddField("Game", item.AppName);
+            builder.AddField("Game", item.AppName, true);
             string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
             if (type == "Mod")
                 type = "Map/Mod";
-            builder.AddField("Type", type);
-            builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j));
+            builder.AddField("Type", type, true);
+            builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
             builder.AddField("Description", item.Description);
             builder.WithUrl(item.Url);
             builder.WithColor(new Color(52, 152, 219));
