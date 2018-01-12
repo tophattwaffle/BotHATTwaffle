@@ -167,7 +167,7 @@ namespace BotHATTwaffle
                 type = "Map/Mod";
             builder.AddField("Type", type, true);
             builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
-            builder.AddField("Description", item.Description);
+            builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
             builder.WithUrl(item.Url);
             builder.WithColor(new Color(52, 152, 219));
             builder.WithTitle(item.Title);
