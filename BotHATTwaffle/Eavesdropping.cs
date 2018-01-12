@@ -127,6 +127,52 @@ namespace BotHATTwaffle
 			AddNewUserJoin((SocketGuildUser)user, roleTime, builder.Build());
 		}
 
+        internal async Task<bool> HandleWorkshopEmbeds(SocketMessage msg)
+        {
+            string content = msg.Content.Trim().ToLower();
+
+            string fileDetails = "://steamcommunity.com/sharedfiles/filedetails/?id=";
+            string workshop = "://steamcommunity.com/workshop/filedetails/?id=";
+
+            int idStartPos = -1;
+            int index;
+
+            if ((index = content.IndexOf(fileDetails)) != -1)
+                idStartPos = index + fileDetails.Length;
+            else if ((index = content.IndexOf(workshop)) != -1)
+                idStartPos = index + workshop.Length;
+
+            if (idStartPos == -1)
+                return false;
+
+            string id = content.Substring(idStartPos);
+
+            int spaceIndex = id.IndexOf(" ");
+            if (spaceIndex != -1)
+                id = id.Substring(0, spaceIndex);
+
+            string workshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
+            Summer.WorkshopItem item = new Summer.WorkshopItem();
+            await item.Load(workshopUrl);
+
+            if (!item.IsValid)
+                return false;
+
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.WithImageUrl(item.Image);
+            builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
+            builder.AddField("Game", item.AppName);
+            builder.AddField("Type", Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type));
+            builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j));
+            builder.AddField("Description", item.Description);
+            builder.WithUrl(item.Url);
+            builder.WithColor(new Color(52, 152, 219));
+            builder.WithTitle(item.Title);
+
+            await msg.Channel.SendMessageAsync("", false, builder.Build());
+            return true;
+        }
+
 		/// <summary>
 		/// This is used to scan each message for less important things.
 		/// Mostly used for shit posting, but also does useful things like nag users
@@ -140,8 +186,11 @@ namespace BotHATTwaffle
 			if (message.Author.IsBot)
 				return;
 
-			//Is a shit post.
-			if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
+            if (await HandleWorkshopEmbeds(message))
+                return;
+
+            //Is a shit post.
+            if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
 			{
 				var builder = new EmbedBuilder()
 				{
