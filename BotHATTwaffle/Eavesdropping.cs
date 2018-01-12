@@ -127,7 +127,7 @@ namespace BotHATTwaffle
 			AddNewUserJoin((SocketGuildUser)user, roleTime, builder.Build());
 		}
 
-		internal async Task<bool> HandleWorkshopEmbeds(SocketMessage msg)
+		internal async Task<bool> HandleWorkshopEmbeds(SocketMessage msg, string images = null)
 		{
 			string content = msg.Content.Trim().ToLower();
 
@@ -169,9 +169,15 @@ namespace BotHATTwaffle
             builder.AddField("Type", type, true);
             builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
             builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
-            builder.WithUrl(item.Url);
+			builder.WithUrl(item.Url);
             builder.WithColor(new Color(52, 152, 219));
             builder.WithTitle(item.Title);
+
+			if(images != null)
+			{
+				builder.AddField("Links", $"[Map Images]({images}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) " +
+				$"| [View Testing Calendar](http://playtesting.tophattwaffle.com) | [View Test Queue](https://docs.google.com/spreadsheets/d/1alpE7wj5aAlWQ08HDRbz5oWdBrG_7ev79525dPjZtC8/edit?usp=sharing)", false);
+			}
 
 			await msg.Channel.SendMessageAsync("", false, builder.Build());
 			return true;
@@ -197,9 +203,8 @@ namespace BotHATTwaffle
 
 				string messagestr = message.Content.Replace("BOT_KEY-A2F3D6", "");
 				var splitUser = messagestr.Substring(0, messagestr.IndexOf("#") + 5).Split('#');
-				await message.Channel.SendMessageAsync($"New {type} Playtest Request Submitted by {Program.Client.GetUser(splitUser[0], splitUser[1]).Mention}. Check it out!\n" +
-				$"Additional Map Images: <{messagestr.Split(',')[1]}>");
-				await HandleWorkshopEmbeds(message);
+				await message.Channel.SendMessageAsync($"New {type} Playtest Request Submitted by {Program.Client.GetUser(splitUser[0], splitUser[1]).Mention}. Check it out!\n");
+				await HandleWorkshopEmbeds(message, messagestr.Split(',')[1]);
 				
 				return;
 			}
