@@ -122,12 +122,12 @@ namespace BotHATTwaffle
 		/// Processes a command.
 		/// </summary>
 		/// <remarks>
-		/// Creates a <see cref="SocketCommandContext"/> from the <see cref="message"/>, executes the command, and finally
+		/// Creates a <see cref="SocketCommandContext"/> from the <see paramref="message"/>, executes the command, and finally
 		/// simulates raising <see cref="CommandService.CommandExecuted"/> by calling <see cref="CommandExecutedEventHandler"/>
 		/// to handle the result of the command's execution.
 		/// </remarks>
 		/// <param name="message">The message which contains the command.</param>
-		/// <param name="argPos">The index of the <see cref="message"/>'s contents at which the command begins.</param>
+		/// <param name="argPos">The index of the <see paramref="message"/>'s contents at which the command begins.</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private async Task ProcessCommandAsync(SocketUserMessage message, int argPos)
 		{
@@ -143,7 +143,7 @@ namespace BotHATTwaffle
 		/// <summary>
 		/// Raised when the client connects to Discord.
 		/// <para>
-		/// Restarts the <see cref="TimerService"/> and logs that the client has conncted.
+		/// Restarts the <see cref="TimerService"/> and logs that the client has connected.
 		/// </para>
 		/// </summary>
 		/// <returns>No object or value is returned by this method when it completes.</returns>

@@ -127,33 +127,33 @@ namespace BotHATTwaffle
 			AddNewUserJoin((SocketGuildUser)user, roleTime, builder.Build());
 		}
 
-        internal async Task<bool> HandleWorkshopEmbeds(SocketMessage msg)
-        {
-            string content = msg.Content.Trim().ToLower();
+		internal async Task<bool> HandleWorkshopEmbeds(SocketMessage msg)
+		{
+			string content = msg.Content.Trim().ToLower();
 
-            string fileDetails = "://steamcommunity.com/sharedfiles/filedetails/?id=";
-            string workshop = "://steamcommunity.com/workshop/filedetails/?id=";
+			string fileDetails = "://steamcommunity.com/sharedfiles/filedetails/?id=";
+			string workshop = "://steamcommunity.com/workshop/filedetails/?id=";
 
-            int idStartPos = -1;
-            int index;
+			int idStartPos = -1;
+			int index;
 
-            if ((index = content.IndexOf(fileDetails)) != -1)
-                idStartPos = index + fileDetails.Length;
-            else if ((index = content.IndexOf(workshop)) != -1)
-                idStartPos = index + workshop.Length;
+			if ((index = content.IndexOf(fileDetails)) != -1)
+				idStartPos = index + fileDetails.Length;
+			else if ((index = content.IndexOf(workshop)) != -1)
+				idStartPos = index + workshop.Length;
 
-            if (idStartPos == -1)
-                return false;
+			if (idStartPos == -1)
+				return false;
 
-            string id = content.Substring(idStartPos);
+			string id = content.Substring(idStartPos);
 
-            int spaceIndex = id.IndexOf(" ");
-            if (spaceIndex != -1)
-                id = id.Substring(0, spaceIndex);
+			int spaceIndex = id.IndexOf(" ");
+			if (spaceIndex != -1)
+				id = id.Substring(0, spaceIndex);
 
-            string workshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
-            Summer.WorkshopItem item = new Summer.WorkshopItem();
-            await item.Load(workshopUrl);
+			string workshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
+			Summer.WorkshopItem item = new Summer.WorkshopItem();
+			await item.Load(workshopUrl);
 
 			if (!item.IsValid)
                 return false;
@@ -173,9 +173,9 @@ namespace BotHATTwaffle
             builder.WithColor(new Color(52, 152, 219));
             builder.WithTitle(item.Title);
 
-            await msg.Channel.SendMessageAsync("", false, builder.Build());
-            return true;
-        }
+			await msg.Channel.SendMessageAsync("", false, builder.Build());
+			return true;
+		}
 
 		/// <summary>
 		/// This is used to scan each message for less important things.
