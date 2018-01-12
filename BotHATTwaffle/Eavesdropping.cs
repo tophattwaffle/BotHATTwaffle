@@ -188,18 +188,18 @@ namespace BotHATTwaffle
 		{
 			if (message.Content.Contains("BOT_KEY-A2F3D6"))
 			{
+				await message.DeleteAsync();
+
 				string type = "Casual";
 
 				if (message.Content.Contains("Competitive"))
 					type = "Competitive";
 
 				string messagestr = message.Content.Replace("BOT_KEY-A2F3D6", "");
-
-				var splitUser = messagestr.Substring(0, message.Content.IndexOf("#") + 5).Split('#');
+				var splitUser = messagestr.Substring(0, messagestr.IndexOf("#") + 5).Split('#');
 				await message.Channel.SendMessageAsync($"New {type} Playtest Request Submitted by {Program.Client.GetUser(splitUser[0], splitUser[1]).Mention}. Check it out!\n" +
-				$"Additional Map Images: <{message.Content.Split(',')[1]}>");
+				$"Additional Map Images: <{messagestr.Split(',')[1]}>");
 				await HandleWorkshopEmbeds(message);
-				await message.DeleteAsync();
 				
 				return;
 			}
