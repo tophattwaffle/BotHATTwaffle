@@ -14,15 +14,14 @@ using System.Web;
 
 using BotHATTwaffle.Objects.Json;
 
+using Newtonsoft.Json;
+
 namespace BotHATTwaffle
 {
 	public class DataServices
 	{
 		public Dictionary<string, string> Config;
 
-		private JObject _searchData;
-		private JObject _serverData;
-		private JsonRoot _root;
 		private List<TutorialSeries> _series;
 		private List<LevelTestingServer> _servers;
 		private readonly DiscordSocketClient _client;
@@ -103,20 +102,48 @@ namespace BotHATTwaffle
 			VariableAssignment();
 
 			//Read in the search JSON data
-			const string SEARCH_DATA_PATH = "searchData.json";
-			_searchData = JObject.Parse(File.ReadAllText(SEARCH_DATA_PATH));
-			_root = _searchData.ToObject<JsonRoot>();
-			_series = _root.Series;
+			_series = DeserialiseToken<List<TutorialSeries>>(@"searchData.json", "Series");
 
 			//Read in the server JSON data
-			const string SERVER_DATA_PATH = "servers.json";
-			_serverData = JObject.Parse(File.ReadAllText(SERVER_DATA_PATH));
-			_root = _serverData.ToObject<JsonRoot>();
-			_servers = _root.Servers;
+			_servers = DeserialiseToken<List<LevelTestingServer>>(@"servers.json", "servers");
 
 			Console.ForegroundColor = ConsoleColor.Magenta;
 			Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
 			Console.ResetColor();
+		}
+
+		/// <summary>
+		/// Deserialises, from a given JSON file, a token at a given path to an object of the given type.
+		/// </summary>
+		/// <typeparam name="TToken">The type of the object into which to deserialise the token.</typeparam>
+		/// <param name="filePath">The path of the JSON file to deserialise.</param>
+		/// <param name="tokenPath">The JPath expression to use to select the token.</param>
+		/// <returns>
+		/// The instance of the object into which the JSON was deserialised. If deserialisation fails, the default value of
+		/// <typeparamref name="TToken"/> is returned.
+		/// </returns>
+		private static TToken DeserialiseToken<TToken>(string filePath, string tokenPath)
+		{
+			using (StreamReader file = File.OpenText(filePath))
+			using (var reader = new JsonTextReader(file))
+			{
+				var obj = (JObject)JToken.ReadFrom(reader);
+
+				try
+				{
+					return obj.SelectToken(tokenPath).ToObject<TToken>();
+				}
+				catch (Exception e)
+				{
+					// Could be JsonException, ArgumentException, or others. Documentation is poor in this respect; don't want to
+					// dig through source code to find others.
+					Console.WriteLine(
+						$"{e.GetType().Name}: Could not deserialise the token at the path {tokenPath} in the file {filePath} " +
+						$"for reason {e.Message}; a default value for the type {typeof(TToken).Name} will be returned.");
+
+					return default(TToken);
+				}
+			}
 		}
 
 		/// <summary>

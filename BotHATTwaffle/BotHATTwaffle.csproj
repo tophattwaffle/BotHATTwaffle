@@ -211,7 +211,6 @@
     <Compile Include="Modules\Shaders.cs" />
     <Compile Include="Modules\Tools.cs" />
     <Compile Include="Modules\Information.cs" />
-    <Compile Include="Objects\Json\JsonRoot.cs" />
     <Compile Include="Objects\Json\TutorialSeries.cs" />
     <Compile Include="Objects\Json\Tutorial.cs" />
     <Compile Include="Modules\LevelTesting.cs" />
