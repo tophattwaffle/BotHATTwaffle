@@ -1,6 +1,6 @@
 ﻿using System;
 
-using BotHATTwaffle.Modules.Json;
+using BotHATTwaffle.Objects.Json;
 
 using Discord;
 using Discord.WebSocket;
@@ -17,7 +17,7 @@ namespace BotHATTwaffle.Objects
 		public DateTime ReservationExpiration { get; set; }
 		public DateTime HandleJoinTime { get; set; }
 		public Embed JoinMessage { get; set; }
-		public JsonServer ReservedServer { get; set; }
+		public LevelTestingServer ReservedServer { get; set; }
 
 		/// <summary>
 		/// Determines if a user's mute has expired.

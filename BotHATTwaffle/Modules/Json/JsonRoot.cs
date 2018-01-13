@@ -1,13 +1,14 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace BotHATTwaffle.Modules.Json
+using Newtonsoft.Json;
+
+namespace BotHATTwaffle.Objects.Json
 {
-	class JsonRoot
+	public class JsonRoot
 	{
 		[JsonProperty("series")]
-		public List<JsonSeries> series { get; set; }
+		public List<TutorialSeries> Series { get; set; }
 		[JsonProperty("servers")]
-		public List<JsonServer> servers { get; set; }
+		public List<LevelTestingServer> Servers { get; set; }
 	}
 }

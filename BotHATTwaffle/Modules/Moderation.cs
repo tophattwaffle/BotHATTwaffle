@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using BotHATTwaffle.Modules.Json;
 using System.Text.RegularExpressions;
 
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
+using BotHATTwaffle.Objects.Json;
+
 using Discord.Addons.Interactive;
 
 namespace BotHATTwaffle.Modules
@@ -758,7 +759,7 @@ namespace BotHATTwaffle.Modules
 					return;
 				}
 				string config = null;
-				JsonServer server = null;
+				LevelTestingServer server = null;
 
 				//Get the right server. If null, use the server in the event info. Else we'll use what was provided.
 				server = _dataServices.GetServer(serverStr == "nothing" ? _levelTesting.CurrentEventInfo[10].Substring(0, 3) : serverStr);
@@ -867,7 +868,7 @@ namespace BotHATTwaffle.Modules
 		/// </summary>
 		/// <param name="server">Server Object</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		private async Task PostTasks(JsonServer server)
+		private async Task PostTasks(LevelTestingServer server)
 		{
 			var authBuilder = new EmbedAuthorBuilder()
 			{

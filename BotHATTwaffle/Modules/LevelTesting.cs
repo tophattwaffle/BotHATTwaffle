@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using Discord.Rest;
 using System.IO;
 using System.Text.RegularExpressions;
-using BotHATTwaffle.Modules.Json;
+
 using BotHATTwaffle.Objects;
+using BotHATTwaffle.Objects.Json;
 
 using Imgur.API.Authentication.Impl;
 using Imgur.API.Endpoints.Impl;
@@ -600,7 +601,7 @@ namespace BotHATTwaffle.Modules
 		/// <param name="inServerReleaseTime">Release Time</param>
 		/// <param name="server">Reserved Server</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, JsonServer server)
+		public async Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, LevelTestingServer server)
 		{
 			await _dataServices.ChannelLog($"{inUser} reservation on {server.Address} has started.", $"Reservation expires at {inServerReleaseTime}");
 			await _dataServices.RconCommand($"say Hey everyone! {inUser.Username} has reserved this server!", server);
@@ -759,7 +760,7 @@ namespace BotHATTwaffle.Modules
 		/// </summary>
 		/// <param name="server">Server to check</param>
 		/// <returns>True if server is open, false if reserved</returns>
-		public bool IsServerOpen(JsonServer server)
+		public bool IsServerOpen(LevelTestingServer server)
 		{
 			foreach (UserData u in UserData.ToList())
 			{
@@ -945,7 +946,7 @@ namespace BotHATTwaffle.Modules
 
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ActiveRole))
 			{
-				JsonServer server = null;
+				LevelTestingServer server = null;
 
 				if (!_levelTesting.CanReserve)
 				{
@@ -1058,7 +1059,7 @@ namespace BotHATTwaffle.Modules
 
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ActiveRole))
 			{
-				JsonServer server = null;
+				LevelTestingServer server = null;
 
 				if (!_levelTesting.CanReserve)
 				{

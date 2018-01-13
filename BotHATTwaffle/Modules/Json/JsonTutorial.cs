@@ -1,13 +1,12 @@
 ﻿using Newtonsoft.Json;
 
-
-namespace BotHATTwaffle.Modules.Json
+namespace BotHATTwaffle.Objects.Json
 {
-	class JsonTutorial
+	public class Tutorial
 	{
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 		[JsonProperty("tags")]
-		public string[] tags { get; set; }//List<string> tags { get; set; }
+		public string[] Tags { get; set; } // List<string> tags { get; set; }
 	}
 }

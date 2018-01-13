@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.IO;
-using BotHATTwaffle.Modules.Json;
+
 using HtmlAgilityPack;
 using System.Threading.Tasks;
 using CoreRCON;
@@ -11,6 +11,8 @@ using System.Net;
 using Discord;
 using Discord.WebSocket;
 using System.Web;
+
+using BotHATTwaffle.Objects.Json;
 
 namespace BotHATTwaffle
 {
@@ -21,8 +23,8 @@ namespace BotHATTwaffle
 		private JObject _searchData;
 		private JObject _serverData;
 		private JsonRoot _root;
-		private List<JsonSeries> _series;
-		private List<JsonServer> _servers;
+		private List<TutorialSeries> _series;
+		private List<LevelTestingServer> _servers;
 		private readonly DiscordSocketClient _client;
 		private readonly Random _random;
 		public string DemoPath;
@@ -104,13 +106,13 @@ namespace BotHATTwaffle
 			const string SEARCH_DATA_PATH = "searchData.json";
 			_searchData = JObject.Parse(File.ReadAllText(SEARCH_DATA_PATH));
 			_root = _searchData.ToObject<JsonRoot>();
-			_series = _root.series;
+			_series = _root.Series;
 
 			//Read in the server JSON data
 			const string SERVER_DATA_PATH = "servers.json";
 			_serverData = JObject.Parse(File.ReadAllText(SERVER_DATA_PATH));
 			_root = _serverData.ToObject<JsonRoot>();
-			_servers = _root.servers;
+			_servers = _root.Servers;
 
 			Console.ForegroundColor = ConsoleColor.Magenta;
 			Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
@@ -394,7 +396,7 @@ namespace BotHATTwaffle
 		/// </summary>
 		/// <param name="serverStr">3 letter server code</param>
 		/// <returns>Server object that was located in JSON file</returns>
-		public JsonServer GetServer(string serverStr) => _servers.Find(x => x.Name == serverStr.ToLower());
+		public LevelTestingServer GetServer(string serverStr) => _servers.Find(x => x.Name == serverStr.ToLower());
 
 		/// <summary>
 		/// Gets all the servers that exist in the servers JSON file
@@ -433,7 +435,7 @@ namespace BotHATTwaffle
 		/// <param name="command">Command to send</param>
 		/// <param name="server">3 letter server code</param>
 		/// <returns>Output from RCON command</returns>
-		public async Task<string> RconCommand(string command, JsonServer server)
+		public async Task<string> RconCommand(string command, LevelTestingServer server)
 		{
 			string reply = null;
 
@@ -479,7 +481,7 @@ namespace BotHATTwaffle
 		/// <returns>Returns a 2D list of strings</returns>
 		public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
 		{
-			List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
+			List<Tutorial> foundTutorials = new List<Tutorial>();
 			List<List<string>> listResults = new List<List<string>>();
 
 			//Let's us search on multiple terms at a time
@@ -498,7 +500,7 @@ namespace BotHATTwaffle
 			{
 				foreach (string s in searchTermArray)
 				{
-					foundTutorials.AddRange(_series[0].tutorial.FindAll(x => x.tags.Contains(s)));
+					foundTutorials.AddRange(_series[0].Tutorials.FindAll(x => x.Tags.Contains(s)));
 				}
 			}
 			//Bootcamp 1
@@ -506,7 +508,7 @@ namespace BotHATTwaffle
 			{
 				foreach (string s in searchTermArray)
 				{
-					foundTutorials.AddRange(_series[1].tutorial.FindAll(x => x.tags.Contains(s)));
+					foundTutorials.AddRange(_series[1].Tutorials.FindAll(x => x.Tags.Contains(s)));
 				}
 			}
 			//3dsmax 2
@@ -514,7 +516,7 @@ namespace BotHATTwaffle
 			{
 				foreach (string s in searchTermArray)
 				{
-					foundTutorials.AddRange(_series[2].tutorial.FindAll(x => x.tags.Contains(s)));
+					foundTutorials.AddRange(_series[2].Tutorials.FindAll(x => x.Tags.Contains(s)));
 				}
 			}
 			//Writtentutorials 3
@@ -522,7 +524,7 @@ namespace BotHATTwaffle
 			{
 				foreach (string s in searchTermArray)
 				{
-					foundTutorials.AddRange(_series[3].tutorial.FindAll(x => x.tags.Contains(s)));
+					foundTutorials.AddRange(_series[3].Tutorials.FindAll(x => x.Tags.Contains(s)));
 				}
 			}
 			//legacy 5
@@ -530,7 +532,7 @@ namespace BotHATTwaffle
 			{
 				foreach (string s in searchTermArray)
 				{
-					foundTutorials.AddRange(_series[5].tutorial.FindAll(x => x.tags.Contains(s)));
+					foundTutorials.AddRange(_series[5].Tutorials.FindAll(x => x.Tags.Contains(s)));
 				}
 			}
 			//troubleshooting 4
@@ -538,12 +540,12 @@ namespace BotHATTwaffle
 			{
 				foreach (string s in searchTermArray)
 				{
-					foundTutorials.AddRange(_series[4].tutorial.FindAll(x => x.tags.Contains(s)));
+					foundTutorials.AddRange(_series[4].Tutorials.FindAll(x => x.Tags.Contains(s)));
 				}
 			}
 
 			//Remove duplicates from list.
-			List<JsonTutorial> noDoups = foundTutorials.Distinct().ToList();
+			List<Tutorial> noDoups = foundTutorials.Distinct().ToList();
 
 			//Process each result that was located
 			foreach (var result in noDoups)
@@ -565,11 +567,11 @@ namespace BotHATTwaffle
 
 				//Create a HTML client so we can get info about the link
 				HtmlWeb htmlWeb = new HtmlWeb();
-				HtmlDocument htmlDocument = htmlWeb.Load(result.url);
+				HtmlDocument htmlDocument = htmlWeb.Load(result.Url);
 				string title = null;
 
 				//Processing for non-YouTube URLs
-				if (!result.url.Contains("youtube"))
+				if (!result.Url.Contains("youtube"))
 				{
 					//Get the page title
 					title = (from x in htmlDocument.DocumentNode.Descendants()
@@ -577,15 +579,15 @@ namespace BotHATTwaffle
 							 select x.InnerText).FirstOrDefault();
 				}
 				//Processing for YouTube URLs
-				else if (result.url.ToLower().Contains("youtube"))
-					title = GetYouTubeTitle(result.url);
+				else if (result.Url.ToLower().Contains("youtube"))
+					title = GetYouTubeTitle(result.Url);
 
 				string description = null;
 				//Get article content, this is by ID. Only works for my site.
-				if (result.url.ToLower().Contains("tophattwaffle"))
+				if (result.Url.ToLower().Contains("tophattwaffle"))
 					description = htmlDocument.GetElementbyId("content-area").InnerText;
-				else if(result.url.ToLower().Contains("youtube"))
-					description = result.url;
+				else if(result.Url.ToLower().Contains("youtube"))
+					description = result.Url;
 
 				//Only if not Null - Fix the bad characters that get pulled from the web page.
 				description = description?.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
@@ -598,7 +600,7 @@ namespace BotHATTwaffle
 				//Get images on the page
 				List<string> imgs = null;
 
-				if (!result.url.ToLower().Contains("youtube"))
+				if (!result.Url.ToLower().Contains("youtube"))
 				{
 				imgs = (from x in htmlDocument.DocumentNode.Descendants()
 									 where x.Name.ToLower() == "img"
@@ -610,14 +612,14 @@ namespace BotHATTwaffle
 				if (imgs != null && imgs.Count > 1)
 					finalImg = imgs[_random.Next(0, imgs.Count)];
 
-				if (result.url.Contains("youtube"))
+				if (result.Url.Contains("youtube"))
 				{
-					finalImg = GetYouTubeImage(result.url);
+					finalImg = GetYouTubeImage(result.Url);
 				}
 
 				//Add results to list
 				singleResult.Add(title);
-				singleResult.Add(result.url);
+				singleResult.Add(result.Url);
 				singleResult.Add(description);
 				singleResult.Add(finalImg);
 				listResults.Add(singleResult);
@@ -670,38 +672,38 @@ namespace BotHATTwaffle
 		public List<List<string>> DumpSearch(string searchSeries)
 		{
 			List<List<string>> listResults = new List<List<string>>();
-			List<JsonTutorial> foundTutorials = new List<JsonTutorial>();
+			List<Tutorial> foundTutorials = new List<Tutorial>();
 
 			//V2 0
 			if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
 			{
-				foundTutorials.AddRange(_series[0].tutorial);
+				foundTutorials.AddRange(_series[0].Tutorials);
 			}
 			//Bootcamp 1
 			if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2" || searchSeries.ToLower() == "all")
 			{
-				foundTutorials.AddRange(_series[1].tutorial);
+				foundTutorials.AddRange(_series[1].Tutorials);
 			}
 			//3dsmax 2
 			if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3" || searchSeries.ToLower() == "all")
 			{
-				foundTutorials.AddRange(_series[2].tutorial);
+				foundTutorials.AddRange(_series[2].Tutorials);
 			}
 			//Writtentutorials 3
 			if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4" || searchSeries.ToLower() == "all")
 			{
-				foundTutorials.AddRange(_series[3].tutorial);
+				foundTutorials.AddRange(_series[3].Tutorials);
 			}
 			//legacy 5
 			if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5" || searchSeries.ToLower() == "all")
 			{
-			   foundTutorials.AddRange(_series[5].tutorial);
+			   foundTutorials.AddRange(_series[5].Tutorials);
 
 			}
 			//troubleshooting 4
 			if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "misc" || searchSeries.ToLower() == "all")
 			{
-				foundTutorials.AddRange(_series[4].tutorial);
+				foundTutorials.AddRange(_series[4].Tutorials);
 			}
 
 			foreach (var result in foundTutorials)
@@ -709,9 +711,9 @@ namespace BotHATTwaffle
 				//Add items to list
 				List<string> singleResult = new List<string>
 				{
-					result.url.Replace("https://www.tophattwaffle.com/", "").Replace("/", ""),
-					result.url,
-					string.Join(", ", result.tags)
+					result.Url.Replace("https://www.tophattwaffle.com/", "").Replace("/", ""),
+					result.Url,
+					string.Join(", ", result.Tags)
 				};
 				listResults.Add(singleResult);
 			}

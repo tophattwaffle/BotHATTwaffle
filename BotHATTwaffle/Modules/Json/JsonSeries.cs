@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace BotHATTwaffle.Modules.Json
+using Newtonsoft.Json;
+
+namespace BotHATTwaffle.Objects.Json
 {
-	class JsonSeries
+	public class TutorialSeries
 	{
-		public List<JsonTutorial> tutorial { get; set; }
+		[JsonProperty("tutorial")]
+		public List<Tutorial> Tutorials { get; set; }
 	}
 }
