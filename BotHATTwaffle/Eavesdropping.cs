@@ -127,7 +127,7 @@ namespace BotHATTwaffle
 			AddNewUserJoin((SocketGuildUser)user, roleTime, builder.Build());
 		}
 
-		internal async Task<bool> HandleWorkshopEmbeds(SocketMessage msg, string images = null)
+		internal async Task<bool> HandleWorkshopEmbeds(SocketMessage msg, string images = null, string testType = null)
 		{
 			string content = msg.Content.Trim().ToLower();
 
@@ -167,7 +167,13 @@ namespace BotHATTwaffle
             if (type == "Mod")
                 type = "Map/Mod";
             builder.AddField("Type", type, true);
-            builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
+
+			if (testType != null)
+			{
+				builder.AddField("Test Type", $"{testType}", false);
+			}
+
+			builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
             builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
 			builder.WithUrl(item.Url);
             builder.WithColor(new Color(52, 152, 219));
@@ -192,19 +198,24 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		internal async Task Listen(SocketMessage message)
 		{
-			if (message.Content.Contains("BOT_KEY-A2F3D6"))
+			if (message.Content.StartsWith("BOT_KEY-A2F3D6"))
 			{
 				await message.DeleteAsync();
+				var msgSplit = message.Content.Split('|');
 
-				string type = "Casual";
+				var splitUser = msgSplit[1].Split('#');
 
-				if (message.Content.Contains("Competitive"))
-					type = "Competitive";
-
-				string messagestr = message.Content.Replace("BOT_KEY-A2F3D6", "");
-				var splitUser = messagestr.Substring(0, messagestr.IndexOf("#") + 5).Split('#');
-				await message.Channel.SendMessageAsync($"New {type} Playtest Request Submitted by {Program.Client.GetUser(splitUser[0], splitUser[1]).Mention}. Check it out!\n");
-				await HandleWorkshopEmbeds(message, messagestr.Split(',')[1]);
+				try
+				{
+					//Try to tag
+					await _dataServices.TestingChannel.SendMessageAsync($"New Playtest Request Submitted by {Program.Client.GetUser(splitUser[0], splitUser[1]).Mention}, check it out!");
+				}
+				catch
+				{
+					//Can't tag
+					await _dataServices.TestingChannel.SendMessageAsync($"New Playtest Request Submitted by {msgSplit[1]}, check it out!");
+				}
+				await HandleWorkshopEmbeds(message, msgSplit[4], msgSplit[2]);
 				
 				return;
 			}
