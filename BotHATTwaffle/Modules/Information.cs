@@ -7,6 +7,8 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using Discord.WebSocket;
+
 namespace BotHATTwaffle.Modules
 {
 	public class InformationService
@@ -19,11 +21,15 @@ namespace BotHATTwaffle.Modules
 
 	public class InformationModule : ModuleBase<SocketCommandContext>
 	{
+		private readonly DiscordSocketClient _client;
 		private readonly DataServices _dataServices;
+		private readonly Random _random;
 
-		public InformationModule(DataServices data)
+		public InformationModule(DiscordSocketClient client, DataServices data, Random random)
 		{
+			_client = client;
 			_dataServices = data;
+			_random = random;
 		}
 
 		/// <summary>
@@ -67,7 +73,7 @@ namespace BotHATTwaffle.Modules
 			var footBuilder = new EmbedFooterBuilder()
 			{
 				Text = "Thanks for using the VDC search!",
-				IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+				IconUrl = _client.CurrentUser.GetAvatarUrl()
 			};
 
 			var builder = new EmbedBuilder()
@@ -227,7 +233,7 @@ namespace BotHATTwaffle.Modules
 			string authTitle = null;
 			string authImgUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png";
 			string footText = null;
-			string footImgUrl = Program.Client.CurrentUser.GetAvatarUrl();
+			string footImgUrl = _client.CurrentUser.GetAvatarUrl();
 			string bodyTitle = "Click Here!";
 			string bodyUrl = null;
 			string bodyThumbUrl = null;  //"https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png"
@@ -375,10 +381,8 @@ namespace BotHATTwaffle.Modules
 			//Get a fact from the file
 			if (File.Exists(_dataServices.CatFactPath))
 			{
-				var _rand = new Random();
-
 				string[] allLines = File.ReadAllLines(_dataServices.CatFactPath);
-				int lineNumber = _rand.Next(0, allLines.Length);
+				int lineNumber = _random.Next(0, allLines.Length);
 				catFact = allLines[lineNumber];
 
 				//Match on title for a fancy title
@@ -433,14 +437,12 @@ namespace BotHATTwaffle.Modules
 		[Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact", "penguinfacts", "penguin facts")]
 		public async Task PenguinFactAsync()
 		{
-			Random rand = new Random();
-
 			//Get a fact from the file
 			string penguinFact = "Did you know penguins have big bushy tails?";
 			if (File.Exists(_dataServices.PenguinFactPath))
 			{
 				var allLines = File.ReadAllLines(_dataServices.PenguinFactPath);
-				var lineNumber = rand.Next(0, allLines.Length);
+				var lineNumber = _random.Next(0, allLines.Length);
 				penguinFact = allLines[lineNumber];
 			}
 
@@ -479,14 +481,12 @@ namespace BotHATTwaffle.Modules
 		[Alias("gimme a tanooki fact", "hit me with a tanooki fact", "hit a nigga with a tanooki fact", "tanooki fact", "tanookifacts", "tanooki facts", "@TanookiSuit3")]
 		public async Task TanookiFactAsync()
 		{
-			Random _rand = new Random();
-
 			//Get a fact from the file
 			string tanookiFact = "Did you know Tanooki has a big bushy tail?";
 			if (File.Exists(_dataServices.TanookiFactPath))
 			{
 				var allLines = File.ReadAllLines(_dataServices.TanookiFactPath);
-				var lineNumber = _rand.Next(0, allLines.Length);
+				var lineNumber = _random.Next(0, allLines.Length);
 				tanookiFact = allLines[lineNumber];
 			}
 

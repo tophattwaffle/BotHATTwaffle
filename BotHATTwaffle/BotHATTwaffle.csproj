@@ -207,13 +207,12 @@
     <Compile Include="GoogleCalendar.cs" />
     <Compile Include="DataService.cs" />
     <Compile Include="Modules\Help.cs" />
-    <Compile Include="Modules\Json\JsonServer.cs" />
+    <Compile Include="Objects\Json\LevelTestingServer.cs" />
     <Compile Include="Modules\Shaders.cs" />
     <Compile Include="Modules\Tools.cs" />
     <Compile Include="Modules\Information.cs" />
-    <Compile Include="Modules\Json\JsonRoot.cs" />
-    <Compile Include="Modules\Json\JsonSeries.cs" />
-    <Compile Include="Modules\Json\JsonTutorial.cs" />
+    <Compile Include="Objects\Json\TutorialSeries.cs" />
+    <Compile Include="Objects\Json\Tutorial.cs" />
     <Compile Include="Modules\LevelTesting.cs" />
     <Compile Include="Modules\Moderation.cs" />
     <Compile Include="Modules\TimerService.cs" />

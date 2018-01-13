@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using BotHATTwaffle.Modules.Json;
+
+using BotHATTwaffle.Objects.Json;
 
 namespace BotHATTwaffle.Objects.Downloader
 {
@@ -14,14 +15,14 @@ namespace BotHATTwaffle.Objects.Downloader
 		protected readonly string LocalPath;
 		protected readonly string WorkshopId;
 
-		protected Downloader(IReadOnlyList<string> testInfo, JsonServer server, DataServices dataSvc)
+		protected Downloader(IReadOnlyList<string> testInfo, LevelTestingServer server, DataServices dataSvc)
 		{
 			DataSvc = dataSvc;
 			DateTime time = Convert.ToDateTime(testInfo[1]);
 			string title = testInfo[2].Substring(0, testInfo[2].IndexOf(" "));
 
 			DemoName = $"{time:MM_dd_yyyy}_{title}";
-			FtpPath = server.FTPPath;
+			FtpPath = server.FtpPath;
 			LocalPath = $"{DataSvc.DemoPath}\\{time:yyyy}\\{time:MM} - " + $"{time:MMMM}\\{DemoName}";
 			WorkshopId = Regex.Match(testInfo[6], @"\d+$").Value;
 		}

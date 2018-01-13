@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,12 +22,11 @@ namespace BotHATTwaffle
 		public const char COMMAND_PREFIX = '>';
 
 		private CommandService _commands;
+		private DiscordSocketClient _client;
 		private IServiceProvider _services;
 		private DataServices _dataServices;
 		private TimerService _timerService;
 		private Eavesdropping _eavesdropping;
-
-		internal static DiscordSocketClient Client { get; private set; }
 
 		/// <summary>
 		/// The entry point of the program. Creates an asyncronous environment to run the bot.
@@ -60,10 +60,10 @@ namespace BotHATTwaffle
 			var _ = new ConsoleCopy(LOG_PATH + logName);
 
 			// Dependency injection. All objects use constructor injection.
-			Client = new DiscordSocketClient();
+			_client = new DiscordSocketClient();
 			_commands = new CommandService();
 			_services = new ServiceCollection()
-				.AddSingleton(Client)
+				.AddSingleton(_client)
 				.AddSingleton(_commands)
 				.AddSingleton<TimerService>()
 				.AddSingleton<UtilityService>()
@@ -74,7 +74,8 @@ namespace BotHATTwaffle
 				.AddSingleton<DataServices>()
 				.AddSingleton<Random>()
 				.AddSingleton<DownloaderService>()
-				.AddSingleton(s => new InteractiveService(Client, TimeSpan.FromSeconds(120)))
+				.AddSingleton<GoogleCalendar>()
+				.AddSingleton(s => new InteractiveService(_client, TimeSpan.FromSeconds(120)))
 				.BuildServiceProvider();
 
 			// Retrieves services that this class uses.
@@ -88,18 +89,18 @@ namespace BotHATTwaffle
 			if (!_dataServices.Config.TryGetValue("botToken", out string botToken)) return;
 
 			// Event subscriptions.
-			Client.Log += LogEventHandler;
-			Client.UserJoined += _eavesdropping.UserJoin; // When a user joins the server.
-			Client.GuildAvailable += GuildAvailableEventHandler; // When a guild is available.
+			_client.Log += LogEventHandler;
+			_client.UserJoined += _eavesdropping.UserJoin; // When a user joins the server.
+			_client.GuildAvailable += GuildAvailableEventHandler; // When a guild is available.
 
 			await InstallCommandsAsync();
 
-			await Client.LoginAsync(TokenType.Bot, botToken);
-			await Client.StartAsync();
+			await _client.LoginAsync(TokenType.Bot, botToken);
+			await _client.StartAsync();
 
 			// Subscribes to connect/disconnect after logging in because they would otherwise be raised before needed.
-			Client.Disconnected += DisconnectedEventHandler;
-			Client.Connected += ConnectedEventHandler;
+			_client.Disconnected += DisconnectedEventHandler;
+			_client.Connected += ConnectedEventHandler;
 
 			await Task.Delay(Timeout.Infinite); // Blocks this task until the program is closed.
 		}
@@ -113,7 +114,7 @@ namespace BotHATTwaffle
 		{
 			// TODO: Event not yet implemented in Discord.Net 1.0.
 			// _commands.CommandExecuted += CommandExecutedEventHandler;
-			Client.MessageReceived += MessageReceivedEventHandler;
+			_client.MessageReceived += MessageReceivedEventHandler;
 
 			await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
 		}
@@ -131,7 +132,7 @@ namespace BotHATTwaffle
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private async Task ProcessCommandAsync(SocketUserMessage message, int argPos)
 		{
-			var context = new SocketCommandContext(Client, message);
+			var context = new SocketCommandContext(_client, message);
 
 			// Executes the command; this is not the return value of the command.
 			// Rather, it is an object that contains information about the outcome of the execution.
@@ -209,7 +210,7 @@ namespace BotHATTwaffle
 			var argPos = 0; // Integer used to track where the prefix ends and the command begins.
 
 			// Determines if the message is a command based on if it starts with the prefix character or a mention prefix.
-			if (message.HasCharPrefix(COMMAND_PREFIX, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
+			if (message.HasCharPrefix(COMMAND_PREFIX, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
 				await ProcessCommandAsync(message, argPos);
 
 			Task _ = _eavesdropping.Listen(messageParam); // Fired and forgotten.
@@ -218,7 +219,8 @@ namespace BotHATTwaffle
 		/// <summary>
 		/// Raised when a command is executed.
 		/// <para>
-		/// Handles failed executions of commands. The failure is logged and a message may be sent indicating failure.
+		/// Handles failed executions of commands. The failure is logged and a message may be sent indicating failure. If an
+		/// exception was thrown, the stack trace is printed to the standard output stream.
 		/// </para>
 		/// </summary>
 		/// <remarks>
@@ -236,21 +238,33 @@ namespace BotHATTwaffle
 
 			Console.ForegroundColor = ConsoleColor.Red;
 			var alert = false; // Set to true if the log message should mention the appropriate users to alert them of the error.
+			string logMessage =
+				$"Invoking User: {context.Message.Author}\nChannel: {context.Message.Channel}\nError Reason: {result.ErrorReason}";
 
-			switch (result.ErrorReason)
+			switch (result.Error)
 			{
-				case "Unknown command.":
+				case CommandError.UnknownCommand:
 					break;
-				case "The input text has too many parameters.":
+				case CommandError.BadArgCount:
+					string determiner = result.ErrorReason == "The input text has too many parameters." ? "many" : "few";
+
+					// Retrieves the command's name from the message by finding the first word after the prefix. The string will
+					// be empty if somehow no match is found.
+					string commandName =
+						Regex.Match(context.Message.Content, COMMAND_PREFIX + @"(\w+)", RegexOptions.IgnoreCase).Groups[1].Value;
+
 					await context.Channel.SendMessageAsync(
-						$"You provided too many parameters! Please consult `{COMMAND_PREFIX}help " +
-						$"{context.Message.Content.Substring(1, context.Message.Content.IndexOf(" ") - 1)}`");
+						$"You provided too {determiner} parameters! Please consult `{COMMAND_PREFIX}help {commandName}`");
 
 					break;
-				case "The input text has too few parameters.":
-					await context.Channel.SendMessageAsync(
-						$"You provided too few parameters! Please consult `{COMMAND_PREFIX}help " +
-						$"{context.Message.Content.Substring(1)}`");
+				case CommandError.Exception:
+					alert = true;
+					await context.Channel.SendMessageAsync("Something bad happened! I logged the error for TopHATTwaffle.");
+
+					Exception e = ((ExecuteResult)result).Exception;
+
+					logMessage += $"\nException: {e.GetType()}\nMethod: {e.TargetSite.Name}";
+					Console.WriteLine($"{e.GetType()}\n{e.StackTrace}\n");
 
 					break;
 				default:
@@ -262,9 +276,8 @@ namespace BotHATTwaffle
 
 			await _dataServices.ChannelLog(
 				$"An error occurred!\nInvoking command: {context.Message}",
-				$"Invoking User: {context.Message.Author}\nChannel: {context.Message.Channel}\nError Reason: {result.ErrorReason}",
+				logMessage,
 				alert);
-
 			Console.ResetColor();
 		}
 	}

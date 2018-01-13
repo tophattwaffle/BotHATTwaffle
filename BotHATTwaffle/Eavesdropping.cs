@@ -7,6 +7,8 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
+using BotHATTwaffle.Objects;
+
 namespace BotHATTwaffle
 {
 	class Eavesdropping
@@ -14,13 +16,15 @@ namespace BotHATTwaffle
 		private readonly Timer _timer;
 		private const int _JOIN_DELAY_ROLE_TIME = 10;
 		private readonly List<UserData> _joinDelayList = new List<UserData>();
-		private readonly Random _random;
+		private readonly DiscordSocketClient _client;
 		private readonly DataServices _dataServices;
+		private readonly Random _random;
 
-		public Eavesdropping(DataServices dataService)
+		public Eavesdropping(DiscordSocketClient client, DataServices dataService, Random random)
 		{
+			_client = client;
 			_dataServices = dataService;
-			_random = new Random();
+			_random = random;
 
 			_dataServices.AgreeStrings = new string[]{
 				"^",
@@ -34,7 +38,7 @@ namespace BotHATTwaffle
 				//Loop over all users in the join list.
 				foreach (UserData u in _joinDelayList.ToList())
 				{
-					if (u.CanRole())
+					if (u.CanHandleJoin())
 					{
 						//Give them playtester role
 						u.User.AddRoleAsync(_dataServices.PlayTesterRole);
@@ -74,7 +78,7 @@ namespace BotHATTwaffle
 			_joinDelayList.Add(new UserData()
 			{
 				User = inUser,
-				JoinRoleTime = inRoleTime,
+				HandleJoinTime = inRoleTime,
 				JoinMessage = message,
 			});
 		}
@@ -95,7 +99,7 @@ namespace BotHATTwaffle
 			var footBuilder = new EmbedFooterBuilder()
 			{
 				Text = "Once again thanks for joining, hope you enjoy your stay!",
-				IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+				IconUrl = _client.CurrentUser.GetAvatarUrl()
 			};
 
 			var builder = new EmbedBuilder()
@@ -156,7 +160,7 @@ namespace BotHATTwaffle
 			await item.Load(workshopUrl);
 
 			if (!item.IsValid)
-                return false;
+				return false;
 
 
             EmbedBuilder builder = new EmbedBuilder();
@@ -176,8 +180,8 @@ namespace BotHATTwaffle
 			builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
             builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
 			builder.WithUrl(item.Url);
-            builder.WithColor(new Color(52, 152, 219));
-            builder.WithTitle(item.Title);
+			builder.WithColor(new Color(52, 152, 219));
+			builder.WithTitle(item.Title);
 
 			if(images != null)
 			{
@@ -224,8 +228,8 @@ namespace BotHATTwaffle
 			if (message.Author.IsBot)
 				return;
 
-            //Is a shit post.
-            if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
+			//Is a shit post.
+			if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
 			{
 				var builder = new EmbedBuilder()
 				{

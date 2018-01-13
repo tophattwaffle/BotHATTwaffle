@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BotHATTwaffle.Modules.Json;
+
+using BotHATTwaffle.Objects.Json;
+
 using Renci.SshNet;
 using Renci.SshNet.Sftp;
 
@@ -10,10 +12,10 @@ namespace BotHATTwaffle.Objects.Downloader
 {
 	public sealed class SftpDownloader : Downloader<SftpClient>
 	{
-		public SftpDownloader(IReadOnlyList<string> testInfo, JsonServer server, DataServices dataSvc) : base(testInfo, server,
+		public SftpDownloader(IReadOnlyList<string> testInfo, LevelTestingServer server, DataServices dataSvc) : base(testInfo, server,
 			dataSvc)
 		{
-			Client = new SftpClient(testInfo[10], server.FTPUser, server.FTPPass);
+			Client = new SftpClient(testInfo[10], server.FtpUser, server.FtpPass);
 		}
 
 		public override void Download()

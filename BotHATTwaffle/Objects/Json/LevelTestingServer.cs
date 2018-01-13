@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace BotHATTwaffle.Modules.Json
+namespace BotHATTwaffle.Objects.Json
 {
-	public class JsonServer
+	public class LevelTestingServer
 	{
 		[JsonProperty("name")]
 		public string Name { get; set; }
@@ -13,12 +13,12 @@ namespace BotHATTwaffle.Modules.Json
 		[JsonProperty("password")]
 		public string Password { get; set; }
 		[JsonProperty("ftppath")]
-		public string FTPPath { get; set; }
+		public string FtpPath { get; set; }
 		[JsonProperty("ftpuser")]
-		public string FTPUser { get; set; }
+		public string FtpUser { get; set; }
 		[JsonProperty("ftppass")]
-		public string FTPPass { get; set; }
+		public string FtpPass { get; set; }
 		[JsonProperty("ftptype")]
-		public string FTPType { get; set; }
+		public string FtpType { get; set; }
 	}
 }

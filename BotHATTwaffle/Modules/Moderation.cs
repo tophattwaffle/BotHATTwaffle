@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using BotHATTwaffle.Modules.Json;
 using System.Text.RegularExpressions;
+
+using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
+using BotHATTwaffle.Objects.Json;
+
 using Discord.Addons.Interactive;
 
 namespace BotHATTwaffle.Modules
@@ -35,7 +38,7 @@ namespace BotHATTwaffle.Modules
 					MuteList.Remove(u);
 				}
 
-				if (!u.CanUnmute()) continue;
+				if (!u.MuteExpired()) continue;
 
 				u.User.RemoveRoleAsync(_dataServices.MuteRole);
 				u.User.SendMessageAsync("You have been unmated!");
@@ -50,25 +53,29 @@ namespace BotHATTwaffle.Modules
 			Console.WriteLine($"ADD MUTE {inUser} {inUnmuteTime}");
 			MuteList.Add(new UserData() {
 				User = inUser,
-				UnmuteTime = inUnmuteTime
+				MuteExpiration = inUnmuteTime
 			});
 		}
 	}
 
 	public class ModerationModule : InteractiveBase
 	{
+		private readonly DiscordSocketClient _client;
 		private readonly ModerationServices _mod;
 		private readonly LevelTesting _levelTesting;
 		private readonly DataServices _dataServices;
 		private readonly TimerService _timer;
 		private readonly DownloaderService _downloaderService;
 
-		public ModerationModule(ModerationServices mod,
-								LevelTesting levelTesting,
-								DataServices dataServices,
-								TimerService timer,
-								DownloaderService dlService)
+		public ModerationModule(
+			DiscordSocketClient client,
+			ModerationServices mod,
+			LevelTesting levelTesting,
+			DataServices dataServices,
+			TimerService timer,
+			DownloaderService dlService)
 		{
+			_client = client;
 			_timer = timer;
 			_dataServices = dataServices;
 			_levelTesting = levelTesting;
@@ -80,8 +87,8 @@ namespace BotHATTwaffle.Modules
 		[Summary("`>announce` Interactively create an embed message to be sent to any channel")]
 		[Remarks("You can also just dump and entire embed in one command using the following template:" +
 				 "\n```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}" +
-		         "255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}" +
-		         "(t|f){submit}general```" +
+				 "255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}" +
+				 "(t|f){submit}general```" +
 				 "\n```{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}```" +
 				 "\nFields can be omitted if you do not want them. You can add multiple fields at a time if you want.")]
 		[Alias("a")]
@@ -314,8 +321,8 @@ namespace BotHATTwaffle.Modules
 				if (quickSendChannel == null)
 				{
 					const string INSTRUCTIONS_STR = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
-					                               "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
-					                               "\n`submit` to send it." + "\n`cancel` to abort.";
+												   "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
+												   "\n`submit` to send it." + "\n`cancel` to abort.";
 					var pic = await ReplyAsync("", false, embedLayout);
 					var preview = await ReplyAsync("__**PREVIEW**__", false, builder);
 					var instructions = await ReplyAsync(INSTRUCTIONS_STR);
@@ -752,7 +759,7 @@ namespace BotHATTwaffle.Modules
 					return;
 				}
 				string config = null;
-				JsonServer server = null;
+				LevelTestingServer server = null;
 
 				//Get the right server. If null, use the server in the event info. Else we'll use what was provided.
 				server = _dataServices.GetServer(serverStr == "nothing" ? _levelTesting.CurrentEventInfo[10].Substring(0, 3) : serverStr);
@@ -861,7 +868,7 @@ namespace BotHATTwaffle.Modules
 		/// </summary>
 		/// <param name="server">Server Object</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		private async Task PostTasks(JsonServer server)
+		private async Task PostTasks(LevelTestingServer server)
 		{
 			var authBuilder = new EmbedAuthorBuilder()
 			{
@@ -903,14 +910,14 @@ namespace BotHATTwaffle.Modules
 			try
 			{
 				//Try to DM them the information to get their demos.
-				await Program.Client.GetUser(splitUser[0], splitUser[1]).SendMessageAsync("", false, builder);
+				await _client.GetUser(splitUser[0], splitUser[1]).SendMessageAsync("", false, builder);
 			}
 			catch
 			{
 				try
 				{
 					//If they don't accepts DMs, tag them in level testing.
-					await _dataServices.TestingChannel.SendMessageAsync($"{Program.Client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
+					await _dataServices.TestingChannel.SendMessageAsync($"{_client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
 				}
 				catch
 				{

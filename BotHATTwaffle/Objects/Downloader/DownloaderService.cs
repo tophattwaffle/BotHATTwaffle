@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using BotHATTwaffle.Modules.Json;
+
+using BotHATTwaffle.Objects.Json;
 
 namespace BotHATTwaffle.Objects.Downloader
 {
@@ -19,7 +20,7 @@ namespace BotHATTwaffle.Objects.Downloader
 			worker.DoWork += DownloadFiles;
 		}
 
-		public void Start(IReadOnlyList<string> testInfo, JsonServer server)
+		public void Start(IReadOnlyList<string> testInfo, LevelTestingServer server)
 		{
 			if (!worker.IsBusy)
 			{
@@ -31,9 +32,9 @@ namespace BotHATTwaffle.Objects.Downloader
 		private void DownloadFiles(object sender, DoWorkEventArgs e)
 		{
 			Console.ForegroundColor = ConsoleColor.Cyan;
-			var (testInfo, server) = (ValueTuple<IReadOnlyList<string>, JsonServer>) e.Argument;
+			var (testInfo, server) = (ValueTuple<IReadOnlyList<string>, LevelTestingServer>) e.Argument;
 
-			switch (server.FTPType.ToLower())
+			switch (server.FtpType.ToLower())
 			{
 				case "ftps":
 				case "ftp":

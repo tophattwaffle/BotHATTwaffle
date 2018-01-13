@@ -8,7 +8,10 @@ using System.Collections.Generic;
 using Discord.Rest;
 using System.IO;
 using System.Text.RegularExpressions;
-using BotHATTwaffle.Modules.Json;
+
+using BotHATTwaffle.Objects;
+using BotHATTwaffle.Objects.Json;
+
 using Imgur.API.Authentication.Impl;
 using Imgur.API.Endpoints.Impl;
 using Imgur.API.Models;
@@ -18,6 +21,7 @@ namespace BotHATTwaffle.Modules
 	public class LevelTesting
 	{
 		public List<UserData> UserData = new List<UserData>();
+		private readonly DiscordSocketClient _client;
 		private readonly DataServices _dataServices;
 		public IUserMessage  AnnounceMessage { get; set; }
 		public GoogleCalendar GoogleCalendar;
@@ -38,11 +42,12 @@ namespace BotHATTwaffle.Modules
 		private int _failedToFetch = 0;
 		private int _failedRetryCount = 10;
 
-		public LevelTesting(DataServices dataServices, Random random)
+		public LevelTesting(DiscordSocketClient client, DataServices dataServices, GoogleCalendar calendar, Random random)
 		{
+			_client = client;
 			_dataServices = dataServices;
 			_random = random;
-			GoogleCalendar = new GoogleCalendar(_dataServices);
+			GoogleCalendar = calendar;
 			CurrentEventInfo = GoogleCalendar.GetEvents(); //Initial get of playtest.
 			LastEventInfo = CurrentEventInfo; //Make sure array is same size for doing compares later.
 		}
@@ -224,8 +229,8 @@ namespace BotHATTwaffle.Modules
 				else
 				{
 					_failedToFetch++;
-					Console.WriteLine($"Failed to update Announcement Message. Attempting to modify {_failedRetryCount - _failedToFetch} more times be recreating message" + 
-					                  $"\n{e.GetType()}: {e.Message}\n{e.StackTrace}\n");
+					Console.WriteLine($"Failed to update Announcement Message. Attempting to modify {_failedRetryCount - _failedToFetch} more times be recreating message" +
+									  $"\n{e.GetType()}: {e.Message}\n{e.StackTrace}\n");
 				}
 			}
 		}
@@ -439,7 +444,7 @@ namespace BotHATTwaffle.Modules
 				var splitUser = CurrentEventInfo[3].Split('#');
 				try
 				{
-					thumbUrl = Program.Client.GetUser(splitUser[0], splitUser[1]).GetAvatarUrl();
+					thumbUrl = _client.GetUser(splitUser[0], splitUser[1]).GetAvatarUrl();
 				}
 				catch { }
 
@@ -460,7 +465,7 @@ namespace BotHATTwaffle.Modules
 				footBuilder = new EmbedFooterBuilder()
 				{
 					Text = $"connect {eventInfo[10]}",
-					IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+					IconUrl = _client.CurrentUser.GetAvatarUrl()
 				};
 
 				//If possible, use a random image from the imgur album.
@@ -509,7 +514,7 @@ namespace BotHATTwaffle.Modules
 					announceDiag = "\n\n\nThere was an issue with the Google Calendar event. Someone tell TopHATTwaffle..." +
 						"If you're seeing this, that means there is probably a test scheduled, but the description contains " +
 						"HTML code so I cannot properly parse it. ReeeeeeEEEeeE";
-				
+
 				authBuilder = new EmbedAuthorBuilder()
 				{
 					Name = "No Playtests Found!",
@@ -519,7 +524,7 @@ namespace BotHATTwaffle.Modules
 				footBuilder = new EmbedFooterBuilder()
 				{
 					Text = "https://www.tophattwaffle.com/playtesting/",
-					IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+					IconUrl = _client.CurrentUser.GetAvatarUrl()
 				};
 
 				builder = new EmbedBuilder()
@@ -549,7 +554,7 @@ namespace BotHATTwaffle.Modules
 			foreach (UserData u in UserData.ToList())
 			{
 				//The server reservation has expired
-				if (u.CanReleaseServer())
+				if (u.ReservationExpired())
 				{
 					var authBuilder = new EmbedAuthorBuilder()
 					{
@@ -559,7 +564,7 @@ namespace BotHATTwaffle.Modules
 					var footBuilder = new EmbedFooterBuilder()
 					{
 						Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-						IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+						IconUrl = _client.CurrentUser.GetAvatarUrl()
 					};
 
 					var builder = new EmbedBuilder()
@@ -569,7 +574,7 @@ namespace BotHATTwaffle.Modules
 						ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 						Color = new Color(243, 128, 72),
 
-						Description = $"Your reservation on {u.Server.Description} has ended! You can stay on the server but you cannot send any more commands to it."
+						Description = $"Your reservation on {u.ReservedServer.Description} has ended! You can stay on the server but you cannot send any more commands to it."
 					};
 
 					try //If we cannot send a DM to the user, just dump it into the testing channel and tag them.
@@ -581,8 +586,8 @@ namespace BotHATTwaffle.Modules
 						await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 					}
 
-					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
-					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.Server);
+					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.ReservedServer);
 					UserData.Remove(u);
 					await Task.Delay(1000);
 				}
@@ -596,15 +601,15 @@ namespace BotHATTwaffle.Modules
 		/// <param name="inServerReleaseTime">Release Time</param>
 		/// <param name="server">Reserved Server</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, JsonServer server)
+		public async Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, LevelTestingServer server)
 		{
 			await _dataServices.ChannelLog($"{inUser} reservation on {server.Address} has started.", $"Reservation expires at {inServerReleaseTime}");
 			await _dataServices.RconCommand($"say Hey everyone! {inUser.Username} has reserved this server!", server);
 			UserData.Add(new UserData()
 			{
 				User = inUser,
-				Server = server,
-				ServerReleaseTime = inServerReleaseTime
+				ReservedServer = server,
+				ReservationExpiration = inServerReleaseTime
 			});
 		}
 
@@ -624,7 +629,7 @@ namespace BotHATTwaffle.Modules
 				var footBuilder = new EmbedFooterBuilder()
 				{
 					Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-					IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+					IconUrl = _client.CurrentUser.GetAvatarUrl()
 				};
 
 				var builder = new EmbedBuilder()
@@ -634,7 +639,7 @@ namespace BotHATTwaffle.Modules
 					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 					Color = new Color(243, 128, 72),
 
-					Description = $"Your reservation on server {u.Server.Description} has expired because all reservations were cleared." +
+					Description = $"Your reservation on server {u.ReservedServer.Description} has expired because all reservations were cleared." +
 					$"This is likely due to a playtest starting soon, or a moderator cleared all reservations."
 				};
 
@@ -647,8 +652,8 @@ namespace BotHATTwaffle.Modules
 					await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 				}
 
-				await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
-				await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.Server);
+				await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+				await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
 				UserData.Remove(u);
 				await Task.Delay(1000);
 			}
@@ -668,7 +673,7 @@ namespace BotHATTwaffle.Modules
 
 			foreach (UserData u in UserData.ToList())
 			{
-				if (u.Server == server)
+				if (u.ReservedServer == server)
 				{
 					var authBuilder = new EmbedAuthorBuilder()
 					{
@@ -678,7 +683,7 @@ namespace BotHATTwaffle.Modules
 					var footBuilder = new EmbedFooterBuilder()
 					{
 						Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-						IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+						IconUrl = _client.CurrentUser.GetAvatarUrl()
 					};
 
 					var builder = new EmbedBuilder()
@@ -688,7 +693,7 @@ namespace BotHATTwaffle.Modules
 						ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 						Color = new Color(243, 128, 72),
 
-						Description = $"Your reservation on server {u.Server.Description} has expired because the reservation was cleared." +
+						Description = $"Your reservation on server {u.ReservedServer.Description} has expired because the reservation was cleared." +
 						$"This is likely due to a playtest starting soon, a moderator cleared the reservation, or you released the reservation."
 					};
 
@@ -701,8 +706,8 @@ namespace BotHATTwaffle.Modules
 						await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 					}
 
-					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
-					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.Server);
+					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
 					UserData.Remove(u);
 					await Task.Delay(1000);
 				}
@@ -727,8 +732,8 @@ namespace BotHATTwaffle.Modules
 			//Add all of the servers to the field list
 			foreach (UserData u in UserData.ToList())
 			{
-				TimeSpan timeLeft = u.ServerReleaseTime.Subtract(DateTime.Now);
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{u.Server.Address}", Value = $"User: `{u.User}#{u.User.Discriminator}`" +
+				TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
+				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{u.ReservedServer.Address}", Value = $"User: `{u.User}#{u.User.Discriminator}`" +
 				$"\nTime Left: {timeLeft:h\'H \'m\'M\'}", IsInline = false });
 			}
 
@@ -755,11 +760,11 @@ namespace BotHATTwaffle.Modules
 		/// </summary>
 		/// <param name="server">Server to check</param>
 		/// <returns>True if server is open, false if reserved</returns>
-		public bool IsServerOpen(JsonServer server)
+		public bool IsServerOpen(LevelTestingServer server)
 		{
 			foreach (UserData u in UserData.ToList())
 			{
-				if (u.Server == server)
+				if (u.ReservedServer == server)
 					return false;
 			}
 			return true;
@@ -768,11 +773,13 @@ namespace BotHATTwaffle.Modules
 
 	public class LevelTestingModule : ModuleBase<SocketCommandContext>
 	{
+		private readonly DiscordSocketClient _client;
 		private readonly LevelTesting _levelTesting;
 		private readonly DataServices _dataServices;
 
-		public LevelTestingModule(LevelTesting levelTesting, DataServices dataServices)
+		public LevelTestingModule(DiscordSocketClient client, LevelTesting levelTesting, DataServices dataServices)
 		{
+			_client = client;
 			_levelTesting = levelTesting;
 			_dataServices = dataServices;
 		}
@@ -804,8 +811,8 @@ namespace BotHATTwaffle.Modules
 				{
 					if (u.User == Context.Message.Author)
 					{
-						TimeSpan timeLeft = u.ServerReleaseTime.Subtract(DateTime.Now);
-						await ReplyAsync($"```You have a reservation on {u.Server.Name}. You have {timeLeft:h\'H \'m\'M\'} left.```");
+						TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
+						await ReplyAsync($"```You have a reservation on {u.ReservedServer.Name}. You have {timeLeft:h\'H \'m\'M\'} left.```");
 						return;
 					}
 				}
@@ -857,7 +864,7 @@ namespace BotHATTwaffle.Modules
 					var footBuilder = new EmbedFooterBuilder()
 					{
 						Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-						IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+						IconUrl = _client.CurrentUser.GetAvatarUrl()
 					};
 					List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
 					fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {server.Address}`", IsInline = false });
@@ -892,8 +899,8 @@ namespace BotHATTwaffle.Modules
 					DateTime time = DateTime.Now;
 					foreach (UserData u in _levelTesting.UserData)
 					{
-						if (u.Server == server)
-							time = u.ServerReleaseTime;
+						if (u.ReservedServer == server)
+							time = u.ReservationExpiration;
 					}
 					TimeSpan timeLeft = time.Subtract(DateTime.Now);
 
@@ -939,7 +946,7 @@ namespace BotHATTwaffle.Modules
 
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ActiveRole))
 			{
-				JsonServer server = null;
+				LevelTestingServer server = null;
 
 				if (!_levelTesting.CanReserve)
 				{
@@ -963,7 +970,7 @@ namespace BotHATTwaffle.Modules
 				{
 					if (u.User == Context.Message.Author)
 					{
-						server = u.Server;
+						server = u.ReservedServer;
 					}
 				}
 
@@ -1052,7 +1059,7 @@ namespace BotHATTwaffle.Modules
 
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ActiveRole))
 			{
-				JsonServer server = null;
+				LevelTestingServer server = null;
 
 				if (!_levelTesting.CanReserve)
 				{
@@ -1064,7 +1071,7 @@ namespace BotHATTwaffle.Modules
 				foreach (UserData u in _levelTesting.UserData)
 				{
 					if (u.User != Context.Message.Author) continue;
-					server = u.Server;
+					server = u.ReservedServer;
 					hasServer = true;
 				}
 

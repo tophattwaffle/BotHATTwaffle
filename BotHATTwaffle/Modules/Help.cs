@@ -8,15 +8,19 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using Discord.WebSocket;
+
 namespace BotHATTwaffle.Modules
 {
 	public class HelpModule : ModuleBase<SocketCommandContext>
 	{
+		private readonly DiscordSocketClient _client;
 		private readonly CommandService _service;
 		//private readonly IConfigurationRoot _config;
 
-		public HelpModule(CommandService service)
+		public HelpModule(DiscordSocketClient client, CommandService service)
 		{
+			_client = client;
 			_service = service;
 			//_config = config;
 		}
@@ -182,7 +186,7 @@ namespace BotHATTwaffle.Modules
 				Fields = fieldBuilder,
 				Author = authBuilder,
 				Url = "https://www.tophattwaffle.com/",
-				ThumbnailUrl = Program.Client.CurrentUser.GetAvatarUrl(),
+				ThumbnailUrl = _client.CurrentUser.GetAvatarUrl(),
 				Color = new Color(130, 171, 206),
 				Description =
 					"BotHATTwaffle was started to centralize Source Engine Discord server functions that were fractured between multiple bots. " +

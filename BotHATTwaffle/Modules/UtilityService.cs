@@ -19,10 +19,12 @@ namespace BotHATTwaffle.Modules
 
 	public class UtilityModule : ModuleBase<SocketCommandContext>
 	{
+		private readonly DiscordSocketClient _client;
 		private readonly DataServices _dataServices;
 
-		public UtilityModule(DataServices dataServices)
+		public UtilityModule(DiscordSocketClient client, DataServices dataServices)
 		{
+			_client = client;
 			_dataServices = dataServices;
 		}
 
@@ -35,7 +37,7 @@ namespace BotHATTwaffle.Modules
 		[Remarks("It's a ping command.")]
 		public async Task PingAsync()
 		{
-			var replyTime = Program.Client.Latency;
+			var replyTime = _client.Latency;
 			var builder = new EmbedBuilder()
 			{
 				Color = new Color(47, 111, 146),
