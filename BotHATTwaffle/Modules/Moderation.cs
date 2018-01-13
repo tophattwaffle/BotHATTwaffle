@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using BotHATTwaffle.Modules.Json;
 using System.Text.RegularExpressions;
+
+using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
 using Discord.Addons.Interactive;
 
@@ -35,7 +37,7 @@ namespace BotHATTwaffle.Modules
 					MuteList.Remove(u);
 				}
 
-				if (!u.CanUnmute()) continue;
+				if (!u.MuteExpired()) continue;
 
 				u.User.RemoveRoleAsync(_dataServices.MuteRole);
 				u.User.SendMessageAsync("You have been unmated!");
@@ -50,7 +52,7 @@ namespace BotHATTwaffle.Modules
 			Console.WriteLine($"ADD MUTE {inUser} {inUnmuteTime}");
 			MuteList.Add(new UserData() {
 				User = inUser,
-				UnmuteTime = inUnmuteTime
+				MuteExpiration = inUnmuteTime
 			});
 		}
 	}
@@ -84,8 +86,8 @@ namespace BotHATTwaffle.Modules
 		[Summary("`>announce` Interactively create an embed message to be sent to any channel")]
 		[Remarks("You can also just dump and entire embed in one command using the following template:" +
 				 "\n```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}" +
-		         "255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}" +
-		         "(t|f){submit}general```" +
+				 "255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}" +
+				 "(t|f){submit}general```" +
 				 "\n```{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}```" +
 				 "\nFields can be omitted if you do not want them. You can add multiple fields at a time if you want.")]
 		[Alias("a")]
@@ -318,8 +320,8 @@ namespace BotHATTwaffle.Modules
 				if (quickSendChannel == null)
 				{
 					const string INSTRUCTIONS_STR = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
-					                               "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
-					                               "\n`submit` to send it." + "\n`cancel` to abort.";
+												   "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
+												   "\n`submit` to send it." + "\n`cancel` to abort.";
 					var pic = await ReplyAsync("", false, embedLayout);
 					var preview = await ReplyAsync("__**PREVIEW**__", false, builder);
 					var instructions = await ReplyAsync(INSTRUCTIONS_STR);

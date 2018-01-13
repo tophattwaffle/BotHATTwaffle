@@ -9,6 +9,8 @@ using Discord.Rest;
 using System.IO;
 using System.Text.RegularExpressions;
 using BotHATTwaffle.Modules.Json;
+using BotHATTwaffle.Objects;
+
 using Imgur.API.Authentication.Impl;
 using Imgur.API.Endpoints.Impl;
 using Imgur.API.Models;
@@ -227,7 +229,7 @@ namespace BotHATTwaffle.Modules
 				{
 					_failedToFetch++;
 					Console.WriteLine($"Failed to update Announcement Message. Attempting to modify {_failedRetryCount - _failedToFetch} more times be recreating message" +
-					                  $"\n{e.GetType()}: {e.Message}\n{e.StackTrace}\n");
+									  $"\n{e.GetType()}: {e.Message}\n{e.StackTrace}\n");
 				}
 			}
 		}
@@ -551,7 +553,7 @@ namespace BotHATTwaffle.Modules
 			foreach (UserData u in UserData.ToList())
 			{
 				//The server reservation has expired
-				if (u.CanReleaseServer())
+				if (u.ReservationExpired())
 				{
 					var authBuilder = new EmbedAuthorBuilder()
 					{
@@ -571,7 +573,7 @@ namespace BotHATTwaffle.Modules
 						ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 						Color = new Color(243, 128, 72),
 
-						Description = $"Your reservation on {u.Server.Description} has ended! You can stay on the server but you cannot send any more commands to it."
+						Description = $"Your reservation on {u.ReservedServer.Description} has ended! You can stay on the server but you cannot send any more commands to it."
 					};
 
 					try //If we cannot send a DM to the user, just dump it into the testing channel and tag them.
@@ -583,8 +585,8 @@ namespace BotHATTwaffle.Modules
 						await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 					}
 
-					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
-					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.Server);
+					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.ReservedServer);
 					UserData.Remove(u);
 					await Task.Delay(1000);
 				}
@@ -605,8 +607,8 @@ namespace BotHATTwaffle.Modules
 			UserData.Add(new UserData()
 			{
 				User = inUser,
-				Server = server,
-				ServerReleaseTime = inServerReleaseTime
+				ReservedServer = server,
+				ReservationExpiration = inServerReleaseTime
 			});
 		}
 
@@ -636,7 +638,7 @@ namespace BotHATTwaffle.Modules
 					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 					Color = new Color(243, 128, 72),
 
-					Description = $"Your reservation on server {u.Server.Description} has expired because all reservations were cleared." +
+					Description = $"Your reservation on server {u.ReservedServer.Description} has expired because all reservations were cleared." +
 					$"This is likely due to a playtest starting soon, or a moderator cleared all reservations."
 				};
 
@@ -649,8 +651,8 @@ namespace BotHATTwaffle.Modules
 					await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 				}
 
-				await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
-				await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.Server);
+				await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+				await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
 				UserData.Remove(u);
 				await Task.Delay(1000);
 			}
@@ -670,7 +672,7 @@ namespace BotHATTwaffle.Modules
 
 			foreach (UserData u in UserData.ToList())
 			{
-				if (u.Server == server)
+				if (u.ReservedServer == server)
 				{
 					var authBuilder = new EmbedAuthorBuilder()
 					{
@@ -690,7 +692,7 @@ namespace BotHATTwaffle.Modules
 						ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 						Color = new Color(243, 128, 72),
 
-						Description = $"Your reservation on server {u.Server.Description} has expired because the reservation was cleared." +
+						Description = $"Your reservation on server {u.ReservedServer.Description} has expired because the reservation was cleared." +
 						$"This is likely due to a playtest starting soon, a moderator cleared the reservation, or you released the reservation."
 					};
 
@@ -703,8 +705,8 @@ namespace BotHATTwaffle.Modules
 						await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 					}
 
-					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.Server.Address} has ended.");
-					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.Server);
+					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
 					UserData.Remove(u);
 					await Task.Delay(1000);
 				}
@@ -729,8 +731,8 @@ namespace BotHATTwaffle.Modules
 			//Add all of the servers to the field list
 			foreach (UserData u in UserData.ToList())
 			{
-				TimeSpan timeLeft = u.ServerReleaseTime.Subtract(DateTime.Now);
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{u.Server.Address}", Value = $"User: `{u.User}#{u.User.Discriminator}`" +
+				TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
+				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{u.ReservedServer.Address}", Value = $"User: `{u.User}#{u.User.Discriminator}`" +
 				$"\nTime Left: {timeLeft:h\'H \'m\'M\'}", IsInline = false });
 			}
 
@@ -761,7 +763,7 @@ namespace BotHATTwaffle.Modules
 		{
 			foreach (UserData u in UserData.ToList())
 			{
-				if (u.Server == server)
+				if (u.ReservedServer == server)
 					return false;
 			}
 			return true;
@@ -808,8 +810,8 @@ namespace BotHATTwaffle.Modules
 				{
 					if (u.User == Context.Message.Author)
 					{
-						TimeSpan timeLeft = u.ServerReleaseTime.Subtract(DateTime.Now);
-						await ReplyAsync($"```You have a reservation on {u.Server.Name}. You have {timeLeft:h\'H \'m\'M\'} left.```");
+						TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
+						await ReplyAsync($"```You have a reservation on {u.ReservedServer.Name}. You have {timeLeft:h\'H \'m\'M\'} left.```");
 						return;
 					}
 				}
@@ -896,8 +898,8 @@ namespace BotHATTwaffle.Modules
 					DateTime time = DateTime.Now;
 					foreach (UserData u in _levelTesting.UserData)
 					{
-						if (u.Server == server)
-							time = u.ServerReleaseTime;
+						if (u.ReservedServer == server)
+							time = u.ReservationExpiration;
 					}
 					TimeSpan timeLeft = time.Subtract(DateTime.Now);
 
@@ -967,7 +969,7 @@ namespace BotHATTwaffle.Modules
 				{
 					if (u.User == Context.Message.Author)
 					{
-						server = u.Server;
+						server = u.ReservedServer;
 					}
 				}
 
@@ -1068,7 +1070,7 @@ namespace BotHATTwaffle.Modules
 				foreach (UserData u in _levelTesting.UserData)
 				{
 					if (u.User != Context.Message.Author) continue;
-					server = u.Server;
+					server = u.ReservedServer;
 					hasServer = true;
 				}
 

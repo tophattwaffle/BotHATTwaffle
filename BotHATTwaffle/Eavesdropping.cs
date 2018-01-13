@@ -7,6 +7,8 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
+using BotHATTwaffle.Objects;
+
 namespace BotHATTwaffle
 {
 	class Eavesdropping
@@ -36,7 +38,7 @@ namespace BotHATTwaffle
 				//Loop over all users in the join list.
 				foreach (UserData u in _joinDelayList.ToList())
 				{
-					if (u.CanRole())
+					if (u.CanHandleJoin())
 					{
 						//Give them playtester role
 						u.User.AddRoleAsync(_dataServices.PlayTesterRole);
@@ -76,7 +78,7 @@ namespace BotHATTwaffle
 			_joinDelayList.Add(new UserData()
 			{
 				User = inUser,
-				JoinRoleTime = inRoleTime,
+				HandleJoinTime = inRoleTime,
 				JoinMessage = message,
 			});
 		}

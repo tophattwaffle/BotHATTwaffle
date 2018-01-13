@@ -30,9 +30,9 @@ namespace BotHATTwaffle.Modules
 				Name = "General Shader",
 				Value = $"[General Shader](https://developer.valvesoftware.com/wiki/Shader)" +
 						$"\n[Shader Authoring](https://developer.valvesoftware.com/wiki/Shader_Authoring)" +
-				        $"\n[Guide to Shaders](http://www.bit-tech.net/reviews/tech/guide_to_shaders/1/)" +
-				        $"\n[Introduction to Shaders](http://www.moddb.com/games/half-life-2/tutorials/introduction-to-shaders)" +
-				        $"\n[Post Process Shaders](http://www.moddb.com/games/half-life-2/tutorials/post-process-shader)", IsInline = false });
+						$"\n[Guide to Shaders](http://www.bit-tech.net/reviews/tech/guide_to_shaders/1/)" +
+						$"\n[Introduction to Shaders](http://www.moddb.com/games/half-life-2/tutorials/introduction-to-shaders)" +
+						$"\n[Post Process Shaders](http://www.moddb.com/games/half-life-2/tutorials/post-process-shader)", IsInline = false });
 			fieldBuilder.Add(new EmbedFieldBuilder
 			{
 				Name = "Shader Language",
@@ -43,7 +43,7 @@ namespace BotHATTwaffle.Modules
 			{
 				Name = "Shader Types",
 				Value = $"[Vertex](https://developer.valvesoftware.com/wiki/Shader#Vertex_shaders )" +
-				        $"\n[Pixel](https://developer.valvesoftware.com/wiki/Shader#Pixel_shaders)",
+						$"\n[Pixel](https://developer.valvesoftware.com/wiki/Shader#Pixel_shaders)",
 				IsInline = false
 			});
 
