@@ -156,6 +156,7 @@ namespace BotHATTwaffle
 				id = id.Substring(0, spaceIndex);
 
 			string workshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
+
 			Summer.WorkshopItem item = new Summer.WorkshopItem();
 			await item.Load(workshopUrl);
 
@@ -212,12 +213,12 @@ namespace BotHATTwaffle
 				try
 				{
 					//Try to tag
-					await _dataServices.TestingChannel.SendMessageAsync($"New Playtest Request Submitted by {Program.Client.GetUser(splitUser[0], splitUser[1]).Mention}, check it out!");
+					await message.Channel.SendMessageAsync($"New Playtest Request Submitted by {_client.GetUser(splitUser[0], splitUser[1]).Mention}, check it out!");
 				}
 				catch
 				{
 					//Can't tag
-					await _dataServices.TestingChannel.SendMessageAsync($"New Playtest Request Submitted by {msgSplit[1]}, check it out!");
+					await message.Channel.SendMessageAsync($"New Playtest Request Submitted by {msgSplit[1]}, check it out!");
 				}
 				await HandleWorkshopEmbeds(message, msgSplit[4], msgSplit[2]);
 				
