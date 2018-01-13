@@ -18,6 +18,7 @@ namespace BotHATTwaffle.Modules
 	public class LevelTesting
 	{
 		public List<UserData> UserData = new List<UserData>();
+		private readonly DiscordSocketClient _client;
 		private readonly DataServices _dataServices;
 		public IUserMessage  AnnounceMessage { get; set; }
 		public GoogleCalendar GoogleCalendar;
@@ -38,11 +39,12 @@ namespace BotHATTwaffle.Modules
 		private int _failedToFetch = 0;
 		private int _failedRetryCount = 10;
 
-		public LevelTesting(DataServices dataServices, Random random)
+		public LevelTesting(DiscordSocketClient client, DataServices dataServices, GoogleCalendar calendar, Random random)
 		{
+			_client = client;
 			_dataServices = dataServices;
 			_random = random;
-			GoogleCalendar = new GoogleCalendar(_dataServices);
+			GoogleCalendar = calendar;
 			CurrentEventInfo = GoogleCalendar.GetEvents(); //Initial get of playtest.
 			LastEventInfo = CurrentEventInfo; //Make sure array is same size for doing compares later.
 		}
@@ -224,7 +226,7 @@ namespace BotHATTwaffle.Modules
 				else
 				{
 					_failedToFetch++;
-					Console.WriteLine($"Failed to update Announcement Message. Attempting to modify {_failedRetryCount - _failedToFetch} more times be recreating message" + 
+					Console.WriteLine($"Failed to update Announcement Message. Attempting to modify {_failedRetryCount - _failedToFetch} more times be recreating message" +
 					                  $"\n{e.GetType()}: {e.Message}\n{e.StackTrace}\n");
 				}
 			}
@@ -439,7 +441,7 @@ namespace BotHATTwaffle.Modules
 				var splitUser = CurrentEventInfo[3].Split('#');
 				try
 				{
-					thumbUrl = Program.Client.GetUser(splitUser[0], splitUser[1]).GetAvatarUrl();
+					thumbUrl = _client.GetUser(splitUser[0], splitUser[1]).GetAvatarUrl();
 				}
 				catch { }
 
@@ -460,7 +462,7 @@ namespace BotHATTwaffle.Modules
 				footBuilder = new EmbedFooterBuilder()
 				{
 					Text = $"connect {eventInfo[10]}",
-					IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+					IconUrl = _client.CurrentUser.GetAvatarUrl()
 				};
 
 				//If possible, use a random image from the imgur album.
@@ -509,7 +511,7 @@ namespace BotHATTwaffle.Modules
 					announceDiag = "\n\n\nThere was an issue with the Google Calendar event. Someone tell TopHATTwaffle..." +
 						"If you're seeing this, that means there is probably a test scheduled, but the description contains " +
 						"HTML code so I cannot properly parse it. ReeeeeeEEEeeE";
-				
+
 				authBuilder = new EmbedAuthorBuilder()
 				{
 					Name = "No Playtests Found!",
@@ -519,7 +521,7 @@ namespace BotHATTwaffle.Modules
 				footBuilder = new EmbedFooterBuilder()
 				{
 					Text = "https://www.tophattwaffle.com/playtesting/",
-					IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+					IconUrl = _client.CurrentUser.GetAvatarUrl()
 				};
 
 				builder = new EmbedBuilder()
@@ -559,7 +561,7 @@ namespace BotHATTwaffle.Modules
 					var footBuilder = new EmbedFooterBuilder()
 					{
 						Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-						IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+						IconUrl = _client.CurrentUser.GetAvatarUrl()
 					};
 
 					var builder = new EmbedBuilder()
@@ -624,7 +626,7 @@ namespace BotHATTwaffle.Modules
 				var footBuilder = new EmbedFooterBuilder()
 				{
 					Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-					IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+					IconUrl = _client.CurrentUser.GetAvatarUrl()
 				};
 
 				var builder = new EmbedBuilder()
@@ -678,7 +680,7 @@ namespace BotHATTwaffle.Modules
 					var footBuilder = new EmbedFooterBuilder()
 					{
 						Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-						IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+						IconUrl = _client.CurrentUser.GetAvatarUrl()
 					};
 
 					var builder = new EmbedBuilder()
@@ -768,11 +770,13 @@ namespace BotHATTwaffle.Modules
 
 	public class LevelTestingModule : ModuleBase<SocketCommandContext>
 	{
+		private readonly DiscordSocketClient _client;
 		private readonly LevelTesting _levelTesting;
 		private readonly DataServices _dataServices;
 
-		public LevelTestingModule(LevelTesting levelTesting, DataServices dataServices)
+		public LevelTestingModule(DiscordSocketClient client, LevelTesting levelTesting, DataServices dataServices)
 		{
+			_client = client;
 			_levelTesting = levelTesting;
 			_dataServices = dataServices;
 		}
@@ -857,7 +861,7 @@ namespace BotHATTwaffle.Modules
 					var footBuilder = new EmbedFooterBuilder()
 					{
 						Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-						IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+						IconUrl = _client.CurrentUser.GetAvatarUrl()
 					};
 					List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
 					fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {server.Address}`", IsInline = false });

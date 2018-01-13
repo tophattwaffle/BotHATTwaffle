@@ -14,13 +14,15 @@ namespace BotHATTwaffle
 		private readonly Timer _timer;
 		private const int _JOIN_DELAY_ROLE_TIME = 10;
 		private readonly List<UserData> _joinDelayList = new List<UserData>();
-		private readonly Random _random;
+		private readonly DiscordSocketClient _client;
 		private readonly DataServices _dataServices;
+		private readonly Random _random;
 
-		public Eavesdropping(DataServices dataService)
+		public Eavesdropping(DiscordSocketClient client, DataServices dataService, Random random)
 		{
+			_client = client;
 			_dataServices = dataService;
-			_random = new Random();
+			_random = random;
 
 			_dataServices.AgreeStrings = new string[]{
 				"^",
@@ -95,7 +97,7 @@ namespace BotHATTwaffle
 			var footBuilder = new EmbedFooterBuilder()
 			{
 				Text = "Once again thanks for joining, hope you enjoy your stay!",
-				IconUrl = Program.Client.CurrentUser.GetAvatarUrl()
+				IconUrl = _client.CurrentUser.GetAvatarUrl()
 			};
 
 			var builder = new EmbedBuilder()
@@ -156,22 +158,22 @@ namespace BotHATTwaffle
 			await item.Load(workshopUrl);
 
 			if (!item.IsValid)
-                return false;
+				return false;
 
 
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.WithImageUrl(item.Image);
-            builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
-            builder.AddField("Game", item.AppName, true);
-            string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
-            if (type == "Mod")
-                type = "Map/Mod";
-            builder.AddField("Type", type, true);
-            builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
-            builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
+			EmbedBuilder builder = new EmbedBuilder();
+			builder.WithImageUrl(item.Image);
+			builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
+			builder.AddField("Game", item.AppName, true);
+			string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
+			if (type == "Mod")
+				type = "Map/Mod";
+			builder.AddField("Type", type, true);
+			builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
+			builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
 			builder.WithUrl(item.Url);
-            builder.WithColor(new Color(52, 152, 219));
-            builder.WithTitle(item.Title);
+			builder.WithColor(new Color(52, 152, 219));
+			builder.WithTitle(item.Title);
 
 			if(images != null)
 			{
@@ -203,9 +205,9 @@ namespace BotHATTwaffle
 
 				string messagestr = message.Content.Replace("BOT_KEY-A2F3D6", "");
 				var splitUser = messagestr.Substring(0, messagestr.IndexOf("#") + 5).Split('#');
-				await message.Channel.SendMessageAsync($"New {type} Playtest Request Submitted by {Program.Client.GetUser(splitUser[0], splitUser[1]).Mention}. Check it out!\n");
+				await message.Channel.SendMessageAsync($"New {type} Playtest Request Submitted by {_client.GetUser(splitUser[0], splitUser[1]).Mention}. Check it out!\n");
 				await HandleWorkshopEmbeds(message, messagestr.Split(',')[1]);
-				
+
 				return;
 			}
 
@@ -213,8 +215,8 @@ namespace BotHATTwaffle
 			if (message.Author.IsBot)
 				return;
 
-            //Is a shit post.
-            if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
+			//Is a shit post.
+			if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
 			{
 				var builder = new EmbedBuilder()
 				{

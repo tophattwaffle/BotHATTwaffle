@@ -57,18 +57,22 @@ namespace BotHATTwaffle.Modules
 
 	public class ModerationModule : InteractiveBase
 	{
+		private readonly DiscordSocketClient _client;
 		private readonly ModerationServices _mod;
 		private readonly LevelTesting _levelTesting;
 		private readonly DataServices _dataServices;
 		private readonly TimerService _timer;
 		private readonly DownloaderService _downloaderService;
 
-		public ModerationModule(ModerationServices mod,
-								LevelTesting levelTesting,
-								DataServices dataServices,
-								TimerService timer,
-								DownloaderService dlService)
+		public ModerationModule(
+			DiscordSocketClient client,
+			ModerationServices mod,
+			LevelTesting levelTesting,
+			DataServices dataServices,
+			TimerService timer,
+			DownloaderService dlService)
 		{
+			_client = client;
 			_timer = timer;
 			_dataServices = dataServices;
 			_levelTesting = levelTesting;
@@ -903,14 +907,14 @@ namespace BotHATTwaffle.Modules
 			try
 			{
 				//Try to DM them the information to get their demos.
-				await Program.Client.GetUser(splitUser[0], splitUser[1]).SendMessageAsync("", false, builder);
+				await _client.GetUser(splitUser[0], splitUser[1]).SendMessageAsync("", false, builder);
 			}
 			catch
 			{
 				try
 				{
 					//If they don't accepts DMs, tag them in level testing.
-					await _dataServices.TestingChannel.SendMessageAsync($"{Program.Client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
+					await _dataServices.TestingChannel.SendMessageAsync($"{_client.GetUser(splitUser[0], splitUser[1]).Mention} You can download your demo here:");
 				}
 				catch
 				{

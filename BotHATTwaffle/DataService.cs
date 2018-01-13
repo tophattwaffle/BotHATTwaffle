@@ -23,6 +23,7 @@ namespace BotHATTwaffle
 		private JsonRoot _root;
 		private List<JsonSeries> _series;
 		private List<JsonServer> _servers;
+		private readonly DiscordSocketClient _client;
 		private readonly Random _random;
 		public string DemoPath;
 
@@ -77,10 +78,11 @@ namespace BotHATTwaffle
 		public int CalUpdateTicks = 2;
 		public string ImgurApi;
 
-		public DataServices(Random random)
+		public DataServices(DiscordSocketClient client, Random random)
 		{
 			Config = ReadSettings(); //Needed when the data is first DI'd
 			VariableAssignment();
+			_client = client;
 			_random = random;
 		}
 
@@ -284,7 +286,7 @@ namespace BotHATTwaffle
 			if (Config.ContainsKey("patreonsRole"))
 				_patreonsRoleStr = Config["patreonsRole"];
 
-			var arg = Program.Client.Guilds.FirstOrDefault();
+			var arg = _client.Guilds.FirstOrDefault();
 
 			Console.ForegroundColor = ConsoleColor.Green;
 			//Iterate all channels
@@ -358,7 +360,7 @@ namespace BotHATTwaffle
 			if (mention)
 			{
 				var splitUser = AlertUser.Split('#');
-				alert = Program.Client.GetUser(splitUser[0], splitUser[1]).Mention;
+				alert = _client.GetUser(splitUser[0], splitUser[1]).Mention;
 			}
 
 			LogChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{message}```");
@@ -379,7 +381,7 @@ namespace BotHATTwaffle
 			if (mention)
 			{
 				var splitUser = AlertUser.Split('#');
-				alert = Program.Client.GetUser(splitUser[0], splitUser[1]).Mention;
+				alert = _client.GetUser(splitUser[0], splitUser[1]).Mention;
 			}
 
 			LogChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{title}\n{message}```");
