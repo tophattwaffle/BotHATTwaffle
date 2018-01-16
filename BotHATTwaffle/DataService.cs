@@ -63,6 +63,7 @@ namespace BotHATTwaffle
 		public string PenguinFactPath;
 		public string TanookiFactPath;
 		public string AlertUser;
+		public int ShitPostDelay = 5;
 
 		//TimerService Vars
 		public int StartDelay = 10;
@@ -215,6 +216,7 @@ namespace BotHATTwaffle
 			mainConfig.AddKeyIfMissing("catFactPath", $"X:\\Scripts\\catfacts.txt");
 			mainConfig.AddKeyIfMissing("penguinFactPath", $"X:\\Scripts\\penguinfacts.txt");
 			mainConfig.AddKeyIfMissing("tanookiFactPath", $"X:\\Scripts\\tanookifacts.txt");
+			mainConfig.AddKeyIfMissing("ShitPostDelay", $"5");
 			#endregion
 
 			#endregion
@@ -273,6 +275,9 @@ namespace BotHATTwaffle
 				Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {CalUpdateTicks}.");
 
 			CalUpdateTicks = CalUpdateTicks - 1;
+
+			if (Config.ContainsKey("ShitPostDelay") && !int.TryParse(Config["ShitPostDelay"], out ShitPostDelay))
+				Console.WriteLine($"Key \"ShitPostDelay\" not found or valid. Using default {ShitPostDelay}.");
 
 			if (Config.ContainsKey("playingStringsCSV"))
 				PlayingStrings = Config["playingStringsCSV"].Split(',');

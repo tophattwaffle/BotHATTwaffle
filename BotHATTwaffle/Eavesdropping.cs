@@ -19,6 +19,7 @@ namespace BotHATTwaffle
 		private readonly DiscordSocketClient _client;
 		private readonly DataServices _dataServices;
 		private readonly Random _random;
+		private DateTime _canShitPost;
 
 		public Eavesdropping(DiscordSocketClient client, DataServices dataService, Random random)
 		{
@@ -31,6 +32,9 @@ namespace BotHATTwaffle
 				"^^^",
 				"^^^ I agree with ^^^",
 			};
+
+			//Subtract value so we can shitpost once right away.
+			_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay * -1);
 
 			//Start a timer. Starts after 10 seconds, and re-fires every 60 seconds.
 			_timer = new Timer(_ =>
@@ -230,32 +234,45 @@ namespace BotHATTwaffle
 				return;
 
 			//Is a shit post.
-			if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
+			if(CanShitPost())
 			{
-				var builder = new EmbedBuilder()
+				if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
 				{
-					ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/doit.jpg",
-				};
-				await message.Channel.SendMessageAsync("",false, builder);
-				return;
+					var builder = new EmbedBuilder()
+					{
+						ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/doit.jpg",
+					};
+					await message.Channel.SendMessageAsync("",false, builder);
+					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					return;
+				}
 			}
 
 			//Is a shit post.
-			if (message.Content.ToLower().Contains("who is daddy") || message.Content.ToLower().Contains("who is tophattwaffle"))
+			if (CanShitPost())
 			{
-				await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
-				return;
+				if (message.Content.ToLower().Contains("who is daddy") || message.Content.ToLower().Contains("who is tophattwaffle"))
+				{
+					await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
+					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					return;
+				}
 			}
 
 			//Is a shit post.
-			if (message.Content.ToLower().Contains("execute order 66"))
+			if (CanShitPost())
 			{
-				await message.Channel.SendMessageAsync("Yes my lord.");
-				await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
-				return;
+				if (message.Content.ToLower().Contains("execute order 66"))
+				{
+					await message.Channel.SendMessageAsync("Yes my lord.");
+					await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
+					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					return;
+				}
 			}
 
 			//Is a shit post.
+
 			if (this._dataServices.AgreeEavesDrop.Any( s => message.Content.Equals("^") && message.Author.Username.Equals(s) ||
 					 ((SocketGuildUser)message.Author).Roles.Contains(this._dataServices.PatreonsRole) && message.Content.Equals("^")))
 			{
@@ -279,11 +296,14 @@ namespace BotHATTwaffle
 				return;
 			}
 
-			if (_dataServices.CarveEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+			if (CanShitPost())
 			{
-				await Carve(message);
-
-				return;
+				if (_dataServices.CarveEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+				{
+					await Carve(message);
+					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					return;
+				}
 			}
 
 			if (_dataServices.PropperEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
@@ -293,31 +313,44 @@ namespace BotHATTwaffle
 				return;
 			}
 
-			if (_dataServices.VbEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+			if (CanShitPost())
 			{
-				await VB(message);
-
-				return;
+				if (_dataServices.VbEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+				{
+					await VB(message);
+					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					return;
+				}
 			}
 
-			if (_dataServices.YorkEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+			if (CanShitPost())
 			{
-				await DeYork(message);
+				if (_dataServices.YorkEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+				{
+					await DeYork(message);
+					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
 
-				return;
+					return;
+				}
 			}
 
 			//Is a shit post.
-			if (message.Content.ToLower().Contains(_dataServices.TanookiEavesDrop))
+			if (CanShitPost())
 			{
-				await Tanooki(message);
-
-				return;
+				if (message.Content.ToLower().Contains(_dataServices.TanookiEavesDrop))
+				{
+					await Tanooki(message);
+					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					return;
+				}
 			}
 
 			if (await HandleWorkshopEmbeds(message))
 				return;
 		}
+
+
+		public bool CanShitPost() => _canShitPost < DateTime.Now;
 
 		/// <summary>
 		/// Nags users to not use pakrat.
