@@ -350,7 +350,7 @@ namespace BotHATTwaffle
 		}
 
 
-		public bool CanShitPost() => _canShitPost < DateTime.Now;
+		private bool CanShitPost() => _canShitPost < DateTime.Now;
 
 		/// <summary>
 		/// Nags users to not use pakrat.
