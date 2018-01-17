@@ -490,7 +490,7 @@ namespace BotHATTwaffle
 			reply = await rcon.SendCommandAsync(command);
 
 			Console.ForegroundColor = ConsoleColor.Green;
-			Console.WriteLine($"RCON COMMAND: {server.Address}\nCommand: {command}\n");
+			Console.WriteLine($"{DateTime.Now}\nRCON COMMAND: {server.Address}\nCommand: {command}\n");
 			Console.ResetColor();
 
 			//If you re-set the rcon_password all RCON connections are closed.
