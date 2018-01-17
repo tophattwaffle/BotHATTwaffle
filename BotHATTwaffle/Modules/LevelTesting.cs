@@ -90,7 +90,6 @@ namespace BotHATTwaffle.Modules
 					await AnnounceMessage.DeleteAsync();
 					AnnounceMessage = null;
 					Console.WriteLine("Old message Deleted!\nForcing refresh to post new message.");
-					await Announce();
 				}
 				catch
 				{
