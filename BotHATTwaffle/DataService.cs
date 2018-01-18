@@ -493,10 +493,10 @@ namespace BotHATTwaffle
 			Console.WriteLine($"{DateTime.Now}\nRCON COMMAND: {server.Address}\nCommand: {command}\n");
 			Console.ResetColor();
 
-			//If you re-set the rcon_password all RCON connections are closed.
-			//By not awaiting this, we are able to set the RCON password back to the same value closing the connection.
-			//This will automatically timeout and dispose of the RCON connection when it tries to connect again.
-			Task fireAndForget = rcon.SendCommandAsync($"rcon_password {server.Password}");
+//If you re-set the rcon_password all RCON connections are closed.
+//By not awaiting this, we are able to set the RCON password back to the same value closing the connection.
+//This will automatically timeout and dispose of the RCON connection when it tries to connect again.
+Task fireAndForget = rcon.SendCommandAsync($"rcon_password {server.Password}");
 
 			//Remove the Bot's public IP from the string.
 			reply = reply.Replace($"{botIp}", "69.420.MLG.1337");
