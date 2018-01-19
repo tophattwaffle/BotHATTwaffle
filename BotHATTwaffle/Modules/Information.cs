@@ -171,6 +171,8 @@ namespace BotHATTwaffle.Modules
 				if (!isPrivate)
 					await wait.DeleteAsync();
 
+				//Delete the invoking message
+				await Context.Message.DeleteAsync();
 				return;
 			}
 
