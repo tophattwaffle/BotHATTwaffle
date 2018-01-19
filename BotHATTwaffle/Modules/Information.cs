@@ -168,11 +168,15 @@ namespace BotHATTwaffle.Modules
 					await ReplyAsync("```\"dump\" and \"all\" search terms can ONLY send replies in a DM. This is to prevent flooding chat." +
 						" You got this message because you do not accept DMs from non-friends.```");
 				}
+
 				if (!isPrivate)
+				{
 					await wait.DeleteAsync();
 
-				//Delete the invoking message
-				await Context.Message.DeleteAsync();
+					//Delete the invoking message
+					await Context.Message.DeleteAsync();
+				}
+
 				return;
 			}
 
