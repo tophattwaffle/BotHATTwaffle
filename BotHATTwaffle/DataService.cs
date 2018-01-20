@@ -484,19 +484,15 @@ namespace BotHATTwaffle
 			}
 
 			//Setup new RCON object
-			var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password,1000);
+			using (var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password))
+			{
+				//Send the RCON command to the server
+				reply = await rcon.SendCommandAsync(command);
 
-			//Send the RCON command to the server
-			reply = await rcon.SendCommandAsync(command);
-
-			Console.ForegroundColor = ConsoleColor.Green;
-			Console.WriteLine($"{DateTime.Now}\nRCON COMMAND: {server.Address}\nCommand: {command}\n");
-			Console.ResetColor();
-
-//If you re-set the rcon_password all RCON connections are closed.
-//By not awaiting this, we are able to set the RCON password back to the same value closing the connection.
-//This will automatically timeout and dispose of the RCON connection when it tries to connect again.
-Task fireAndForget = rcon.SendCommandAsync($"rcon_password {server.Password}");
+				Console.ForegroundColor = ConsoleColor.Green;
+				Console.WriteLine($"{DateTime.Now}\nRCON COMMAND: {server.Address}\nCommand: {command}\n");
+				Console.ResetColor();
+			}
 
 			//Remove the Bot's public IP from the string.
 			reply = reply.Replace($"{botIp}", "69.420.MLG.1337");

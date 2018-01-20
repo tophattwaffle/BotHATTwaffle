@@ -75,7 +75,8 @@ namespace CoreRCON
 			await SendPacketAsync(new RCONPacket(0, PacketType.Auth, _password));
 			await _authenticationTask.Task;
 
-			Task.Run(() => WatchForDisconnection(_reconnectDelay)).Forget();
+			//Don't start watching for disconnection. We don't want to even stay connected. 
+			//Task.Run(() => WatchForDisconnection(_reconnectDelay)).Forget();
 		}
 
 		public void Dispose()
@@ -181,6 +182,7 @@ namespace CoreRCON
 		/// Polls the server to check if RCON is still authenticated.  Will still throw if the password was changed elsewhere.
 		/// </summary>
 		/// <param name="delay">Time in milliseconds to wait between polls.</param>
+		/*
 		private async void WatchForDisconnection(uint delay)
 		{
 			int checkedDelay = checked((int)delay);
@@ -202,5 +204,6 @@ namespace CoreRCON
 				await Task.Delay(checkedDelay);
 			}
 		}
+		*/
 	}
 }

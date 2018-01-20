@@ -896,7 +896,7 @@ namespace BotHATTwaffle.Modules
 			await Task.Delay(3000);
 			await _dataServices.RconCommand($"sv_voiceenable 0; say Please join the Level Testing voice channel for feedback!", server);
 			await Task.Delay(3000);
-			await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
+			await _dataServices.RconCommand($"sv_cheats 1; say Please join the Level Testing voice channel for feedback!", server);
 			await Task.Delay(3000);
 			await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 			await Task.Delay(3000);
