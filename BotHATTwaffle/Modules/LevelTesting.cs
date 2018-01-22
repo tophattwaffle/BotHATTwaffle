@@ -272,7 +272,7 @@ namespace BotHATTwaffle.Modules
 			{
 				var result = Regex.Match(CurrentEventInfo[6], @"\d+$").Value;
 				await _dataServices.RconCommand($"exec postgame", server);
-				await Task.Delay(2000);
+				await Task.Delay(5000);
 				await _dataServices.RconCommand($"host_workshop_map {result}", server);
 				await _dataServices.ChannelLog("Changing Map on Test Server", $"'host_workshop_map {result}' on {server.Address}");
 			}
