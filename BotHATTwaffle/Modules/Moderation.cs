@@ -694,9 +694,6 @@ namespace BotHATTwaffle.Modules
 					if (server != null)
 						reply = await _dataServices.RconCommand(command, server);
 
-					if (reply.Length > 1880)
-						reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED...]";
-
 					//Remove log messages from log
 					string[] replyArray = reply.Split(
 					new[] { "\r\n", "\r", "\n" },
@@ -704,6 +701,9 @@ namespace BotHATTwaffle.Modules
 					);
 					reply = string.Join("\n", replyArray.Where(x => !x.Trim().StartsWith("L ")));
 					reply = reply.Replace("discord.gg", "discord,gg").Replace(server.Password,"[PASSWORD HIDDEN]");
+
+					if (reply.Length > 1880)
+						reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED...]";
 				}
 				catch { }
 

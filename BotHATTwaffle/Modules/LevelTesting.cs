@@ -990,14 +990,14 @@ namespace BotHATTwaffle.Modules
 						string reply = await _dataServices.RconCommand(command, server);
 						Console.WriteLine($"RCON:\n{reply}");
 
-						//Limit command output
-						if (reply.Length > 1880)
-							reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED...]";
-
 						//Remove log messages from log
 						string[] replyArray = reply.Split(new[] { "\r\n", "\r", "\n" },StringSplitOptions.None);
 						reply = string.Join("\n", replyArray.Where(x => !x.Trim().StartsWith("L ")));
 						reply = reply.Replace("discord.gg", "discord,gg").Replace(server.Password, "[PASSWORD HIDDEN]");
+
+						//Limit command output
+						if (reply.Length > 1880)
+							reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED]";
 
 						//Special handling case for a password
 						if (command.Contains("sv_password"))
