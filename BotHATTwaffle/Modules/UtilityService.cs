@@ -1,11 +1,9 @@
-﻿using Discord;
-using Discord.Commands;
-using System;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.Threading.Tasks;
 using System.Linq;
+
+using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
-using System.Threading;
 
 namespace BotHATTwaffle.Modules
 {
@@ -13,7 +11,7 @@ namespace BotHATTwaffle.Modules
 	{
 		public UtilityService()
 		{
-			//Nothing happens here, yet
+			// Nothing happens here, yet
 		}
 	}
 
@@ -29,90 +27,96 @@ namespace BotHATTwaffle.Modules
 		}
 
 		/// <summary>
-		/// Ping command with response time from API
+		/// Displays the estimated round-trip latency, in miliseconds, to the gateway server.
 		/// </summary>
-		/// <returns></returns>
+		/// <seealso cref="DiscordSocketClient.Latency"/>
+		/// <returns>No object or value is returned by this method when it completes.</returns>
 		[Command("ping")]
-		[Summary("`>ping` Replies with a message")]
-		[Remarks("It's a ping command.")]
+		[Summary("`>ping` Replies with the bot's latency to Discord.")]
+		[Remarks("The ping is the estimated round-trip latency, in miliseconds, to the gateway server.")]
 		public async Task PingAsync()
 		{
-			var replyTime = _client.Latency;
-			var builder = new EmbedBuilder()
+			var builder = new EmbedBuilder
 			{
 				Color = new Color(47, 111, 146),
-				Description = $"*Do you like waffles?*" +
-				$"\nIt took me **{replyTime}ms** to reach the Discord API."
+				Description = $"*Do you like waffles?*\nIt took me **{_client.Latency} ms** to reach the Discord API."
 			};
-			await ReplyAsync("", false, builder);
+
+			await ReplyAsync("", false, builder.Build());
 		}
 
 		/// <summary>
-		/// Allows users to give/remove a role from themselves to display what skills they have.
+		/// Toggles the invoking user's roles.
 		/// </summary>
+		/// <remarks>
+		/// Yields a list of all toggleable roles when invoked without parameters. The roles which can be used with this command
+		/// are specified in the <c>roleMeWhiteListCSV</c> config field.
+		/// </remarks>
 		/// <param name="inRoleStr">List of roles to toggle</param>
-		/// <returns></returns>
+		/// <returns>No object or value is returned by this method when it completes.</returns>
 		[Command("roleme")]
-		[Summary("`>roleme [role names]` Toggles roles on a user")]
-		[Remarks("This will let you add roles to yourself. Typically for saying you have a skill like 3D Modeling, or level design." +
-			"\nYou can put multiple roles into one command to get multiple at one time. Example: `>roleme blender level design programmer`" +
-			"\nYou can type `>roleme` to show all roles available")]
+		[Summary("`>roleme [role names]` Toggles the invoking user's roles.")]
+		[Remarks(
+			"This enables one to toggle some of oneself's roles. The toggleable roles tyically display possession of a skill, " +
+			"such as 3D Modeling or level design.\n" +
+			"The command accepts multiple roles in one invocation: `>roleme blender level design programmer`.\n" +
+			"Invoking it without any parameters, i.e. `>roleme`, yields a list of all available roles.")]
 		public async Task RolemeAsync([Remainder]string inRoleStr = "display")
 		{
-			//Currently, we don't have the framework to get user roles in DM.
-			//Just don't allow it in a DM.
+			// Currently, the framework to get users' roles in DMs doesn't exist.
 			if (Context.IsPrivate)
 			{
-				await ReplyAsync("**This command can not be used in a DM**");
+				await ReplyAsync("**This command can not be used in a direct message.**");
 				return;
 			}
 
-			var user = Context.User as SocketGuildUser;
+			var user = (SocketGuildUser)Context.User;
 
-			//Display roles, or modify role state
+			// Display roles; otherwise toggle them.
 			if (inRoleStr.ToLower() == "display")
-			{
 				await ReplyAsync($"Valid roles are:```\n{string.Join("\n", _dataServices.RoleMeWhiteList)}```");
-			}
 			else
 			{
-				//Validate that we can apply the role
-				bool valid = false;
+				// Validates the role can be applied.
+				var valid = false;
 				string reply = null;
+
 				foreach (string s in _dataServices.RoleMeWhiteList)
 				{
 					if (!inRoleStr.ToLower().Contains(s.ToLower())) continue;
-					valid = true; //We applied at least 1 role.
+					valid = true; // At least one role was applied.
 
-					var inRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == s);
+					SocketRole inRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == s);
 
 					if (user.Roles.Contains(inRole))
 					{
-						//Remove role
+						// Removes the role.
 						reply += $"{Context.User.Username} lost the **{inRole}** role.\n";
 						await ((IGuildUser)user).RemoveRoleAsync(inRole);
 					}
 					else
 					{
-						//Add role
+						// Adds the role.
 						reply += $"{Context.User.Username} now has the role **{inRole}**. Enjoy the flair!\n";
 						await ((IGuildUser)user).AddRoleAsync(inRole);
 					}
 				}
 
-				if(valid)
+				if (valid)
 				{
-					//Something actually happened - Reply with the changes.
+					// Something actually happened - reply with the changes.
 					await ReplyAsync($"{reply}");
 					await _dataServices.ChannelLog($"{Context.User}\n{reply}");
 				}
 				else
 				{
-					//Nothing was changed - bad input provided.
-					await ReplyAsync($"{Context.User.Mention}\n```You cannot assign yourself the role of **{inRoleStr}** because it does not exist, " +
-						$"or it is not allowed.```");
-					await _dataServices.ChannelLog($"{Context.User} attempted to roleMe the role of: {inRoleStr} and it failed. Either due to the " +
-						$"role not existing, or they tried to use a role that isn't in the white list.");
+					// Nothing was changed - a bad input was provided.
+					await ReplyAsync(
+						$"{Context.User.Mention}\n```Not all of the following roles could be toggled: **{inRoleStr}**; some do " +
+						"not exist and/or are disallowed.```");
+					await _dataServices.ChannelLog(
+						$"{Context.User} failed to roleme at least some of the following roles: {inRoleStr}; some do not " +
+						"exist and/or are disallowed.");
 				}
 			}
 		}
