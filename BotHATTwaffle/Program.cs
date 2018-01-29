@@ -66,7 +66,6 @@ namespace BotHATTwaffle
 				.AddSingleton(_client)
 				.AddSingleton(_commands)
 				.AddSingleton<TimerService>()
-				.AddSingleton<UtilityService>()
 				.AddSingleton<ModerationServices>()
 				.AddSingleton<LevelTesting>()
 				.AddSingleton<ToolsService>()

@@ -7,20 +7,12 @@ using Discord.WebSocket;
 
 namespace BotHATTwaffle.Modules
 {
-	public class UtilityService
-	{
-		public UtilityService()
-		{
-			// Nothing happens here, yet
-		}
-	}
-
-	public class UtilityModule : ModuleBase<SocketCommandContext>
+	public class UtilitiesModule : ModuleBase<SocketCommandContext>
 	{
 		private readonly DiscordSocketClient _client;
 		private readonly DataServices _dataServices;
 
-		public UtilityModule(DiscordSocketClient client, DataServices dataServices)
+		public UtilitiesModule(DiscordSocketClient client, DataServices dataServices)
 		{
 			_client = client;
 			_dataServices = dataServices;
