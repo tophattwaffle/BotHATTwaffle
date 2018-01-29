@@ -27,7 +27,7 @@
 	}
 
 	public class SourceQueryInfo : IQueryInfo
-    {
+	{
 		public byte Bots { get; private set; }
 		public ServerEnvironment Environment { get; private set; }
 		public string Folder { get; private set; }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CoreRCON.PacketFormats
 {
-    public interface IQueryInfo
-    {
-    }
+	public interface IQueryInfo
+	{
+	}
 }

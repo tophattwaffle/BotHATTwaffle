@@ -168,14 +168,14 @@ namespace BotHATTwaffle
 				return false;
 
 
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.WithImageUrl(item.Image);
-            builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
-            builder.AddField("Game", item.AppName, true);
-            string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
-            if (type == "Mod")
-                type = "Map/Mod";
-            builder.AddField("Type", type, true);
+			EmbedBuilder builder = new EmbedBuilder();
+			builder.WithImageUrl(item.Image);
+			builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
+			builder.AddField("Game", item.AppName, true);
+			string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
+			if (type == "Mod")
+				type = "Map/Mod";
+			builder.AddField("Type", type, true);
 
 			if (testType != null)
 			{
@@ -183,7 +183,7 @@ namespace BotHATTwaffle
 			}
 
 			builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
-            builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
+			builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
 			builder.WithUrl(item.Url);
 			builder.WithColor(new Color(52, 152, 219));
 			builder.WithTitle(item.Title);
