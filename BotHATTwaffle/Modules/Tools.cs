@@ -27,8 +27,10 @@ namespace BotHATTwaffle.Modules
 				Url = "https://www.tophattwaffle.com/downloads/vtfedit/",
 				ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vtfedit.png",
 				Color = new Color(255, 206, 199),
-				Description = "VTFEdit is a lightweight program that can be used to convert images into the Valve VTF image format." +
-				" It is much easier to use than VTEX.exe and provides a nice GUI for everything you'd ever need to get your images into the Source Engine."
+				Description =
+					"VTFEdit is a lightweight tool used to convert images into Valve's proprietary format - VTF (Valve " +
+					"Texture Format). Because it has a GUI, it is substantially easier to use than Valve's own CLI tool, " +
+					"VTEX (Valve Texture Tool)."
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
@@ -50,16 +52,16 @@ namespace BotHATTwaffle.Modules
 				Url = "https://www.tophattwaffle.com/downloads/gcfscape/",
 				ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/gcfscape.png",
 				Color = new Color(63, 56, 156),
-				Description = "GCFScape is a utility that will let you explore, extract, and manage content in various packages used by Valve / Steam games." +
-				" Such as VPK, GCF, PAK, BSP, and more."
-
+				Description =
+					"GCFScape is a tool for exploring, extracting, and managing content in various package formats used by " +
+					"Valve and Steam. Supported formats include VPK, GCF, PAK, BSP, and more."
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 		}
 
 		[Command("VMTEditor")]
-		[Summary("`>VMTEditor` Provides a link to VMT Editor.")]
+		[Summary("`>VMTEditor` Provides a download link to VMT Editor.")]
 		[Alias("vmt")]
 		public async Task VMTEditorAsync()
 		{
@@ -74,10 +76,10 @@ namespace BotHATTwaffle.Modules
 				Url = "https://gira-x.github.io/VMT-Editor/",
 				ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vmteditor.png",
 				Color = new Color(50, 50, 50),
-				Description = "VMT Editor is, hands down, one of the best VMT creation tools that exists for Source engine. " +
-				"It quickly became a standard tool for most designers that regularly create VMT files. " +
-				"Created by Yanzl over at MapCore."
-
+				Description =
+					"VMT Editor is, hands down, one of the best VMT (Valve Material Type) creation tools that exists for the " +
+					"Source engine. It quickly became a standard tool for most designers that regularly create VMT files. " +
+					"Created by Yanzl over at MapCore."
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
@@ -98,9 +100,9 @@ namespace BotHATTwaffle.Modules
 				Url = "https://www.tophattwaffle.com/downloads/vide/",
 				ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/vide.png",
 				Color = new Color(50, 50, 50),
-				Description = "VIDE is a 3rd party tool that has many tools rolled into one awesome package. " +
-				"Most people use it for packing assets into a level, but it can do so much more than that."
-
+				Description =
+					"VIDE (Valve Integrated Development Environment) is a 3rd-party program which contains various tools. It " +
+					"is popular for its pakfile lump editor (packing assets into a level), but it can do so much more than that."
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
@@ -122,9 +124,9 @@ namespace BotHATTwaffle.Modules
 				Url = "https://dev.wallworm.com/",
 				ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/worm_logo.png",
 				Color = new Color(21, 21, 21),
-				Description = "Wall Worm tools are a scripting package created to help designers working in 3dsmax " +
-				"export assets and levels into the Source Engine. It's the best thing to ever happen to Source Engine modeling."
-
+				Description =
+					"Wall Worm tools enable developers to design assets and level in Autodesk's 3ds Max and export them into " +
+					"the Source Engine. It's the best thing to ever happen to Source Engine modelling."
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
@@ -146,9 +148,10 @@ namespace BotHATTwaffle.Modules
 				Url = "https://www.tophattwaffle.com/downloads/bspsource/",
 				ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/BSPSource_icon.png",
 				Color = new Color(84,137,71),
-				Description = "BSPSource is a community tool that can be used to decompile a BSP file into a VMF that can be " +
-				"opened inside Hammer. It is a great tool to see how things are done in a map. It should not be used to steal content."
-
+				Description =
+					"BSPSource is a tool for decompiling Source's BSP (Binary Space Partition) files into VMF (Valve Map " +
+					"Format) files that can be opened with Hammer. It is a great tool to see how things are done in a map. It " +
+					"should not be used to steal content."
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
@@ -170,9 +173,10 @@ namespace BotHATTwaffle.Modules
 				Url = "http://www.interlopers.net/errors",
 				ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/12/selectall.jpg",
 				Color = new Color(84, 137, 71),
-				Description = "Interlopers has a wonderful tool that you can paste your compile log in that explains common errors." +
-				"Just copy and paste your entire log, or a section containing and error, and you will typically get a fix for it!"
-
+				Description =
+					"The compile log checker on Interlopers is a web tool which analyses compile logs of maps to detect " +
+					"compilation issues and propose solutions. Simply copy and paste an entire log or a section with an " +
+					"error and click the button to have the log checked."
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
