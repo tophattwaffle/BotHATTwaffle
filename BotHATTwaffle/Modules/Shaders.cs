@@ -23,7 +23,7 @@ namespace BotHATTwaffle.Modules
 					Name = "Shader Resources",
 					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
 				},
-				Fields = new List<EmbedFieldBuilder>
+				Fields =
 				{
 					new EmbedFieldBuilder
 					{

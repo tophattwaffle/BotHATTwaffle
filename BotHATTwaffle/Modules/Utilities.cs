@@ -135,7 +135,7 @@ namespace BotHATTwaffle.Modules
 				string name = $"Failed ({rolesInvalid.Count()})";
 
 				embed.AddInlineField(name, string.Join("\n", rolesInvalid));
-				embed.WithFooter("Roles fail if they don't exist or toggling them is disallowed.");
+				embed.WithFooter("Failures occur when roles don't exist or toggling them is disallowed.");
 				logMessage.Append($"{name}\n    " + string.Join("\n    ", rolesInvalid));
 			}
 
