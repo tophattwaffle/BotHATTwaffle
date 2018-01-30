@@ -52,7 +52,7 @@ namespace BotHATTwaffle.Modules
 		[Command("roleme")]
 		[Summary("`>roleme [role names]` Toggles the invoking user's roles.")]
 		[Remarks(
-			"This enables one to toggle some of oneself's roles. The toggleable roles tyically display possession of a skill, " +
+			"This enables one to toggle some of oneself's roles. The toggleable roles typically display possession of a skill, " +
 			"such as 3D Modeling or level design.\n" +
 			"The command accepts multiple roles in one invocation: `>roleme blender level_designer programmer`.\n" +
 			"Invoking it without any parameters, i.e. `>roleme`, yields a list of all available roles.")]
@@ -118,7 +118,7 @@ namespace BotHATTwaffle.Modules
 			{
 				string name = $"Added ({rolesAdded.Count})";
 
-				embed.AddInlineField(name, string.Join("\n", rolesAdded.Select(r => r.IsMentionable ? r.Mention : r.Name)));
+				embed.AddInlineField(name, string.Join("\n", rolesAdded.Select(r =>r.Mention)));
 				logMessage.AppendLine($"{name}\n    " + string.Join("\n    ", rolesAdded.Select(r => r.Name)));
 			}
 
@@ -126,7 +126,7 @@ namespace BotHATTwaffle.Modules
 			{
 				string name = $"Removed ({rolesRemoved.Count})";
 
-				embed.AddInlineField(name, string.Join("\n", rolesRemoved.Select(r => r.IsMentionable ? r.Mention : r.Name)));
+				embed.AddInlineField(name, string.Join("\n", rolesRemoved.Select(r => r.Mention)));
 				logMessage.AppendLine($"{name}\n    " + string.Join("\n    ", rolesRemoved.Select(r => r.Name)));
 			}
 
