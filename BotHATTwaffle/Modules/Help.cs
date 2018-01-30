@@ -140,7 +140,7 @@ namespace BotHATTwaffle.Modules
 		[Command("help")]
 		[Summary("Provides help for a specific command.")]
 		[Alias("h")]
-		public async Task HelpAsync(string command)
+		public async Task HelpAsync([Summary("The command for which to get help.")] string command)
 		{
 			// Deletes the invoking message if it's not a direct message.
 			if (!Context.IsPrivate)
@@ -166,7 +166,8 @@ namespace BotHATTwaffle.Modules
 							     ? p.DefaultValue == null
 								     ? string.Empty
 								     : $" _{p.DefaultValue}_"
-							     : string.Empty))
+							     : string.Empty) +
+						     (!string.IsNullOrWhiteSpace(p.Summary) ? "" : $"\n    {p.Summary}"))
 					.ToImmutableArray();
 
 				// Parameters for the usage string.
@@ -191,7 +192,7 @@ namespace BotHATTwaffle.Modules
 					embed.AddField("Details", cmd.Remarks);
 
 				if (param.Any())
-					embed.AddInlineField("Parameters", string.Join("\n", param));
+					embed.AddField("Parameters", string.Join("\n", param));
 
 				if (contexts.Any())
 					embed.AddInlineField("Contexts", string.Join("\n", contexts));
