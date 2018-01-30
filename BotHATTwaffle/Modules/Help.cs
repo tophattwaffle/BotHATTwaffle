@@ -162,12 +162,8 @@ namespace BotHATTwaffle.Modules
 				// A default value is added in italics for optional parameters.
 				ImmutableArray<string> param = cmd.Parameters.Select(
 						p => p.Name +
-						     (p.IsOptional
-							     ? p.DefaultValue == null
-								     ? string.Empty
-								     : $" _{p.DefaultValue}_"
-							     : string.Empty) +
-						     (string.IsNullOrWhiteSpace(p.Summary) ? "" : $"\n    {p.Summary}"))
+						     (p.IsOptional ? $" _{p.DefaultValue ?? "null"}_" : string.Empty) +
+						     (string.IsNullOrWhiteSpace(p.Summary) ? string.Empty : $"\n    {p.Summary}"))
 					.ToImmutableArray();
 
 				// Parameters for the usage string.
@@ -185,8 +181,15 @@ namespace BotHATTwaffle.Modules
 					Description = $"`{Program.COMMAND_PREFIX}{cmd.Name}{paramsUsage}`\n{cmd.Summary}"
 				};
 
-				embed.WithAuthor($"Help Result for {command}", "https://twemoji.maxcdn.com/72x72/2753.png");
-				embed.WithFooter($"Result {i + 1}/{result.Commands.Count}.");
+				embed.WithAuthor(cmd.Name, "https://twemoji.maxcdn.com/72x72/2753.png");
+
+				// Only includes result count if there's more than one.
+				// Only includes message about optional parameters if the command has any.
+				embed.WithFooter(
+					(result.Commands.Count > 1 ? $"Result {i + 1}/{result.Commands.Count}." : string.Empty) +
+					(cmd.Parameters.Any(p => p.IsOptional)
+						? " Angle brackets denote optional arguments; italic text denotes their default value."
+						: string.Empty));
 
 				if (!string.IsNullOrWhiteSpace(cmd.Remarks))
 					embed.AddField("Details", cmd.Remarks);
