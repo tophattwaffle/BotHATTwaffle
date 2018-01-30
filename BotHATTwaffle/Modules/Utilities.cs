@@ -1,5 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Linq;
+using System.Text;
 
 using Discord;
 using Discord.Commands;
@@ -34,7 +37,7 @@ namespace BotHATTwaffle.Modules
 				Description = $"*Do you like waffles?*\nIt took me **{_client.Latency} ms** to reach the Discord API."
 			};
 
-			await ReplyAsync("", false, builder.Build());
+			await ReplyAsync(string.Empty, false, builder.Build());
 		}
 
 		/// <summary>
@@ -44,16 +47,16 @@ namespace BotHATTwaffle.Modules
 		/// Yields a list of all toggleable roles when invoked without parameters. The roles which can be used with this command
 		/// are specified in the <c>roleMeWhiteListCSV</c> config field.
 		/// </remarks>
-		/// <param name="inRoleStr">List of roles to toggle</param>
+		/// <param name="rolesStr">A case-insensitive space-delimited list of roles to toggle.</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		[Command("roleme")]
 		[Summary("`>roleme [role names]` Toggles the invoking user's roles.")]
 		[Remarks(
 			"This enables one to toggle some of oneself's roles. The toggleable roles tyically display possession of a skill, " +
 			"such as 3D Modeling or level design.\n" +
-			"The command accepts multiple roles in one invocation: `>roleme blender level design programmer`.\n" +
+			"The command accepts multiple roles in one invocation: `>roleme blender level_designer programmer`.\n" +
 			"Invoking it without any parameters, i.e. `>roleme`, yields a list of all available roles.")]
-		public async Task RolemeAsync([Remainder]string inRoleStr = "display")
+		public async Task RolemeAsync([Remainder]string rolesStr = "display")
 		{
 			// Currently, the framework to get users' roles in DMs doesn't exist.
 			if (Context.IsPrivate)
@@ -62,55 +65,82 @@ namespace BotHATTwaffle.Modules
 				return;
 			}
 
-			var user = (SocketGuildUser)Context.User;
-
-			// Display roles; otherwise toggle them.
-			if (inRoleStr.ToLower() == "display")
-				await ReplyAsync($"Valid roles are:```\n{string.Join("\n", _dataServices.RoleMeWhiteList)}```");
-			else
+			if (rolesStr.Equals("display", StringComparison.InvariantCultureIgnoreCase))
 			{
-				// Validates the role can be applied.
-				var valid = false;
-				string reply = null;
+				await ReplyAsync($"Valid roles are:```\n{string.Join("\n", _dataServices.RoleMeWhiteList)}```");
+				return;
+			}
 
-				foreach (string s in _dataServices.RoleMeWhiteList)
+			string[] rolesIn = rolesStr.Split(' ');
+
+			// The intersection of the role whitelist and the inputted roles.
+			IEnumerable<string> roleNames =
+				_dataServices.RoleMeWhiteList.Intersect(rolesIn, StringComparer.InvariantCultureIgnoreCase);
+
+			// The intersection of the inputted roles and the valid roles.
+			// It'd be safer to inserect with the SocketRole collection below,
+			// but this assumes that the roles in the whitelist actually exist.
+			IEnumerable<string> rolesInvalid = rolesIn.Except(roleNames, StringComparer.InvariantCultureIgnoreCase);
+
+			roleNames = roleNames.Select(r => r.Replace('_', ' '));
+
+			// Finds all SocketRoles from roleNames.
+			IEnumerable<SocketRole> roles =
+				Context.Guild.Roles.Where(r => roleNames.Contains(r.Name, StringComparer.InvariantCultureIgnoreCase));
+
+			var user = (SocketGuildUser)Context.User;
+			var rolesAdded = new List<SocketRole>();
+			var rolesRemoved = new List<SocketRole>();
+
+			// Updates roles.
+			foreach (SocketRole role in roles)
+			{
+				if (user.Roles.Contains(role))
 				{
-					if (!inRoleStr.ToLower().Contains(s.ToLower())) continue;
-					valid = true; // At least one role was applied.
-
-					SocketRole inRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == s);
-
-					if (user.Roles.Contains(inRole))
-					{
-						// Removes the role.
-						reply += $"{Context.User.Username} lost the **{inRole}** role.\n";
-						await ((IGuildUser)user).RemoveRoleAsync(inRole);
-					}
-					else
-					{
-						// Adds the role.
-						reply += $"{Context.User.Username} now has the role **{inRole}**. Enjoy the flair!\n";
-						await ((IGuildUser)user).AddRoleAsync(inRole);
-					}
-				}
-
-				if (valid)
-				{
-					// Something actually happened - reply with the changes.
-					await ReplyAsync($"{reply}");
-					await _dataServices.ChannelLog($"{Context.User}\n{reply}");
+					await ((IGuildUser)user).RemoveRoleAsync(role);
+					rolesRemoved.Add(role);
 				}
 				else
 				{
-					// Nothing was changed - a bad input was provided.
-					await ReplyAsync(
-						$"{Context.User.Mention}\n```Not all of the following roles could be toggled: **{inRoleStr}**; some do " +
-						"not exist and/or are disallowed.```");
-					await _dataServices.ChannelLog(
-						$"{Context.User} failed to roleme at least some of the following roles: {inRoleStr}; some do not " +
-						"exist and/or are disallowed.");
+					await ((IGuildUser)user).AddRoleAsync(role);
+					rolesAdded.Add(role);
 				}
 			}
+
+			// Builds the response.
+			var logMessage = new StringBuilder();
+
+			var embed = new EmbedBuilder();
+			embed.WithTitle("`roleme` Results");
+			embed.WithDescription($"Results of toggled roles for {Context.User.Mention}:");
+
+			if (rolesAdded.Any())
+			{
+				string name = $"Added ({rolesAdded.Count})";
+
+				embed.AddInlineField(name, string.Join("\n", rolesAdded.Select(r => r.IsMentionable ? r.Mention : r.Name)));
+				logMessage.AppendLine($"{name}\n    " + string.Join("\n    ", rolesAdded.Select(r => r.Name)));
+			}
+
+			if (rolesRemoved.Any())
+			{
+				string name = $"Removed ({rolesRemoved.Count})";
+
+				embed.AddInlineField(name, string.Join("\n", rolesRemoved.Select(r => r.IsMentionable ? r.Mention : r.Name)));
+				logMessage.AppendLine($"{name}\n    " + string.Join("\n    ", rolesRemoved.Select(r => r.Name)));
+			}
+
+			if (rolesInvalid.Any())
+			{
+				string name = $"Failed ({rolesInvalid.Count()})";
+
+				embed.AddInlineField(name, string.Join("\n", rolesInvalid));
+				embed.WithFooter("Roles fail if they don't exist or toggling them is disallowed.");
+				logMessage.Append($"{name}\n    " + string.Join("\n    ", rolesInvalid));
+			}
+
+			await ReplyAsync(string.Empty, false, embed.Build());
+			await _dataServices.ChannelLog($"Toggled Roles for {Context.User}", logMessage.ToString());
 		}
 	}
 }
