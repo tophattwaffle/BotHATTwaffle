@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,19 +13,86 @@ using Discord.WebSocket;
 
 namespace BotHATTwaffle.Modules
 {
+	/// <summary>
+	/// Contains utility functions for help commands.
+	/// </summary>
+	public interface IHelpService
+	{
+		/// <summary>
+		/// Retrieves the names of the required contexts from a command's preconditions.
+		/// </summary>
+		/// <param name="preconditions">The command's preconditions.</param>
+		/// <returns>An alphabetically sorted collection of the names of required contexts.</returns>
+		IReadOnlyCollection<string> GetContexts(IEnumerable<PreconditionAttribute> preconditions);
+
+		/// <summary>
+		/// Retrieves the names of the required permissions from a command's preconditions.
+		/// </summary>
+		/// <param name="preconditions">The command's preconditions.</param>
+		/// <returns>An alphabetically sorted collection of the names of required permissions.</returns>
+		IReadOnlyCollection<string> GetPermissions(IEnumerable<PreconditionAttribute> preconditions);
+	}
+
+	/// <inheritdoc />
+	public class HelpService : IHelpService
+	{
+		/// <inheritdoc />
+		/// <remarks>
+		/// <see cref="RequireContextAttribute"/> and <see cref="RequireNsfwAttribute"/> are considered contexts.
+		/// </remarks>
+		public IReadOnlyCollection<string> GetContexts(IEnumerable<PreconditionAttribute> preconditions) {
+			var contexts = new List<string>();
+
+			foreach (PreconditionAttribute precondition in preconditions)
+			{
+				switch (precondition)
+				{
+					case RequireContextAttribute attr:
+						// Gets an enumerable of the set contexts.
+						IEnumerable<Enum> setFlags =
+							Enum.GetValues(typeof(ContextType)).Cast<Enum>().Where(m => attr.Contexts.HasFlag(m));
+						contexts.AddRange(setFlags.Select(f => f.ToString())); // Adds each set context's name.
+
+						break;
+					case RequireNsfwAttribute _:
+						contexts.Add("NSFW");
+
+						break;
+				}
+			}
+
+			return contexts.OrderBy(c => c).ToImmutableArray();
+		}
+
+		/// <inheritdoc />
+		public IReadOnlyCollection<string> GetPermissions(IEnumerable<PreconditionAttribute> preconditions) {
+			var permissions = new List<string>();
+
+			foreach (PreconditionAttribute precondition in preconditions)
+			{
+				if (precondition is RequireUserPermissionAttribute attr)
+					permissions.Add(attr.ChannelPermission?.ToString() ?? attr.GuildPermission.ToString());
+			}
+
+			return permissions.OrderBy(p => p).ToImmutableArray();
+		}
+	}
+
 	public class HelpModule : ModuleBase<SocketCommandContext>
 	{
 		private readonly DiscordSocketClient _client;
-		private readonly CommandService _service;
+		private readonly CommandService _commandService;
+		private readonly IHelpService _helpService;
 
-		public HelpModule(DiscordSocketClient client, CommandService service)
+		public HelpModule(DiscordSocketClient client, CommandService commandService, IHelpService helpService)
 		{
 			_client = client;
-			_service = service;
+			_commandService = commandService;
+			_helpService = helpService;
 		}
 
 		[Command("help")]
-		[Summary("`>help` Displays this message.")]
+		[Summary("Displays this message.")]
 		[Alias("h")]
 		public async Task HelpAsync()
 		{
@@ -35,10 +103,15 @@ namespace BotHATTwaffle.Modules
 			var embed = new EmbedBuilder
 			{
 				Color = new Color(47, 111, 146),
-				Description = "These are the available commands:"
+				Description = $"A command can be invoked by prefixing its name with `{Program.COMMAND_PREFIX}`. " +
+				              $"To see usage details for a command, use `{Program.COMMAND_PREFIX}help [command]`.\n\n" +
+				              "The following is a list of available commands:"
 			};
 
-			foreach (ModuleInfo module in _service.Modules)
+			embed.WithAuthor("Command Help", "https://twemoji.maxcdn.com/72x72/2753.png");
+
+			// Sorts modules alphabetically and iterates them.
+			foreach (ModuleInfo module in _commandService.Modules.OrderBy(m => m.Name))
 			{
 				var description = new StringBuilder();
 
@@ -50,7 +123,7 @@ namespace BotHATTwaffle.Modules
 				}
 
 				if (description.Length != 0)
-					embed.AddField(module.Name, description.ToString());
+					embed.AddField(module.Name.Replace("Module", string.Empty), description.ToString());
 			}
 
 			// Replies normally if a direct message fails.
@@ -65,7 +138,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("help")]
-		[Summary("`>help [command]` Provides help for a specific command.")]
+		[Summary("Provides help for a specific command.")]
 		[Alias("h")]
 		public async Task HelpAsync(string command)
 		{
@@ -73,46 +146,77 @@ namespace BotHATTwaffle.Modules
 			if (!Context.IsPrivate)
 				await Context.Message.DeleteAsync();
 
-			SearchResult result = _service.Search(Context, command);
+			SearchResult result = _commandService.Search(Context, command);
 
 			if (!result.IsSuccess)
 			{
-				await ReplyAsync($"Sorry, I couldn't find a command like **{command}**.");
+				await ReplyAsync($"No commands matching **{command}** were found.");
 				return;
 			}
 
-			var builder = new EmbedBuilder
+			// Iterates command search results.
+			for (var i = 0; i < result.Commands.Count; ++i)
 			{
-				Color = new Color(47, 111, 146),
-				Description = $"Here are some commands like **{command}**"
-			};
+				CommandInfo cmd = result.Commands[i].Command;
 
-			foreach (CommandMatch match in result.Commands)
-			{
-				CommandInfo cmd = match.Command;
+				// A default value is added in italics for optional parameters.
+				ImmutableArray<string> param = cmd.Parameters.Select(
+						p => p.Name +
+						     (p.IsOptional
+							     ? p.DefaultValue == null
+								     ? string.Empty
+								     : $" _{p.DefaultValue}_"
+							     : string.Empty))
+					.ToImmutableArray();
 
-				// Builds the help string.
-				builder.AddField(
-					string.Join(", ", cmd.Aliases),
-					$"Parameters: {string.Join(", ", cmd.Parameters.Select(p => p.Name))}\n" +
-					$"Summary: {cmd.Summary}\n" +
-					$"Instructions: {cmd.Remarks}\n" +
-					$"Aliases: {string.Join(", ", cmd.Aliases)}");
-			}
+				// Parameters for the usage string.
+				string paramsUsage = string.Join(" ", cmd.Parameters.Select(p => p.IsOptional ? $"<{p.Name}>" : $"[{p.Name}]"));
+				paramsUsage = string.IsNullOrWhiteSpace(paramsUsage) ? string.Empty : " " + paramsUsage;
 
-			// Replies normally if a direct message fails.
-			try
-			{
-				await Context.User.SendMessageAsync(string.Empty, false, builder.Build());
-			}
-			catch
-			{
-				await ReplyAsync(string.Empty, false, builder.Build());
+				IReadOnlyCollection<string> contexts = _helpService.GetContexts(cmd.Preconditions);
+				IReadOnlyCollection<string> permissions = _helpService.GetPermissions(cmd.Preconditions);
+
+				// Creates the embed.
+				var embed = new EmbedBuilder
+				{
+					Color = new Color(47, 111, 146),
+					// Title = cmd.Name,
+					Description = $"`{Program.COMMAND_PREFIX}{cmd.Name}{paramsUsage}`\n{cmd.Summary}"
+				};
+
+				embed.WithAuthor($"Help Result for {command}", "https://twemoji.maxcdn.com/72x72/2753.png");
+				embed.WithFooter($"Result {i + 1}/{result.Commands.Count}.");
+
+				if (!string.IsNullOrWhiteSpace(cmd.Remarks))
+					embed.AddField("Details", cmd.Remarks);
+
+				if (param.Any())
+					embed.AddInlineField("Parameters", string.Join("\n", param));
+
+				if (contexts.Any())
+					embed.AddInlineField("Contexts", string.Join("\n", contexts));
+
+				if (permissions.Any())
+					embed.AddInlineField("Permissions", string.Join("\n", permissions));
+
+				// The first alias is skipped because it's the command's name.
+				if (cmd.Aliases.Count > 1)
+					embed.AddInlineField("Aliases", string.Join("\n", cmd.Aliases.Skip(1)));
+
+				// Replies normally if a direct message fails.
+				try
+				{
+					await Context.User.SendMessageAsync(string.Empty, false, embed.Build());
+				}
+				catch
+				{
+					await ReplyAsync(string.Empty, false, embed.Build());
+				}
 			}
 		}
 
 		[Command("about")]
-		[Summary("`>about` Displays information about the bot.")]
+		[Summary("Displays information about the bot.")]
 		public async Task AboutAsync()
 		{
 			DateTime buildDate = new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime;
@@ -132,9 +236,9 @@ namespace BotHATTwaffle.Modules
 				              "people would interact with.\n\nPlease let me know if you have any suggests or find bugs!"
 			};
 
-			embed.AddInlineField("Written by", "[TopHATTwaffle](https://github.com/tophattwaffle)");
+			embed.AddInlineField("Author", "[TopHATTwaffle](https://github.com/tophattwaffle)");
 			embed.AddInlineField(
-				"With Help From",
+				"Contributors",
 				"[BenBlodgi](https://github.com/BenVlodgi)\n" +
 				"[Mark](https://github.com/MarkKoz)\n" +
 				"[JimWood](https://github.com/JamesT-W)");
@@ -142,7 +246,7 @@ namespace BotHATTwaffle.Modules
 				"Build Date",
 				$"{buildDate}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)");
 			embed.AddInlineField(
-				"Built With",
+				"Libraries",
 				"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)\n" +
 				"[CoreRCON](https://github.com/ScottKaye/CoreRCON)\n" +
 				"[Html Agility Pack](http://html-agility-pack.net/)\n" +

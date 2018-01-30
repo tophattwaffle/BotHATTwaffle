@@ -73,6 +73,7 @@ namespace BotHATTwaffle
 				.AddSingleton<Random>()
 				.AddSingleton<DownloaderService>()
 				.AddSingleton<GoogleCalendar>()
+				.AddSingleton<IHelpService, HelpService>()
 				.AddSingleton(s => new InteractiveService(_client, TimeSpan.FromSeconds(120)))
 				.BuildServiceProvider();
 
