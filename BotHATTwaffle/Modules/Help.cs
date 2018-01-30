@@ -1,13 +1,13 @@
-﻿using Discord;
-using Discord.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-//using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
+using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 
 namespace BotHATTwaffle.Modules
@@ -16,184 +16,141 @@ namespace BotHATTwaffle.Modules
 	{
 		private readonly DiscordSocketClient _client;
 		private readonly CommandService _service;
-		//private readonly IConfigurationRoot _config;
 
 		public HelpModule(DiscordSocketClient client, CommandService service)
 		{
 			_client = client;
 			_service = service;
-			//_config = config;
 		}
 
-		/// <summary>
-		/// Sends a DM with general help message if possible. If not, replies with it.
-		/// </summary>
-		/// <returns></returns>
 		[Command("help")]
-		[Summary("`>help` Displays this message")]
+		[Summary("`>help` Displays this message.")]
 		[Alias("h")]
 		public async Task HelpAsync()
 		{
-			//If in a DM, don't try to delete their message
+			// Deletes the invoking message if it's not a direct message.
 			if (!Context.IsPrivate)
 				await Context.Message.DeleteAsync();
 
-			//string prefix = _config["prefix"];
-			var builder = new EmbedBuilder()
+			var embed = new EmbedBuilder
 			{
 				Color = new Color(47, 111, 146),
-				Description = "These are the commands you can use"
+				Description = "These are the available commands:"
 			};
 
-			//Loop through all of our modules
-			foreach (var module in _service.Modules)
+			foreach (ModuleInfo module in _service.Modules)
 			{
-				//Build the help string
-				string description = null;
-				foreach (var cmd in module.Commands)
+				var description = new StringBuilder();
+
+				// Builds the help strings.
+				foreach (CommandInfo cmd in module.Commands)
 				{
-					var result = await cmd.CheckPreconditionsAsync(Context);
-					if (result.IsSuccess)
-						description += $"{cmd.Name} - {cmd.Summary}\n";
+					if ((await cmd.CheckPreconditionsAsync(Context)).IsSuccess)
+						description.AppendLine($"{cmd.Name} - {cmd.Summary}");
 				}
 
-				if (!string.IsNullOrWhiteSpace(description))
-				{
-					builder.AddField(x =>
-					{
-						x.Name = module.Name;
-						x.Value = description;
-						x.IsInline = false;
-					});
-				}
+				if (description.Length != 0)
+					embed.AddField(module.Name, description.ToString());
 			}
 
-			//Try to DM, if we can't reply
+			// Replies normally if a direct message fails.
 			try
 			{
-				await Context.User.SendMessageAsync("", false, builder.Build());
+				await Context.User.SendMessageAsync(string.Empty, false, embed.Build());
 			}
 			catch
 			{
-				await ReplyAsync("", false, builder.Build());
+				await ReplyAsync(string.Empty, false, embed.Build());
 			}
 		}
 
-		/// <summary>
-		/// Gives a help message for a specific command with more detail.
-		/// </summary>
-		/// <param name="command"></param>
-		/// <returns></returns>
 		[Command("help")]
-		[Summary("`>help [command]` Displays help message for a specific command")]
+		[Summary("`>help [command]` Provides help for a specific command.")]
 		[Alias("h")]
 		public async Task HelpAsync(string command)
 		{
+			// Deletes the invoking message if it's not a direct message.
 			if (!Context.IsPrivate)
 				await Context.Message.DeleteAsync();
-			var result = _service.Search(Context, command);
+
+			SearchResult result = _service.Search(Context, command);
+
 			if (!result.IsSuccess)
 			{
 				await ReplyAsync($"Sorry, I couldn't find a command like **{command}**.");
 				return;
 			}
 
-			//string prefix = _config["prefix"];
-			var builder = new EmbedBuilder()
+			var builder = new EmbedBuilder
 			{
 				Color = new Color(47, 111, 146),
 				Description = $"Here are some commands like **{command}**"
 			};
 
-			//Loop through all of our commands that match the search
-			foreach (var match in result.Commands)
+			foreach (CommandMatch match in result.Commands)
 			{
-				//Build the help string
-				var cmd = match.Command;
-				builder.AddField(x =>
-				{
-					x.Name = string.Join(", ", cmd.Aliases);
-					x.Value = $"Parameters: {string.Join(", ", cmd.Parameters.Select(p => p.Name))}" +
-							  $"\nSummary: {cmd.Summary}" + $"\nInstructions: {cmd.Remarks}" +
-							  $"\nAlias: {string.Join(", ", cmd.Aliases.ToArray())}";
-					;
-					x.IsInline = false;
-				});
+				CommandInfo cmd = match.Command;
+
+				// Builds the help string.
+				builder.AddField(
+					string.Join(", ", cmd.Aliases),
+					$"Parameters: {string.Join(", ", cmd.Parameters.Select(p => p.Name))}\n" +
+					$"Summary: {cmd.Summary}\n" +
+					$"Instructions: {cmd.Remarks}\n" +
+					$"Aliases: {string.Join(", ", cmd.Aliases)}");
 			}
 
-			//Try to DM, if we can't reply
+			// Replies normally if a direct message fails.
 			try
 			{
-				await Context.User.SendMessageAsync("", false, builder.Build());
+				await Context.User.SendMessageAsync(string.Empty, false, builder.Build());
 			}
 			catch
 			{
-				await ReplyAsync("", false, builder.Build());
+				await ReplyAsync(string.Empty, false, builder.Build());
 			}
 		}
 
-		/// <summary>
-		/// Displays the about message.
-		/// </summary>
-		/// <returns></returns>
 		[Command("about")]
-		[Summary("`>about` Displays information about the bot")]
+		[Summary("`>about` Displays information about the bot.")]
 		public async Task AboutAsync()
 		{
 			DateTime buildDate = new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime;
 
-			List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-			fieldBuilder.Add(new EmbedFieldBuilder
+			var embed = new EmbedBuilder
 			{
-				Name = "Written by",
-				Value = "[TopHATTwaffle](https://github.com/tophattwaffle)",
-				IsInline = true
-			});
-			fieldBuilder.Add(new EmbedFieldBuilder
-			{
-				Name = "With Help From",
-				Value = "[BenBlodgi](https://github.com/BenVlodgi)\n[Mark](https://github.com/MarkKoz)\n[JimWood](https://github.com/JamesT-W)",
-				IsInline = true
-			});
-			fieldBuilder.Add(new EmbedFieldBuilder
-			{
-				Name = "Build Date",
-				Value = $"{buildDate}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)",
-				IsInline = true
-			});
-			fieldBuilder.Add(new EmbedFieldBuilder
-			{
-				Name = "Built With",
-				Value = $"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)" +
-						$"\n[CoreRCON](https://github.com/ScottKaye/CoreRCON)" +
-						$"\n[Html Agility Pack](http://html-agility-pack.net/)" +
-						$"\n[Newtonsoft Json.NET](https://www.newtonsoft.com/json)" +
-						$"\n[SSH.NET](https://github.com/sshnet/SSH.NET/)" +
-						$"\n[FluentFTP](https://github.com/robinrodricks/FluentFTP)",
-				IsInline = true
-			});
-
-
-			//string prefix = _config["prefix"];
-			var authBuilder = new EmbedAuthorBuilder()
-			{
-				Name = "About BotHATTwaffle",
-				IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
-			};
-
-			var builder = new EmbedBuilder()
-			{
-				Fields = fieldBuilder,
-				Author = authBuilder,
+				Author = new EmbedAuthorBuilder
+				{
+					Name = "About BotHATTwaffle",
+					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+				},
 				Url = "https://www.tophattwaffle.com/",
 				ThumbnailUrl = _client.CurrentUser.GetAvatarUrl(),
 				Color = new Color(130, 171, 206),
-				Description =
-					"BotHATTwaffle was started to centralize Source Engine Discord server functions that were fractured between multiple bots. " +
-					"This bot was my first attempt at a real C# program that other people would interact with." +
-					"\n\nPlease let me know if you have any suggests or find bugs!"
+				Description = "BotHATTwaffle was started to centralize Source Engine Discord server functions that were " +
+				              "fractured between multiple bots. This bot was my first attempt at a real C# program that other " +
+				              "people would interact with.\n\nPlease let me know if you have any suggests or find bugs!"
 			};
-			await ReplyAsync("", false, builder.Build());
+
+			embed.AddInlineField("Written by", "[TopHATTwaffle](https://github.com/tophattwaffle)");
+			embed.AddInlineField(
+				"With Help From",
+				"[BenBlodgi](https://github.com/BenVlodgi)\n" +
+				"[Mark](https://github.com/MarkKoz)\n" +
+				"[JimWood](https://github.com/JamesT-W)");
+			embed.AddInlineField(
+				"Build Date",
+				$"{buildDate}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)");
+			embed.AddInlineField(
+				"Built With",
+				"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)\n" +
+				"[CoreRCON](https://github.com/ScottKaye/CoreRCON)\n" +
+				"[Html Agility Pack](http://html-agility-pack.net/)\n" +
+				"[Newtonsoft Json.NET](https://www.newtonsoft.com/json)\n" +
+				"[SSH.NET](https://github.com/sshnet/SSH.NET/)\n" +
+				"[FluentFTP](https://github.com/robinrodricks/FluentFTP)");
+
+			await ReplyAsync(string.Empty, false, embed.Build());
 		}
 	}
 }
