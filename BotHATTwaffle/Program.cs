@@ -68,7 +68,6 @@ namespace BotHATTwaffle
 				.AddSingleton<TimerService>()
 				.AddSingleton<ModerationServices>()
 				.AddSingleton<LevelTesting>()
-				.AddSingleton<ToolsService>()
 				.AddSingleton<Eavesdropping>()
 				.AddSingleton<DataServices>()
 				.AddSingleton<Random>()
