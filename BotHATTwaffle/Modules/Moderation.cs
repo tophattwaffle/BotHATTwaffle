@@ -999,7 +999,7 @@ namespace BotHATTwaffle.Modules
 		[Remarks("Requirements: Moderator Role" +
 			"\n`>mute @person 15 Being a mean person` will mute them for 15 minutes, with the reason \"Being a mean person\"")]
 		[Alias("m")]
-		public async Task MuteAsync(SocketGuildUser user, int durationInMinutes = 5, [Remainder]string reason = "No reason provided")
+		public async Task MuteAsync(SocketGuildUser user, float durationInMinutes = 5, [Remainder]string reason = "No reason provided")
 		{
 			if (Context.IsPrivate)
 			{
