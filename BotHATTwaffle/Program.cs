@@ -256,6 +256,11 @@ namespace BotHATTwaffle
 						$"You provided too {determiner} parameters! Please consult `{COMMAND_PREFIX}help {commandName}`");
 
 					break;
+				case CommandError.UnmetPrecondition:
+					var res = (PreconditionResult)result;
+					await context.Channel.SendMessageAsync(res.ErrorReason);
+
+					break;
 				case CommandError.Exception:
 					alert = true;
 					await context.Channel.SendMessageAsync("Something bad happened! I logged the error for TopHATTwaffle.");

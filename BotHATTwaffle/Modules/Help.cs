@@ -103,9 +103,9 @@ namespace BotHATTwaffle.Modules
 			var embed = new EmbedBuilder
 			{
 				Color = new Color(47, 111, 146),
-				Description = $"A command can be invoked by prefixing its name with `{Program.COMMAND_PREFIX}`. " +
-				              $"To see usage details for a command, use `{Program.COMMAND_PREFIX}help [command]`.\n\n" +
-				              "The following is a list of available commands:"
+				Description = $"A command can be invoked by prefixing its name with `{Program.COMMAND_PREFIX}`. To see usage " +
+				              $"details for a command, use `{Program.COMMAND_PREFIX}help [command]`.\n\nThe following is a " +
+				              "list of commands available in the context in which this help command was invoked:"
 			};
 
 			embed.WithAuthor("Command Help", "https://twemoji.maxcdn.com/72x72/2753.png");
@@ -167,7 +167,7 @@ namespace BotHATTwaffle.Modules
 								     ? string.Empty
 								     : $" _{p.DefaultValue}_"
 							     : string.Empty) +
-						     (!string.IsNullOrWhiteSpace(p.Summary) ? "" : $"\n    {p.Summary}"))
+						     (string.IsNullOrWhiteSpace(p.Summary) ? "" : $"\n    {p.Summary}"))
 					.ToImmutableArray();
 
 				// Parameters for the usage string.
