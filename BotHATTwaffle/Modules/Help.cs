@@ -103,12 +103,11 @@ namespace BotHATTwaffle.Modules
 			var embed = new EmbedBuilder
 			{
 				Color = new Color(47, 111, 146),
+				Title = "\u2753 Command Help",
 				Description = $"A command can be invoked by prefixing its name with `{Program.COMMAND_PREFIX}`. To see usage " +
 				              $"details for a command, use `{Program.COMMAND_PREFIX}help [command]`.\n\nThe following is a " +
 				              "list of commands available in the context in which this help command was invoked:"
 			};
-
-			embed.WithAuthor("Command Help", "https://twemoji.maxcdn.com/72x72/2753.png");
 
 			// Sorts modules alphabetically and iterates them.
 			foreach (ModuleInfo module in _commandService.Modules.OrderBy(m => m.Name))
@@ -159,11 +158,11 @@ namespace BotHATTwaffle.Modules
 			{
 				CommandInfo cmd = result.Commands[i].Command;
 
-				// A default value is added in italics for optional parameters.
+				// If optional, name is italicised and default value is displayed.
 				ImmutableArray<string> param = cmd.Parameters.Select(
-						p => p.Name +
-						     (p.IsOptional ? $" _{p.DefaultValue ?? "null"}_" : string.Empty) +
-						     (string.IsNullOrWhiteSpace(p.Summary) ? string.Empty : $"\n    {p.Summary}"))
+						p => (p.IsOptional ? $"___{p.Name}___" : $"__{p.Name}__") +
+							 (string.IsNullOrWhiteSpace(p.Summary) ? string.Empty : $" - {p.Summary}") +
+						     (p.IsOptional ? $" Default: `{p.DefaultValue ?? "null"}`" : string.Empty))
 					.ToImmutableArray();
 
 				// Parameters for the usage string.
@@ -177,18 +176,16 @@ namespace BotHATTwaffle.Modules
 				var embed = new EmbedBuilder
 				{
 					Color = new Color(47, 111, 146),
-					// Title = cmd.Name,
+					Title = $"\u2753 `{cmd.Name}` Help",
 					Description = $"`{Program.COMMAND_PREFIX}{cmd.Name}{paramsUsage}`\n{cmd.Summary}"
 				};
-
-				embed.WithAuthor(cmd.Name, "https://twemoji.maxcdn.com/72x72/2753.png");
 
 				// Only includes result count if there's more than one.
 				// Only includes message about optional parameters if the command has any.
 				embed.WithFooter(
 					(result.Commands.Count > 1 ? $"Result {i + 1}/{result.Commands.Count}." : string.Empty) +
 					(cmd.Parameters.Any(p => p.IsOptional)
-						? " Angle brackets denote optional arguments; italic text denotes their default value."
+						? " Angle brackets and italics denote optional arguments/parameters."
 						: string.Empty));
 
 				if (!string.IsNullOrWhiteSpace(cmd.Remarks))
@@ -203,9 +200,9 @@ namespace BotHATTwaffle.Modules
 				if (permissions.Any())
 					embed.AddInlineField("Permissions", string.Join("\n", permissions));
 
-				// The first alias is skipped because it's the command's name.
+				// Excludes the command's name from the aliases.
 				if (cmd.Aliases.Count > 1)
-					embed.AddInlineField("Aliases", string.Join("\n", cmd.Aliases.Skip(1)));
+					embed.AddInlineField("Aliases", string.Join("\n", cmd.Aliases.Where(a => a != cmd.Name)));
 
 				// Replies normally if a direct message fails.
 				try
