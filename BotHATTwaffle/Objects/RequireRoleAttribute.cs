@@ -31,9 +31,9 @@ namespace BotHATTwaffle.Objects
 		/// Require that the user invoking the command has any of the specified roles.
 		/// </summary>
 		/// <param name="roles">The roles the user must have.</param>
-		public RequireRoleAttribute(params Roles[] roles)
+		public RequireRoleAttribute(params Role[] roles)
 		{
-			RoleIds = roles?.Select(r => (ulong)r)?.ToImmutableArray();
+			RoleIds = roles?.Select(r => (ulong)r).ToImmutableArray();
 		}
 
 		/// <summary>

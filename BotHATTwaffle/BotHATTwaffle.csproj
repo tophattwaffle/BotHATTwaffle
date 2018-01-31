@@ -220,7 +220,7 @@
     <Compile Include="Objects\Downloader\FtpDownloader.cs" />
     <Compile Include="Objects\Downloader\SftpDownloader.cs" />
     <Compile Include="Objects\RequireRoleAttribute.cs" />
-    <Compile Include="Objects\Roles.cs" />
+    <Compile Include="Objects\Role.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Objects\UserData.cs" />

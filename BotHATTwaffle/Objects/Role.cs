@@ -1,6 +1,6 @@
 ﻿namespace BotHATTwaffle.Objects
 {
-	public enum Roles : ulong
+	public enum Role : ulong
 	{
 		ActiveMember = 249671633696981002UL,
 		Moderators = 188015393233698816UL,

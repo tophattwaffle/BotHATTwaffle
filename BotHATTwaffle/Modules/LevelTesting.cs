@@ -790,7 +790,7 @@ namespace BotHATTwaffle.Modules
 		[Remarks("A reservation lasts 2 hours. A Workshop ID can be included in order to have that map automatically hosted.")]
 		[Alias("ps")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.ActiveMember)]
+		[RequireRole(Role.ActiveMember)]
 		public async Task PublicTestStartAsync(
 			[Summary("The three-letter code which identifies the server to reserve.")]
 			string serverCode = null,
@@ -917,7 +917,7 @@ namespace BotHATTwaffle.Modules
 		[Summary("Lists all available servers.")]
 		[Alias("list", "ListServers", "ls")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.ActiveMember, Roles.Moderators, Roles.RconAccess)]
+		[RequireRole(Role.ActiveMember, Role.Moderators, Role.RconAccess)]
 		public async Task ListServersAsync() => await ReplyAsync(string.Empty, false, _dataServices.GetAllServers());
 
 		[Command("PublicCommand")]
@@ -927,7 +927,7 @@ namespace BotHATTwaffle.Modules
 			"A reservation can be extended by 30 minutes using `>pc extend`.")]
 		[Alias("pc")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.ActiveMember)]
+		[RequireRole(Role.ActiveMember)]
 		public async Task PublicTestCommandAsync([Remainder]string command = null)
 		{
 			LevelTestingServer server = null;
@@ -1047,7 +1047,7 @@ namespace BotHATTwaffle.Modules
 		[Summary("Releases the invoking user's reservation on a public server.")]
 		[Alias("rs")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.ActiveMember)]
+		[RequireRole(Role.ActiveMember)]
 		public async Task ReleasePublicTestCommandAsync([Remainder]string command = null)
 		{
 			LevelTestingServer server = null;

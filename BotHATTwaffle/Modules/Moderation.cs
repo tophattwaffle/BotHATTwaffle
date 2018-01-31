@@ -94,7 +94,7 @@ namespace BotHATTwaffle.Modules
 			"Fields can be omitted. Multiple fields can be added simultaneously.")]
 		[Alias("a")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.Moderators)]
+		[RequireRole(Role.Moderators)]
 		public async Task AnnounceAsync(
 			[Summary("A template or the input for the interactive builder's current prompt.")] [Remainder]
 			string input = null)
@@ -652,7 +652,7 @@ namespace BotHATTwaffle.Modules
 		[Remarks("The command's output, if any, will be displayed by the bot.")]
 		[Alias("r")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.Moderators, Roles.RconAccess)]
+		[RequireRole(Role.Moderators, Role.RconAccess)]
 		public async Task RconAsync(
 			[Summary("The three-letter code which identifies the server on which to invoke the command.")]
 			string serverCode,
@@ -723,7 +723,7 @@ namespace BotHATTwaffle.Modules
 			"If no server is specified, the event server is used.")]
 		[Alias("p")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.Moderators)]
+		[RequireRole(Role.Moderators)]
 		public async Task PlaytestAsync(
 			[Summary("The action to perform on the server.")]
 			string action,
@@ -902,7 +902,7 @@ namespace BotHATTwaffle.Modules
 		[Command("shutdown")]
 		[Summary("Shuts down the bot.")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.Moderators)]
+		[RequireRole(Role.Moderators)]
 		public async Task ShutdownAsync()
 		{
 			await Context.Message.DeleteAsync();
@@ -914,7 +914,7 @@ namespace BotHATTwaffle.Modules
 		[Command("reload")]
 		[Summary("Reloads data from settings files.")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.Moderators)]
+		[RequireRole(Role.Moderators)]
 		public async Task ReloadAsync()
 		{
 			await ReplyAsync("```Reloading Data!```");
@@ -926,7 +926,7 @@ namespace BotHATTwaffle.Modules
 		[Command("DumpSettings")]
 		[Summary("Dumps currently loaded settings to a DM.")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.Moderators)]
+		[RequireRole(Role.Moderators)]
 		public async Task DumpSettingsAsync()
 		{
 			await Context.Message.DeleteAsync();
@@ -944,7 +944,7 @@ namespace BotHATTwaffle.Modules
 		[Summary("Mutes a user.")]
 		[Alias("m")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.Moderators)]
+		[RequireRole(Role.Moderators)]
 		public async Task MuteAsync(
 			[Summary("The user to mute.")]
 			SocketGuildUser user,
@@ -965,7 +965,7 @@ namespace BotHATTwaffle.Modules
 		[Remarks("If no server is specified, _all_ server reservations are cleared.")]
 		[Alias("cr")]
 		[RequireContext(ContextType.Guild)]
-		[RequireRole(Roles.Moderators)]
+		[RequireRole(Role.Moderators)]
 		public async Task ClearReservationsAsync(string serverStr = null)
 		{
 			if (serverStr == null)

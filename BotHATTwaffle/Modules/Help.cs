@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
+using BotHATTwaffle.Objects;
+
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -31,6 +33,14 @@ namespace BotHATTwaffle.Modules
 		/// <param name="preconditions">The command's preconditions.</param>
 		/// <returns>An alphabetically sorted collection of the names of required permissions.</returns>
 		IReadOnlyCollection<string> GetPermissions(IEnumerable<PreconditionAttribute> preconditions);
+
+		/// <summary>
+		/// Retrieves the names of the required roles from a command's preconditions.
+		/// </summary>
+		/// <param name="preconditions">The command's preconditions.</param>
+		/// <param name="context">The command's context.</param>
+		/// <returns>An alphabetically sorted collection of the names of required roles.</returns>
+		IReadOnlyCollection<string> GetRoles(IEnumerable<PreconditionAttribute> preconditions, ICommandContext context);
 	}
 
 	/// <inheritdoc />
@@ -75,6 +85,30 @@ namespace BotHATTwaffle.Modules
 			}
 
 			return permissions.OrderBy(p => p).ToImmutableArray();
+		}
+
+		/// <inheritdoc />
+		/// <remarks>
+		/// Attempts to fetch role names from the attribute if the string constructor was used. Otherwise, if the context is a
+		/// guild, converts IDs to names. If not in a guild, the name in <see cref="Role"/> is used. If it's not in the enum,
+		/// the raw ID is displayed.
+		/// </remarks>
+		public IReadOnlyCollection<string> GetRoles(IEnumerable<PreconditionAttribute> preconditions, ICommandContext context)
+		{
+			var roles = new List<string>();
+
+			foreach (PreconditionAttribute precondition in preconditions)
+			{
+				if (precondition is RequireRoleAttribute attr)
+				{
+					roles.AddRange(
+						attr.RoleNames ??
+						context.Guild?.Roles.Where(r => attr.RoleIds.Contains(r.Id)).Select(r => r.Name) ??
+						attr.RoleIds.Select(id => ((Role)id).ToString()));
+				}
+			}
+
+			return roles.OrderBy(r => r).ToImmutableArray();
 		}
 	}
 
@@ -171,6 +205,7 @@ namespace BotHATTwaffle.Modules
 
 				IReadOnlyCollection<string> contexts = _helpService.GetContexts(cmd.Preconditions);
 				IReadOnlyCollection<string> permissions = _helpService.GetPermissions(cmd.Preconditions);
+				IReadOnlyCollection<string> roles = _helpService.GetRoles(cmd.Preconditions, Context);
 
 				// Creates the embed.
 				var embed = new EmbedBuilder
@@ -199,6 +234,9 @@ namespace BotHATTwaffle.Modules
 
 				if (permissions.Any())
 					embed.AddInlineField("Permissions", string.Join("\n", permissions));
+
+				if (roles.Any())
+					embed.AddInlineField("Roles", string.Join("\n", roles));
 
 				// Excludes the command's name from the aliases.
 				if (cmd.Aliases.Count > 1)
