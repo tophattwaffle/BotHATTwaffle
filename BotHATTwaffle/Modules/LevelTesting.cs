@@ -786,19 +786,19 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("PublicServer")]
-		[Summary("`>PublicServer [serverPrefix]` Reserves a public server for your own testing use.")]
-		[Remarks("`>ps eus` Reserves a server for 2 hours for you to use for testing purposes." +
-			"\nYou can also include a Workshop ID to load that map automatically. `>ps eus 123456789`." +
-			"\nTo see a list of servers use `>ps`")]
+		[Summary("Reserves a public server under the invoking user for personal testing purposes.")]
+		[Remarks(
+			"__Required Roles:__ `Active Member`\n\n" +
+			"A reservation lasts 2 hours. A Workshop ID can be included in order to have that map automatically hosted. If no" +
+			"server is specified, all available servers are listed.")]
 		[Alias("ps")]
-		public async Task PublicTestStartAsync(string serverStr = null, string mapId = null)
+		[RequireContext(ContextType.Guild)]
+		public async Task PublicTestStartAsync(
+			[Summary("The three-letter code which identifies the server to reserve.")]
+			string serverCode = null,
+			[Summary("The ID of a Steam Workshop map for the server to host.")]
+			string mapId = null)
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("***This command can not be used in a DM***");
-				return;
-			}
-
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ActiveRole))
 			{
 				if (!_levelTesting.CanReserve)
@@ -818,15 +818,8 @@ namespace BotHATTwaffle.Modules
 					}
 				}
 
-				//Display list of servers if no parameters are given
-				if (serverStr == null && mapId == null)
-				{
-					await ReplyAsync("",false,_dataServices.GetAllServers());
-					return;
-				}
-
 				//Get the server
-				var server = _dataServices.GetServer(serverStr);
+				var server = _dataServices.GetServer(serverCode);
 
 				//Cannot find server
 				if (server == null)
@@ -930,21 +923,31 @@ namespace BotHATTwaffle.Modules
 			}
 		}
 
+		[Command("servers")]
+		[Summary("Lists all available servers.")]
+		[Remarks(
+			"__Required Roles:__ `Active Member`, `Moderator`, or `RconAccess`")]
+		[Alias("list", "ListServers", "ls", "PublicServer", "ps", "rcon", "r")]
+		[RequireContext(ContextType.Guild)]
+		public async Task ListServersAsync()
+		{
+			IReadOnlyCollection<SocketRole> roles = ((SocketGuildUser)Context.User).Roles;
+			var allowed = new[] {_dataServices.ActiveRole, _dataServices.ModRole, _dataServices.RconRole};
+
+			if (allowed.Any(r => roles.Contains(r)))
+				await ReplyAsync(string.Empty, false, _dataServices.GetAllServers());
+		}
+
 		[Command("PublicCommand")]
-		[Summary("`>PublicCommand [command]` Sends command to your reserved test server")]
-		[Remarks("`>pc [command]` Sends a command to your reserved server." +
-			"\nExample: `>pc sv_cheats 1`" +
-			"\nYou must have a server already reserved to use this command." +
-			"\nUse `pc` to see all commands you can use.")]
+		[Summary("Invokes a command on the invoking user's reserved test server.")]
+		[Remarks(
+			"__Required Roles:__ `Active Member`\n\n" +
+			"One must have a server already reserved to use this command. If no command is specified, all whitelisted " +
+			"commands are listed.")]
 		[Alias("pc")]
+		[RequireContext(ContextType.Guild)]
 		public async Task PublicTestCommandAsync([Remainder]string command = null)
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("***This command can not be used in a DM***");
-				return;
-			}
-
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ActiveRole))
 			{
 				LevelTestingServer server = null;
@@ -1047,17 +1050,12 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("ReleaseServer")]
-		[Summary("`>ReleaseServer` Releases your reservation on the public server.")]
-		[Remarks("`>ReleaseServer` or `>rs` releases the reservation you have on a server.")]
+		[Summary("Releases the invoking user's reservation on a public server.")]
+		[Remarks("__Required Roles:__ `Active Member`")]
 		[Alias("rs")]
+		[RequireContext(ContextType.Guild)]
 		public async Task ReleasePublicTestCommandAsync([Remainder]string command = null)
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("***This command can not be used in a DM***");
-				return;
-			}
-
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ActiveRole))
 			{
 				LevelTestingServer server = null;
@@ -1094,32 +1092,21 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("ShowReservations")]
-		[Summary("`>sr` Shows all server reservations")]
-		[Remarks("Shows all current server reservations.")]
+		[Summary("Displays all currently reserved servers.")]
 		[Alias("sr")]
-		public async Task ShowReservationsAsync(string serverStr = null)
+		[RequireContext(ContextType.Guild)]
+		public async Task ShowReservationsAsync()
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("***This command can not be used in a DM***");
-				return;
-			}
-
 			await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
-
 		}
 
 		[Command("playtester")]
-		[Summary("`>playtester` Toggles your playtest notifications.")]
-		[Remarks("Toggles your subscription to the playtester notification group.")]
+		[Summary("Toggles the Playtester role for the invoking user.")]
+		[Remarks("Effictively toggles one's subscription to playtesting notifications.")]
 		[Alias("pt")]
+		[RequireContext(ContextType.Guild)]
 		public async Task PlaytesterAsync()
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("**This command can not be used in a DM**");
-				return;
-			}
 			var user = Context.User as SocketGuildUser;
 
 			if (user.Roles.Contains(_dataServices.PlayTesterRole))
@@ -1137,8 +1124,8 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("upcoming")]
-		[Summary("`>upcoming` Shows you the next playtest")]
-		[Remarks("Automatically looks up the next playtest for you. You can always just look in the announcement channel")]
+		[Summary("Displays the upcoming playtest event.")]
+		[Remarks("Automatically looks up the next playtest event. It can also always be found in #announcements.")]
 		[Alias("up")]
 		public async Task UpcomingAsync()
 		{

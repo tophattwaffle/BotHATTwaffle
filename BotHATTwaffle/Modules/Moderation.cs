@@ -84,21 +84,21 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("announce", RunMode = RunMode.Async)]
-		[Summary("`>announce` Interactively create an embed message to be sent to any channel")]
-		[Remarks("You can also just dump and entire embed in one command using the following template:" +
-				 "\n```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}" +
-				 "255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}" +
-				 "(t|f){submit}general```" +
-				 "\n```{Author Name}{Thumbnail}{Title}{URL}{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}```" +
-				 "\nFields can be omitted if you do not want them. You can add multiple fields at a time if you want.")]
+		[Summary("Interactively create an embed message to be sent to any channel.")]
+		[Remarks(
+			"__Required Roles:__ `Moderators`\n\n" +
+			"The entire embed can also be built at once using the following template:```{Author Name}{Thumbnail}{Title}{URL}" +
+			"{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}```\n" +
+			"Example:```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}" +
+			"255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}(t" +
+			"|f){submit}general```\n" +
+			"Fields can be omitted. Multiple fields can be added simultaneously.")]
 		[Alias("a")]
-		public async Task AnnounceAsync([Remainder] string inValue = null)
+		[RequireContext(ContextType.Guild)]
+		public async Task AnnounceAsync(
+			[Summary("A template or the input for the interactive builder's current prompt.")] [Remainder]
+			string input = null)
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("```This command can not be used in a DM```");
-				return;
-			}
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				await Context.Message.DeleteAsync();
@@ -122,11 +122,11 @@ namespace BotHATTwaffle.Modules
 
 				List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
 
-				if (inValue != null)
+				if (input != null)
 				{
 					//Reg ex match for {TAGNAME}
 					Regex regex = new Regex("{([^}]*)}", RegexOptions.IgnoreCase);
-					if (IsValidTag(inValue, regex))
+					if (IsValidTag(input, regex))
 					{
 						string errors = null;
 
@@ -135,68 +135,68 @@ namespace BotHATTwaffle.Modules
 						 * The tag is removed and the following text is consumed until either the next tag is found
 						 * or the end of the string is hit.
 						 */
-						while (inValue.Length > 0)
+						while (input.Length > 0)
 						{
-							if (inValue.ToLower().StartsWith("{author name}"))
+							if (input.ToLower().StartsWith("{author name}"))
 							{
-								inValue = inValue.Substring(13);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(13);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								authName = inValue.Substring(0, textLength);
-								inValue = inValue.Substring(textLength);
+								authName = input.Substring(0, textLength);
+								input = input.Substring(textLength);
 							}
 
-							if (inValue.ToLower().StartsWith("{thumbnail}"))
+							if (input.ToLower().StartsWith("{thumbnail}"))
 							{
-								inValue = inValue.Substring(11);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(11);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								embedThumbUrl = inValue.Substring(0, textLength);
+								embedThumbUrl = input.Substring(0, textLength);
 								if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
 								{
 									embedThumbUrl = null;
 									errors += "THUMBNAIL URL NOT A PROPER URL. SET TO NULL\n";
 								}
 
-								inValue = inValue.Substring(textLength);
+								input = input.Substring(textLength);
 							}
 
-							if (inValue.ToLower().StartsWith("{title}"))
+							if (input.ToLower().StartsWith("{title}"))
 							{
-								inValue = inValue.Substring(7);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(7);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								embedTitle = inValue.Substring(0, textLength);
-								inValue = inValue.Substring(textLength);
+								embedTitle = input.Substring(0, textLength);
+								input = input.Substring(textLength);
 							}
 
-							if (inValue.ToLower().StartsWith("{url}"))
+							if (input.ToLower().StartsWith("{url}"))
 							{
-								inValue = inValue.Substring(5);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(5);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								embedUrl = inValue.Substring(0, textLength);
+								embedUrl = input.Substring(0, textLength);
 								if (!Uri.IsWellFormedUriString(embedUrl, UriKind.Absolute))
 								{
 									embedUrl = null;
 									errors += "TITLE URL NOT A PROPER URL. SET TO NULL\n";
 								}
 ;
-								inValue = inValue.Substring(textLength);
+								input = input.Substring(textLength);
 							}
 
-							if (inValue.ToLower().StartsWith("{color}"))
+							if (input.ToLower().StartsWith("{color}"))
 							{
-								inValue = inValue.Substring(7);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(7);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
 								string[] splitString = {null, null, null};
-								splitString = inValue.Substring(0, textLength).Split(' ');
+								splitString = input.Substring(0, textLength).Split(' ');
 								try
 								{
 									var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
@@ -207,83 +207,83 @@ namespace BotHATTwaffle.Modules
 									errors += "INVALID RGB STRUCTURE. DEFUALT COLOR USED\n";
 								}
 
-								inValue = inValue.Substring(textLength);
+								input = input.Substring(textLength);
 							}
 
-							if (inValue.ToLower().StartsWith("{description}"))
+							if (input.ToLower().StartsWith("{description}"))
 							{
-								inValue = inValue.Substring(13);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(13);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								embedDescription = inValue.Substring(0, textLength);
-								inValue = inValue.Substring(textLength);
+								embedDescription = input.Substring(0, textLength);
+								input = input.Substring(textLength);
 							}
 
-							if (inValue.ToLower().StartsWith("{image}"))
+							if (input.ToLower().StartsWith("{image}"))
 							{
-								inValue = inValue.Substring(7);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(7);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								embedImageUrl = inValue.Substring(0, textLength);
+								embedImageUrl = input.Substring(0, textLength);
 								if (!Uri.IsWellFormedUriString(embedImageUrl, UriKind.Absolute))
 								{
 									embedImageUrl = null;
 									errors += "IMAGE URL NOT A PROPER URL. SET TO NULL\n";
 								}
-								inValue = inValue.Substring(textLength);
+								input = input.Substring(textLength);
 							}
 
-							if (inValue.ToLower().StartsWith("{footer text}"))
+							if (input.ToLower().StartsWith("{footer text}"))
 							{
-								inValue = inValue.Substring(13);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(13);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								footText = inValue.Substring(0, textLength);
-								inValue = inValue.Substring(textLength);
+								footText = input.Substring(0, textLength);
+								input = input.Substring(textLength);
 							}
 
-							if (inValue.ToLower().StartsWith("{field}"))
+							if (input.ToLower().StartsWith("{field}"))
 							{
-								inValue = inValue.Substring(7);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(7);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								string fieldTi = inValue.Substring(0, textLength);
+								string fieldTi = input.Substring(0, textLength);
 
-								inValue = inValue.Substring(textLength + 2);
+								input = input.Substring(textLength + 2);
 
 								//Match field text
-								m = regex.Match(inValue);
-								textLength = inValue.IndexOf(m.ToString());
-								string fieldCo = inValue.Substring(0, textLength);
+								m = regex.Match(input);
+								textLength = input.IndexOf(m.ToString());
+								string fieldCo = input.Substring(0, textLength);
 
-								inValue = inValue.Substring(textLength + 2);
+								input = input.Substring(textLength + 2);
 
 								//Match field inline
-								m = regex.Match(inValue);
+								m = regex.Match(input);
 
-								textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								string tfStr = inValue.Substring(0, textLength);
+								string tfStr = input.Substring(0, textLength);
 
 								bool fieldIn = tfStr.ToLower().StartsWith("t");
 
-								inValue = inValue.Substring(textLength);
+								input = input.Substring(textLength);
 
 								fieldBuilder.Add(new EmbedFieldBuilder { Name = fieldTi, Value = fieldCo, IsInline = fieldIn });
 							}
 
-							if (inValue.ToLower().StartsWith("{submit}"))
+							if (input.ToLower().StartsWith("{submit}"))
 							{
-								inValue = inValue.Substring(8);
-								Match m = regex.Match(inValue);
-								int textLength = m.ToString() != "" ? inValue.IndexOf(m.ToString()) : inValue.Length;
+								input = input.Substring(8);
+								Match m = regex.Match(input);
+								int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
 
-								quickSendChannel = inValue.Substring(0, textLength);
-								inValue = inValue.Substring(textLength);
+								quickSendChannel = input.Substring(0, textLength);
+								input = input.Substring(textLength);
 							}
 						}
 						if (errors != null)
@@ -641,6 +641,7 @@ namespace BotHATTwaffle.Modules
 			}
 		}
 
+		// TODO: Move to ModerationServices.
 		private bool IsValidTag(string inString, Regex regex)
 		{
 			string[] validTags = { "{author name}", "{thumbnail}", "{title}", "{url}", "{color}", "{description}", "{image}", "{footer text}", "{field}", "{}", "{submit}" };
@@ -655,23 +656,23 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("rcon")]
-		[Summary("`>rcon [server] [command]` Sends rcon command to server.")]
-		[Remarks("Requirements: Moderator Role. Sends rcon command to the desired server. Use the server 3 letter code (ex: `eus`) to pick the server. If " +
-			"the command returns output it will be displayed. Some commands do not have output.")]
+		[Summary("Invokes an RCON command on a server.")]
+		[Remarks(
+			"__Required Roles:__ `Moderators` or `RconAccess`\n\n" +
+			"The command's output, if any, will be displayed by the bot. If no server is specified, all available servers are" +
+			" listed.")]
 		[Alias("r")]
-		public async Task RconAsync(string serverString = null, [Remainder]string command = null)
+		[RequireContext(ContextType.Guild)]
+		public async Task RconAsync(
+			[Summary("The three-letter code which identifies the server on which to invoke the command.")]
+			string serverCode,
+			[Summary("The command to invoke on the server.")] [Remainder]
+			string command)
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("```This command can not be used in a DM```");
-				await _dataServices.ChannelLog($"{Context.User} was trying to rcon from DM.", $"{command} was trying to be sent to {serverString}");
-				return;
-			}
-
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole) || (Context.User as SocketGuildUser).Roles.Contains(_dataServices.RconRole))
 			{
 				//Display list of servers
-				if (serverString == null && command == null)
+				if (serverCode == null && command == null)
 				{
 					await ReplyAsync("",false, _dataServices.GetAllServers());
 					return;
@@ -682,12 +683,12 @@ namespace BotHATTwaffle.Modules
 				if (command.ToLower().Contains("rcon_password") || command.ToLower().Contains("exit"))
 				{
 					await ReplyAsync("```This command cannot be run from here. Ask TopHATTwaffle to do it.```");
-					await _dataServices.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverString}");
+					await _dataServices.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverCode}");
 					return;
 				}
 
 				//Get the server we are going to use
-				var server = _dataServices.GetServer(serverString);
+				var server = _dataServices.GetServer(serverCode);
 				string reply = null;
 				try
 				{
@@ -728,29 +729,32 @@ namespace BotHATTwaffle.Modules
 			}
 			else
 			{
-				await _dataServices.ChannelLog($"{Context.User} is trying to rcon from the bot. They tried to send {serverString} {command}");
+				await _dataServices.ChannelLog($"{Context.User} is trying to rcon from the bot. They tried to send {serverCode} {command}");
 				await ReplyAsync("```You cannot use this command with your current permission level!```");
 			}
 		}
 
 		[Command("playtest")]
-		[Summary("`>playtest [pre/start/post/scramble/pause/unpause] [Optional serverPrefix]` Playtest Functions")]
-		[Remarks("`>playtest pre` Sets the testing config then reloads the map to clear cheats." +
-			"\n`>playtest start` Starts the playtest, starts a demo recording, then tells the server it is live." +
-			"\n`>playtest post` Starts postgame config. Gets the playtest demo and BSP file. Places it into the public DropBox folder." +
-			"\n`>playtest scramble` or `>p s` Scrambles teams." +
-			"\n`>playtest pause` or `>p p` Pauses playtest." +
-			"\n`>playtest unpause` or `>p u` Unpauses playtest." +
-			"\nIf a server prefix is provided, commands will go to that server. If no server is provided, the event server will be used. `>p start eus`")]
+		[Summary("Peforms an action on a server.")]
+		[Remarks(
+			"__Required Roles:__ `Moderators`\n\n" +
+			"Actions:\n" +
+		    "`pre` - Sets the testing config and reloads the map to clear cheats.\n" +
+			"`start` - Starts the playtest, starts recording a demo, and then tells the server it is live.\n" +
+			"`post` - Starts the postgame config. Gets the playtest's demo and BSP files and stores them in the public " +
+			"DropBox folder.\n" +
+			"`scramble`; `s` - Scrambles the teams.\n" +
+			"`pause`; `p` - Pauses the playtest.\n" +
+			"`resume`; `r` - Resumes the playtest.\n\n" +
+			"If no server is specified, the event server is used.")]
 		[Alias("p")]
-		public async Task PlaytestAsync(string action, string serverStr = "nothing")
+		[RequireContext(ContextType.Guild)]
+		public async Task PlaytestAsync(
+			[Summary("The action to perform on the server.")]
+			string action,
+			[Summary("The three-letter code which identifies the server on which to perform the action.")]
+			string serverCode = null)
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("**This command can not be used in a DM**");
-				return;
-			}
-
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				if(_levelTesting.CurrentEventInfo[0] == "NO_EVENT_FOUND")
@@ -762,7 +766,7 @@ namespace BotHATTwaffle.Modules
 				LevelTestingServer server = null;
 
 				//Get the right server. If null, use the server in the event info. Else we'll use what was provided.
-				server = _dataServices.GetServer(serverStr == "nothing" ? _levelTesting.CurrentEventInfo[10].Substring(0, 3) : serverStr);
+				server = _dataServices.GetServer(serverCode ?? _levelTesting.CurrentEventInfo[10].Substring(0, 3));
 
 				if (_levelTesting.CurrentEventInfo[7].ToLower() == "competitive" || _levelTesting.CurrentEventInfo[7].ToLower() == "comp")
 					config = _dataServices.CompConfig;
@@ -868,6 +872,7 @@ namespace BotHATTwaffle.Modules
 		/// </summary>
 		/// <param name="server">Server Object</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
+		// TODO: Move to ModerationServices.
 		private async Task PostTasks(LevelTestingServer server)
 		{
 			var authBuilder = new EmbedAuthorBuilder()
@@ -929,16 +934,11 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("shutdown")]
-		[Summary("`>shutdown` shuts down the bot")]
-		[Remarks("Requirements: Moderator Role.")]
+		[Summary("Shuts down the bot.")]
+		[Remarks("__Required Roles:__ `Moderators`")]
+		[RequireContext(ContextType.Guild)]
 		public async Task ShutdownAsync()
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("**This command can not be used in a DM**");
-				return;
-			}
-
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				await Context.Message.DeleteAsync();
@@ -954,38 +954,17 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("reload")]
-		[Summary("`>reload` Reloads data from settings files.")]
-		[Remarks("Requirements: Moderator Role.")]
-		public async Task ReloadAsync(string arg = null)
+		[Summary("Reloads data from settings files.")]
+		[Remarks("__Required Roles:__ `Moderators`")]
+		[RequireContext(ContextType.Guild)]
+		public async Task ReloadAsync()
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("**This command can not be used in a DM**");
-				return;
-			}
-
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
-				//Lets you see the currently loaded settings in a DM only.
-				if (arg == "dump")
-				{
-					await Context.Message.DeleteAsync();
-					var lines = _dataServices.Config.Select(kvp => kvp.Key + ": " + kvp.Value.ToString());
-					var reply = string.Join(Environment.NewLine, lines);
-					reply = reply.Replace((_dataServices.Config["botToken"]), "[TOKEN HIDDEN]");
-					try
-					{
-						await Context.Message.Author.SendMessageAsync($"```{reply}```");
-					}
-					catch { }//Do nothing if we can't DM.
-				}
-				else
-				{
-					await ReplyAsync("```Reloading Data!```");
-					await _dataServices.ChannelLog($"{Context.User} reloaded bot data!");
-					_dataServices.ReloadSettings();
-					_timer.Restart();
-				}
+				await ReplyAsync("```Reloading Data!```");
+				await _dataServices.ChannelLog($"{Context.User} reloaded bot data!");
+				_dataServices.ReloadSettings();
+				_timer.Restart();
 			}
 			else
 			{
@@ -994,19 +973,44 @@ namespace BotHATTwaffle.Modules
 			}
 		}
 
-		[Command("mute")]
-		[Summary("`>mute [@user] [duration] [Optional Reason]` Mutes someone.")]
-		[Remarks("Requirements: Moderator Role" +
-			"\n`>mute @person 15 Being a mean person` will mute them for 15 minutes, with the reason \"Being a mean person\"")]
-		[Alias("m")]
-		public async Task MuteAsync(SocketGuildUser user, int durationInMinutes = 5, [Remainder]string reason = "No reason provided")
+		[Command("DumpSettings")]
+		[Summary("Dumps currently loaded settings to a DM.")]
+		[Remarks("__Required Roles:__ `Moderators`")]
+		[RequireContext(ContextType.Guild)]
+		public async Task DumpSettingsAsync()
 		{
-			if (Context.IsPrivate)
+			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
-				await ReplyAsync("***This command can not be used in a DM***");
-				return;
+				await Context.Message.DeleteAsync();
+				var lines = _dataServices.Config.Select(kvp => kvp.Key + ": " + kvp.Value.ToString());
+				var reply = string.Join(Environment.NewLine, lines);
+				reply = reply.Replace((_dataServices.Config["botToken"]), "[TOKEN HIDDEN]");
+				try
+				{
+					await Context.Message.Author.SendMessageAsync($"```{reply}```");
+				}
+				catch { }//Do nothing if we can't DM.
 			}
+			else
+			{
+				await _dataServices.ChannelLog($"{Context.User} is trying to dump settings with inadequate permissions.");
+				await ReplyAsync("```You cannot use this command with your current permission level!```");
+			}
+		}
 
+		[Command("mute")]
+		[Summary("Mutes a user.")]
+		[Remarks("__Required Roles:__ `Moderators`")]
+		[Alias("m")]
+		[RequireContext(ContextType.Guild)]
+		public async Task MuteAsync(
+			[Summary("The user to mute.")]
+			SocketGuildUser user,
+			[Summary("The duration, in minutes, of the mute.")]
+			int durationInMinutes = 5,
+			[Summary("The reason for the mute.")] [Remainder]
+			string reason = "No reason provided")
+		{
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				DateTime unmuteTime = DateTime.Now.AddMinutes(durationInMinutes);
@@ -1023,17 +1027,14 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("ClearReservations")]
-		[Summary("`>cr` Clears all server reservations")]
-		[Remarks("`>cr [server prefix]` will clear a specific server. Requirements: Moderator Role")]
+		[Summary("Clears server reservations.")]
+		[Remarks(
+			"__Required Roles:__ `Moderators`\n\n" +
+			"If no server is specified, _all_ server reservations are cleared.")]
 		[Alias("cr")]
+		[RequireContext(ContextType.Guild)]
 		public async Task ClearReservationsAsync(string serverStr = null)
 		{
-			if (Context.IsPrivate)
-			{
-				await ReplyAsync("***This command can not be used in a DM***");
-				return;
-			}
-
 			if (((SocketGuildUser)Context.User).Roles.Contains(_dataServices.ModRole))
 			{
 				if(serverStr == null)

@@ -12,9 +12,9 @@ namespace BotHATTwaffle.Modules
 	public class ToolsModule : ModuleBase<SocketCommandContext>
 	{
 		[Command("VTFEdit")]
-		[Summary("`>VTFEdit` Provides a download link to VTFEdit.")]
+		[Summary("Provides a download link to VTFEdit.")]
 		[Alias("vtf")]
-		public async Task VTFEditAsync()
+		public async Task VtfEditAsync()
 		{
 			var embed = new EmbedBuilder
 			{
@@ -36,9 +36,9 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("GCFScape")]
-		[Summary("`>GCFScape` Provides a download link to GCFScape.")]
+		[Summary("Provides a download link to GCFScape.")]
 		[Alias("gcf")]
-		public async Task GCFScapeAsync()
+		public async Task GcfScapeAsync()
 		{
 			var embed = new EmbedBuilder
 			{
@@ -59,9 +59,9 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("VMTEditor")]
-		[Summary("`>VMTEditor` Provides a download link to VMT Editor.")]
+		[Summary("Provides a download link to VMT Editor.")]
 		[Alias("vmt")]
-		public async Task VMTEditorAsync()
+		public async Task VmtEditorAsync()
 		{
 			var embed = new EmbedBuilder
 			{
@@ -83,8 +83,8 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("VIDE")]
-		[Summary("`>VIDE` Provides a download link to VIDE.")]
-		public async Task VIDEAsync()
+		[Summary("Provides a download link to VIDE.")]
+		public async Task VideAsync()
 		{
 			var embed = new EmbedBuilder
 			{
@@ -106,7 +106,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("WallWorm")]
-		[Summary("`>WallWorm` Provides a link to Wall Worm's website.")]
+		[Summary("Provides a link to Wall Worm's website.")]
 		[Alias("wwmt")]
 		public async Task WallWormAsync()
 		{
@@ -129,9 +129,9 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("BSPSource")]
-		[Summary("`>BSPSource` Provides a download link to BSPSource.")]
+		[Summary("Provides a download link to BSPSource.")]
 		[Alias("bsp")]
-		public async Task BSPSourceAsync()
+		public async Task BspSourceAsync()
 		{
 			var embed = new EmbedBuilder
 			{
@@ -153,7 +153,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("log")]
-		[Summary("`>log` Provides a link to the compile log checker on Interlopers.")]
+		[Summary("Provides a link to the compile log checker on Interlopers.")]
 		[Alias("l")]
 		public async Task LogCheckerAsync()
 		{

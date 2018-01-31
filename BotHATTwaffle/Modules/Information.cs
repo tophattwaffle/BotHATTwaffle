@@ -26,17 +26,19 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("vdc")]
-		[Summary("`>vdc [Search]` Quick link back to a VDC search.")]
+		[Summary("Searches the VDC and replies with the results.")]
 		[Remarks(
-			"Searches the Valve Developer Community and returns a link to the results. Try to use the proper full term; for " +
-			"instance, `func_detail` will return better results than `detail`.")]
+			"Searches the Valve Developer Community and returns a link to the results. Use of proper, full terms returns " +
+			"better results e.g. `func_detail` over `detail`.")]
 		[Alias("v")]
-		public async Task SearchAsync([Remainder] string searchTerm)
+		public async Task SearchAsync(
+			[Summary("The term for which to search.")] [Remainder]
+			string term)
 		{
 			await Context.Channel.TriggerTypingAsync();
 
-			searchTerm = searchTerm.Replace(' ', '+');
-			string builtUrl = $"https://developer.valvesoftware.com/w/index.php?search={searchTerm}&title=Special%3ASearch&go=Go";
+			term = term.Replace(' ', '+');
+			string builtUrl = $"https://developer.valvesoftware.com/w/index.php?search={term}&title=Special%3ASearch&go=Go";
 			string siteTitle;
 
 			// Download web page title and store to string.
@@ -52,14 +54,14 @@ namespace BotHATTwaffle.Modules
 			if (!Uri.IsWellFormedUriString(builtUrl, UriKind.Absolute))
 			{
 				builtUrl = "https://developer.valvesoftware.com/wiki/Main_Page";
-				searchTerm = "Valve Developer Community";
+				term = "Valve Developer Community";
 			}
 
 			var builder = new EmbedBuilder
 			{
 				Author = new EmbedAuthorBuilder
 				{
-					Name = $"This is what I was able to find for {searchTerm}",
+					Name = $"This is what I was able to find for {term}",
 					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
 				},
 				Footer = new EmbedFooterBuilder
@@ -78,7 +80,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("search", RunMode = RunMode.Async)]
-		[Summary("`>search [series] [SearchTerm]` searches a tutorial series.")]
+		[Summary("Searches in a series for a tutorial or lists all tutorials in a series.")]
 		[Remarks(
 			"`>search [series] [SearchTerm]` searches our tutorial database for a result.\n" +
 			"There are several series which can be searched. `>tutorial all [SearchTerm]` can be used to search them all; " +
@@ -96,19 +98,23 @@ namespace BotHATTwaffle.Modules
 			"respond, so please wait!\n" +
 			"Really big thanks to Mark for helping make the JSON searching work!")]
 		[Alias("s")]
-		public async Task SearchAsync(string series, [Remainder]string search)
+		public async Task SearchAsync(
+			[Summary("The series in which to search.")]
+			string series,
+			[Summary("The term for which to search in the series.")] [Remainder]
+			string term)
 		{
 			IUserMessage wait = await ReplyAsync(
-				$":eyes: Searching for **{search}** in **{series}**. This may take a moment! :eyes:");
+				$":eyes: Searching for **{term}** in **{series}**. This may take a moment! :eyes:");
 
 			bool isPrivate = Context.IsPrivate;
-			List<List<string>> results = _dataServices.Search(series, search, isPrivate); // Peforms a search.
+			List<List<string>> results = _dataServices.Search(series, term, isPrivate); // Peforms a search.
 
-			await _dataServices.ChannelLog($"{Context.User} ran a search", $"Series: {series}\nSearch Term: {search}");
+			await _dataServices.ChannelLog($"{Context.User} ran a search", $"Series: {series}\nSearch Term: {term}");
 
 			// A dump was requested.
-			if (search.Equals("dump", StringComparison.InvariantCultureIgnoreCase) ||
-			    search.Equals("all", StringComparison.InvariantCultureIgnoreCase))
+			if (term.Equals("dump", StringComparison.InvariantCultureIgnoreCase) ||
+			    term.Equals("all", StringComparison.InvariantCultureIgnoreCase))
 			{
 				// [0]title
 				// [1]url
@@ -191,7 +197,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("tutorials")]
-		[Summary("`>tutorials [Optional series]` Displays links to tutorial series.")]
+		[Summary("Displays links to tutorial series.")]
 		[Remarks(
 			"`>tutorials [Optional series]` Example: `>tutorials` `>tutorials v2`\n" +
 			"Displays information about all tutorial series, or the specific one you're looking for\n\n" +
@@ -202,13 +208,13 @@ namespace BotHATTwaffle.Modules
 			"`5` `LegacySeries` `v1` `lg`\n" +
 			"`6` `HammerTroubleshooting` `ht`")]
 		[Alias("t")]
-		public async Task TutorialsAsync(string searchSeries = "all")
+		public async Task TutorialsAsync([Summary("The series for which to search.")] string series = "all")
 		{
 			string authTitle;
 			string bodyUrl;
 			string bodyDescription;
 
-			switch (searchSeries.ToLower())
+			switch (series.ToLower())
 			{
 				case "v2series":
 				case "v2":
@@ -314,7 +320,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("CatFact", RunMode = RunMode.Async)]
-		[Summary("`>catFact` Provides a cat fact!")]
+		[Summary("Provides a cat fact!")]
 		[Remarks("Ever want to know more about cats? Now you can.")]
 		[Alias("gimme a cat fact", "hit me with a cat fact", "hit a nigga with a cat fact", "cat fact", "CatFacts", "cat facts")]
 		public async Task CatFactAsync()
@@ -350,12 +356,12 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("unsubscribe")]
-		[Summary("`>unsubscribe` Unsubscribes the invoking user from cat facts.")]
+		[Summary("Unsubscribes the invoking user from cat facts.")]
 		[Remarks("Takes the invoking user off the cat fact list.")]
 		public async Task CatFactUnsubAsync() => await ReplyAsync("You cannot unsubscribe from cat facts...");
 
 		[Command("PenguinFact", RunMode = RunMode.Async)]
-		[Summary("`>PenguinFact` Provides a Penguin fact!")]
+		[Summary("Provides a penguin fact!")]
 		[Remarks("Ever want to know more about Penguin? Now you can.")]
 		[Alias("gimme a penguin fact", "hit me with a penguin fact", "hit a nigga with a penguin fact", "penguin fact",
 			"PenguinFacts", "penguin facts")]
@@ -386,7 +392,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("TanookiFact", RunMode = RunMode.Async)]
-		[Summary("`>tanookiFact` Provides a Tanooki fact!")]
+		[Summary("Provides a Tanooki fact!")]
 		[Remarks("Ever want to know more about Tanooki? Now you can.")]
 		[Alias("gimme a tanooki fact", "hit me with a tanooki fact", "hit a nigga with a tanooki fact", "tanooki fact",
 			"TanookiFacts", "tanooki facts", "@TanookiSuit3")]
@@ -417,7 +423,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("TanookiIRL", RunMode = RunMode.Async)]
-		[Summary("`>tanookiirl` Displays Tanooki looking at stuff!")]
+		[Summary("Displays Tanooki looking at stuff!")]
 		[Alias("TanookiLooksAtThings")]
 		public async Task TanookiLookAsync()
 		{

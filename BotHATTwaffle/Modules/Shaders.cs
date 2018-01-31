@@ -11,10 +11,10 @@ namespace BotHATTwaffle.Modules
 	/// </summary>
 	public class ShadersModule : ModuleBase<SocketCommandContext>
 	{
-		[Command("shader")]
-		[Summary("`>shader` Provides links to Source shader development resources.")]
-		[Alias("shaders")]
-		public async Task ShaderAsync()
+		[Command("shaders")]
+		[Summary("Provides links to Source shader development resources.")]
+		[Alias("shader")]
+		public async Task ShadersAsync()
 		{
 			var embed = new EmbedBuilder
 			{

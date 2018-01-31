@@ -202,7 +202,11 @@ namespace BotHATTwaffle.Modules
 
 				// Excludes the command's name from the aliases.
 				if (cmd.Aliases.Count > 1)
-					embed.AddInlineField("Aliases", string.Join("\n", cmd.Aliases.Where(a => a != cmd.Name)));
+				{
+					embed.AddInlineField(
+						"Aliases",
+						string.Join("\n", cmd.Aliases.Where(a => !a.Equals(cmd.Name, StringComparison.OrdinalIgnoreCase))));
+				}
 
 				// Replies normally if a direct message fails.
 				try
@@ -220,7 +224,7 @@ namespace BotHATTwaffle.Modules
 		[Summary("Displays information about the bot.")]
 		public async Task AboutAsync()
 		{
-			DateTime buildDate = new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime;
+			DateTime buildDate = new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToUniversalTime();
 
 			var embed = new EmbedBuilder
 			{
@@ -245,7 +249,7 @@ namespace BotHATTwaffle.Modules
 				"[JimWood](https://github.com/JamesT-W)");
 			embed.AddInlineField(
 				"Build Date",
-				$"{buildDate}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)");
+				$"{buildDate:yyyy-MM-ddTHH:mm:ssK}\n[Changelog](https://github.com/tophattwaffle/BotHATTwaffle/commits/master)");
 			embed.AddInlineField(
 				"Libraries",
 				"[Discord.net V1.0.2](https://github.com/RogueException/Discord.Net)\n" +
@@ -254,6 +258,9 @@ namespace BotHATTwaffle.Modules
 				"[Newtonsoft Json.NET](https://www.newtonsoft.com/json)\n" +
 				"[SSH.NET](https://github.com/sshnet/SSH.NET/)\n" +
 				"[FluentFTP](https://github.com/robinrodricks/FluentFTP)");
+
+			embed.WithFooter("Build date");
+			embed.WithTimestamp(buildDate);
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 		}
