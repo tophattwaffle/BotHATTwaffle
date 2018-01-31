@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using Discord;
 using Discord.Commands;
@@ -27,7 +29,7 @@ namespace BotHATTwaffle.Modules
 		/// <seealso cref="DiscordSocketClient.Latency"/>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		[Command("ping")]
-		[Summary("`>ping` Replies with the bot's latency to Discord.")]
+		[Summary("Replies with the bot's latency to Discord.")]
 		[Remarks("The ping is the estimated round-trip latency, in miliseconds, to the gateway server.")]
 		public async Task PingAsync()
 		{
@@ -47,45 +49,48 @@ namespace BotHATTwaffle.Modules
 		/// Yields a list of all toggleable roles when invoked without parameters. The roles which can be used with this command
 		/// are specified in the <c>roleMeWhiteListCSV</c> config field.
 		/// </remarks>
-		/// <param name="rolesStr">A case-insensitive space-delimited list of roles to toggle.</param>
+		/// <param name="roles">A case-insensitive space-delimited list of roles to toggle.</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		[Command("roleme")]
-		[Summary("`>roleme [role names]` Toggles the invoking user's roles.")]
+		[Summary("Toggles the invoking user's roles.")]
 		[Remarks(
-			"This enables one to toggle some of oneself's roles. The toggleable roles typically display possession of a skill, " +
-			"such as 3D Modeling or level design.\n" +
-			"The command accepts multiple roles in one invocation: `>roleme blender level_designer programmer`.\n" +
-			"Invoking it without any parameters, i.e. `>roleme`, yields a list of all available roles.")]
-		public async Task RolemeAsync([Remainder]string rolesStr = "display")
+			"Toggleable roles typically display possession of a skill, such as 3D modelling or level design. To send multiple " +
+			"roles in one invocation, separate the names with a space. Invoking without any parameters displays a list of " +
+			"all toggleable roles.")]
+		[RequireContext(ContextType.Guild)]
+		public async Task RolemeAsync(
+			[Summary("A case-insensitive, space-delimited list of roles to toggle.")] [Remainder]
+			string roles = null)
 		{
-			// Currently, the framework to get users' roles in DMs doesn't exist.
-			if (Context.IsPrivate)
+			if (string.IsNullOrWhiteSpace(roles))
 			{
-				await ReplyAsync("**This command can not be used in a direct message.**");
+				await ReplyAsync($"Toggleable roles are:```\n{string.Join("\n", _dataServices.RoleMeWhiteList)}```");
 				return;
 			}
 
-			if (rolesStr.Equals("display", StringComparison.InvariantCultureIgnoreCase))
+			var roleNames = new List<string>();
+
+			foreach (string role in _dataServices.RoleMeWhiteList)
 			{
-				await ReplyAsync($"Valid roles are:```\n{string.Join("\n", _dataServices.RoleMeWhiteList)}```");
-				return;
+				Match match = Regex.Match(roles, $@"\b{role}\b", RegexOptions.IgnoreCase);
+
+				if (!match.Success) continue;
+
+				// Finds and removes all occurrences of the whitelisted role in the input string.
+				while (match.Success)
+				{
+					roles = roles.Remove(match.Index, match.Length);
+					match = Regex.Match(roles, $@"\b{role}\b", RegexOptions.IgnoreCase);
+				}
+
+				roleNames.Add(role);
 			}
 
-			string[] rolesIn = rolesStr.Split(' ');
-
-			// The intersection of the role whitelist and the inputted roles.
-			IEnumerable<string> roleNames =
-				_dataServices.RoleMeWhiteList.Intersect(rolesIn, StringComparer.InvariantCultureIgnoreCase);
-
-			// The intersection of the inputted roles and the valid roles.
-			// It'd be safer to inserect with the SocketRole collection below,
-			// but this assumes that the roles in the whitelist actually exist.
-			IEnumerable<string> rolesInvalid = rolesIn.Except(roleNames, StringComparer.InvariantCultureIgnoreCase);
-
-			roleNames = roleNames.Select(r => r.Replace('_', ' '));
+			// Splits the remaining roles not found in the whitelist. Filters out empty elements.
+			ImmutableArray<string> rolesInvalid = roles.Split(' ').Where(r => !string.IsNullOrWhiteSpace(r)).ToImmutableArray();
 
 			// Finds all SocketRoles from roleNames.
-			IEnumerable<SocketRole> roles =
+			IEnumerable<SocketRole> rolesValid =
 				Context.Guild.Roles.Where(r => roleNames.Contains(r.Name, StringComparer.InvariantCultureIgnoreCase));
 
 			var user = (SocketGuildUser)Context.User;
@@ -93,7 +98,7 @@ namespace BotHATTwaffle.Modules
 			var rolesRemoved = new List<SocketRole>();
 
 			// Updates roles.
-			foreach (SocketRole role in roles)
+			foreach (SocketRole role in rolesValid)
 			{
 				if (user.Roles.Contains(role))
 				{
