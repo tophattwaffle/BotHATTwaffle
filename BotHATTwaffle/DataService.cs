@@ -329,17 +329,17 @@ namespace BotHATTwaffle
 				if (s.Name == _logChannelStr)
 				{
 					LogChannel = s;
-					Console.WriteLine($"\nLog Channel Found! Logging to: {s.Name}");
+					Console.WriteLine($"\nLog Channel Found! Logging to: {s.Name}\nID: {s.Id}");
 				}
 				if (s.Name == _announcementChannelStr)
 				{
 					AnnouncementChannel = s;
-					Console.WriteLine($"\nAnnouncement Channel Found! Announcing to: {s.Name}");
+					Console.WriteLine($"\nAnnouncement Channel Found! Announcing to: {s.Name}\nID: {s.Id}");
 				}
 				if (s.Name == _testingChannelStr)
 				{
 					TestingChannel = s;
-					Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {s.Name}");
+					Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {s.Name}\nID: {s.Id}");
 
 				}
 			}
@@ -349,33 +349,33 @@ namespace BotHATTwaffle
 				if (r.Name == _playTesterRoleStr)
 				{
 					PlayTesterRole = r;
-					Console.WriteLine($"\nPlaytester role found!: {r.Name}");
+					Console.WriteLine($"\nPlaytester role found!: {r.Name}\nID: {r.Id}");
 				}
 				if (r.Name == _modRoleStr)
 				{
 
 					ModRole = r;
-					Console.WriteLine($"\nModerator role found!: {r.Name}");
+					Console.WriteLine($"\nModerator role found!: {r.Name}\nID: {r.Id}");
 				}
 				if (r.Name == _rconRoleStr)
 				{
 					RconRole = r;
-					Console.WriteLine($"\nRCON role found!: {r.Name}");
+					Console.WriteLine($"\nRCON role found!: {r.Name}\nID: {r.Id}");
 				}
 				if (r.Name == _mutedRoleStr)
 				{
 					MuteRole = r;
-					Console.WriteLine($"\nMuted role found!: {r.Name}");
+					Console.WriteLine($"\nMuted role found!: {r.Name}\nID: {r.Id}");
 				}
 				if (r.Name == _activeRoleStr)
 				{
 					ActiveRole = r;
-					Console.WriteLine($"\nActive Memeber role found!: {r.Name}"); //That isn't a spelling mistake :kappa:
+					Console.WriteLine($"\nActive Memeber role found!: {r.Name}\nID: {r.Id}"); //That isn't a spelling mistake :kappa:
 				}
 				if (r.Name == this._patreonsRoleStr)
 				{
 					PatreonsRole = r;
-					Console.WriteLine($"\nPatreons role found!: {r.Name}");
+					Console.WriteLine($"\nPatreons role found!: {r.Name}\nID: {r.Id}");
 				}
 			}
 			Console.WriteLine();
