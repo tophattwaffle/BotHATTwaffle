@@ -734,7 +734,7 @@ namespace BotHATTwaffle.Modules
 			foreach (UserData u in UserData.ToList())
 			{
 				TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{u.ReservedServer.Address}", Value = $"User: `{u.User}#{u.User.Discriminator}`" +
+				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{u.ReservedServer.Address}", Value = $"User: `{u.User}`" +
 				$"\nTime Left: {timeLeft:h\'H \'m\'M\'}", IsInline = false });
 			}
 
@@ -943,7 +943,8 @@ namespace BotHATTwaffle.Modules
 		[Remarks(
 			"__Required Roles:__ `Active Member`\n\n" +
 			"One must have a server already reserved to use this command. If no command is specified, all whitelisted " +
-			"commands are listed.")]
+			"commands are listed.\n\n" +
+			"To extend a reservation for 30 minutes, type: `>pc extend`")]
 		[Alias("pc")]
 		[RequireContext(ContextType.Guild)]
 		public async Task PublicTestCommandAsync([Remainder]string command = null)
@@ -970,10 +971,12 @@ namespace BotHATTwaffle.Modules
 				}
 
 				//Find the server that the user has reserved
+				UserData user = null;
 				foreach (UserData u in _levelTesting.UserData)
 				{
 					if (u.User == Context.Message.Author)
 					{
+						user = u;
 						server = u.ReservedServer;
 					}
 				}
@@ -981,6 +984,24 @@ namespace BotHATTwaffle.Modules
 				//Server found, process command
 				if(server != null)
 				{
+					if (command.ToLower().Equals("extend"))
+					{
+						if (user.CanExtend())
+						{
+							user.ReservationExpiration = user.ReservationExpiration.AddMinutes(30);
+							TimeSpan timeLeft = user.ReservationExpiration.Subtract(DateTime.Now);
+							await ReplyAsync("```Your server reservation has been extended by 30 minutes" + 
+							                 $"\nNew time Left: {timeLeft:h\'H \'m\'M\'}```");
+						}
+						else
+						{
+							TimeSpan timeLeft = user.ReservationExpiration.Subtract(DateTime.Now);
+							await ReplyAsync($"```You cannot extend your reservation until there is less than 30 minutes left on the reservation." +
+							                 $"\nCurrent time Left: {timeLeft:h\'H \'m\'M\'}```");
+						}
+						return;
+					}
+
 					if (command.Contains(";"))
 					{
 						await ReplyAsync("```You cannot use ; in a command sent to a server.```");

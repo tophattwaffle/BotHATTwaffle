@@ -32,6 +32,12 @@ namespace BotHATTwaffle.Objects
 		public bool ReservationExpired() => ReservationExpiration < DateTime.Now;
 
 		/// <summary>
+		/// Determines if a user's server reservation can be extended.
+		/// </summary>
+		/// <returns><c>true</c> if expired; <c>false</c> othwerise.</returns>
+		public bool CanExtend() => ReservationExpiration.AddMinutes(-30) < DateTime.Now;
+
+		/// <summary>
 		/// Determines if it's time to handle the new user joining the server.
 		/// </summary>
 		/// <returns><c>true</c> if the join can be handled now; <c>false</c> otherwise.</returns>
