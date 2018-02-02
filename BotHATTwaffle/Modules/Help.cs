@@ -151,13 +151,18 @@ namespace BotHATTwaffle.Modules
 				// Builds the help strings.
 				foreach (CommandInfo cmd in module.Commands)
 				{
-					if ((await cmd.CheckPreconditionsAsync(Context)).IsSuccess)
-						description.AppendLine($"{cmd.Name} - {cmd.Summary}");
+					//BUG
+					//When uncommented commands with [RequireContext(ContextType.Guild)] attribute are omitted from the output.
+					//Is this check even needed?
+					//if ((await cmd.CheckPreconditionsAsync(Context)).IsSuccess)
+
+					description.AppendLine($"__**{cmd.Name}**__ - {cmd.Summary}");
 				}
 
 				if (description.Length != 0)
 					embed.AddField(module.Name.Replace("Module", string.Empty), description.ToString());
 			}
+			
 
 			// Replies normally if a direct message fails.
 			try
