@@ -793,7 +793,7 @@ namespace BotHATTwaffle.Modules
 		[RequireRole(Role.ActiveMember)]
 		public async Task PublicTestStartAsync(
 			[Summary("The three-letter code which identifies the server to reserve.")]
-			string serverCode = null,
+			string serverCode,
 			[Summary("The ID of a Steam Workshop map for the server to host.")]
 			string mapId = null)
 		{
