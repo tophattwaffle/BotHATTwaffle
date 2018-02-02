@@ -441,7 +441,7 @@ namespace BotHATTwaffle
 				Color = new Color(243, 128, 72),
 
 				Description = $"You were asking about carve. We don't use carve here. Not only does it create bad brushwork, but it " +
-	$"\ncan also cause Hammer to stop responding and crash. If you're here trying to defend using carve, just stop - you are wrong."
+	$"can also cause Hammer to stop responding and crash. If you're here trying to defend using carve, just stop - you are wrong."
 			};
 
 			message.Channel.SendMessageAsync("", false, builder);
