@@ -151,11 +151,6 @@ namespace BotHATTwaffle.Modules
 				// Builds the help strings.
 				foreach (CommandInfo cmd in module.Commands)
 				{
-					//BUG
-					//When uncommented commands with [RequireContext(ContextType.Guild)] attribute are omitted from the output.
-					//Is this check even needed?
-					//if ((await cmd.CheckPreconditionsAsync(Context)).IsSuccess)
-
 					description.AppendLine($"__**{cmd.Name}**__ - {cmd.Summary}");
 				}
 
