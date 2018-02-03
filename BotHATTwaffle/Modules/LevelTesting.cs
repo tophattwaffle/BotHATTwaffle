@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Discord.Rest;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Timers;
 
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Json;
@@ -42,7 +43,12 @@ namespace BotHATTwaffle.Modules
 		private int _failedToFetch = 0;
 		private int _failedRetryCount = 10;
 
-		public LevelTesting(DiscordSocketClient client, DataServices dataServices, GoogleCalendar calendar, Random random)
+		public LevelTesting(
+			DiscordSocketClient client,
+			DataServices dataServices,
+			GoogleCalendar calendar,
+			Random random,
+			TimerService timer)
 		{
 			_client = client;
 			_dataServices = dataServices;
@@ -50,6 +56,9 @@ namespace BotHATTwaffle.Modules
 			GoogleCalendar = calendar;
 			CurrentEventInfo = GoogleCalendar.GetEvents(); //Initial get of playtest.
 			LastEventInfo = CurrentEventInfo; //Make sure array is same size for doing compares later.
+
+			timer.AddHandler(async (sender, e) => await Announce());
+			timer.AddHandler(CheckServerReservations);
 		}
 
 		/// <summary>
@@ -549,7 +558,7 @@ namespace BotHATTwaffle.Modules
 		/// Checks all the server reservations to see if they have expired or not.
 		/// </summary>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task CheckServerReservations()
+		public async void CheckServerReservations(object sender, ElapsedEventArgs e)
 		{
 			//Loop reservations and clear them if needed.
 			foreach (UserData u in UserData.ToList())

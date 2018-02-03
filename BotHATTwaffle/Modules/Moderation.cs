@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Timers;
 
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
@@ -22,29 +23,30 @@ namespace BotHATTwaffle.Modules
 		public string[] TestInfo { get; set; }
 		private readonly DataServices _dataServices;
 
-		public ModerationServices(DataServices dataServices)
+		public ModerationServices(DataServices dataServices, TimerService timer)
 		{
 			_dataServices = dataServices;
+			timer.AddHandler(Cycle);
 		}
 
-		public void Cycle()
+		public async void Cycle(object sender, ElapsedEventArgs e)
 		{
 			//Check for unmutes
 			foreach (UserData u in MuteList.ToList())
 			{
 				if (!(u.User).Roles.Contains(_dataServices.MuteRole))
 				{
-					_dataServices.ChannelLog($"{u.User} was manually unmuted from someone removing the role.","Removing them from the mute list.");
+					await _dataServices.ChannelLog($"{u.User} was manually unmuted from someone removing the role.", "Removing them from the mute list.");
 					MuteList.Remove(u);
 				}
 
 				if (!u.MuteExpired()) continue;
 
-				u.User.RemoveRoleAsync(_dataServices.MuteRole);
-				u.User.SendMessageAsync("You have been unmated!");
+				await u.User.RemoveRoleAsync(_dataServices.MuteRole);
+				await u.User.SendMessageAsync("You have been unmated!");
 				MuteList.Remove(u);
-				_dataServices.ChannelLog($"{u.User} Has been unmuted.");
-				Task.Delay(1000);
+				await _dataServices.ChannelLog($"{u.User} Has been unmuted.");
+				await Task.Delay(1000);
 			}
 		}
 
@@ -920,7 +922,8 @@ namespace BotHATTwaffle.Modules
 			await ReplyAsync("```Reloading Data!```");
 			await _dataServices.ChannelLog($"{Context.User} reloaded bot data!");
 			_dataServices.ReloadSettings();
-			_timer.Restart();
+			_timer.Stop();
+			_timer.Start();
 		}
 
 		[Command("DumpSettings")]

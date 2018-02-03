@@ -82,15 +82,21 @@ namespace BotHATTwaffle
 			_timerService = _services.GetRequiredService<TimerService>();
 			_eavesdropping = _services.GetRequiredService<Eavesdropping>();
 
+			// Constructs services explicitly. Modules are transient so their dependencies would normally be constructed when
+			// the module is initially used e.g. a command is invoked.
+			_services.GetRequiredService<ModerationServices>();
+			_services.GetRequiredService<LevelTesting>();
+
 			// Retrieves the bot's token from the config file; effectively exits the program if botToken can't be retrieved.
 			// This is the only setting that has to be retreived this way so it can start up properly.
 			// Once the guild becomes ready the rest of the settings are fully loaded.
 			if (!_dataServices.Config.TryGetValue("botToken", out string botToken)) return;
 
 			// Event subscriptions.
+			_client.GuildAvailable += GuildAvailableEventHandler;
 			_client.Log += LogEventHandler;
+			_client.Ready += ReadyHandler;
 			_client.UserJoined += _eavesdropping.UserJoin; // When a user joins the server.
-			_client.GuildAvailable += GuildAvailableEventHandler; // When a guild is available.
 
 			await InstallCommandsAsync();
 
@@ -150,7 +156,7 @@ namespace BotHATTwaffle
 		private Task ConnectedEventHandler()
 		{
 			Console.WriteLine($"\n{DateTime.Now}\nCLIENT CONNECTED\n");
-			_timerService.Restart();
+			_timerService.Start(); // TODO: Remove if it is determined that it is redundant due to ReadyHandler.
 
 			return Task.CompletedTask;
 		}
@@ -213,6 +219,18 @@ namespace BotHATTwaffle
 				await ProcessCommandAsync(message, argPos);
 
 			Task _ = _eavesdropping.Listen(messageParam); // Fired and forgotten.
+		}
+
+		/// <summary>
+		/// Raised when guild data has finished downloading.
+		/// </summary>
+		/// <returns>No object or value is returned by this method when it completes.</returns>
+		private Task ReadyHandler()
+		{
+			_timerService.Stop();
+			_timerService.Start();
+
+			return Task.CompletedTask;
 		}
 
 		/// <summary>
