@@ -1,13 +1,13 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Timers;
+
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Timers;
 
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
@@ -17,61 +17,92 @@ using Discord.Addons.Interactive;
 
 namespace BotHATTwaffle.Modules
 {
-	public class ModerationServices
+	public class ModerationService
 	{
-		public List<UserData> MuteList = new List<UserData>();
-		public string[] TestInfo { get; set; }
 		private readonly DataServices _dataServices;
+		private readonly List<UserData> _mutedUsers = new List<UserData>();
 
-		public ModerationServices(DataServices dataServices, TimerService timer)
+		public ModerationService(DataServices dataServices, TimerService timer)
 		{
 			_dataServices = dataServices;
-			timer.AddHandler(Cycle);
+			timer.AddHandler(CheckMutes);
 		}
 
-		public async void Cycle(object sender, ElapsedEventArgs e)
+		/// <summary>
+		/// Checks for expired or manually removed mutes and appropriately unmutes users.
+		/// </summary>
+		/// <param name="sender">The source of the event.</param>
+		/// <param name="e">Provides data for the <see cref="Timer.Elapsed"/> event.</param>
+		public async void CheckMutes(object sender, ElapsedEventArgs e)
 		{
-			//Check for unmutes
-			foreach (UserData u in MuteList.ToList())
+			foreach (UserData user in _mutedUsers.ToList())
 			{
-				if (!(u.User).Roles.Contains(_dataServices.MuteRole))
+				if (!user.User.Roles.Contains(_dataServices.MuteRole))
 				{
-					await _dataServices.ChannelLog($"{u.User} was manually unmuted from someone removing the role.", "Removing them from the mute list.");
-					MuteList.Remove(u);
+					await Unmute(user, $"The {_dataServices.MuteRole.Name} role was manually removed.");
+
+					continue;
 				}
 
-				if (!u.MuteExpired()) continue;
+				if (!user.MuteExpired()) continue;
 
-				await u.User.RemoveRoleAsync(_dataServices.MuteRole);
-				await u.User.SendMessageAsync("You have been unmated!");
-				MuteList.Remove(u);
-				await _dataServices.ChannelLog($"{u.User} Has been unmuted.");
+				await Unmute(user, "The mute expired.");
+
 				await Task.Delay(1000);
 			}
 		}
 
-		public void AddMute(SocketGuildUser inUser, DateTime inUnmuteTime)
+		/// <summary>
+		/// Mutes a <paramref name="user"/> for a <paramref name="reason"/> and the given <paramref name="duration"/>.
+		/// </summary>
+		/// <param name="user">The user to mute.</param>
+		/// <param name="duration">The duration, in minutes, of the mute.</param>
+		/// <param name="mod">The user which issued the mute.</param>
+		/// <param name="reason">The reason for the mute.</param>
+		/// <returns>No object or value is returned by this method when it completes.</returns>
+		public async Task Mute(SocketGuildUser user, double duration, SocketUser mod, string reason = "")
 		{
-			Console.WriteLine($"ADD MUTE {inUser} {inUnmuteTime}");
-			MuteList.Add(new UserData() {
-				User = inUser,
-				MuteExpiration = inUnmuteTime
-			});
+			DateTime expiration = DateTime.Now.AddMinutes(duration);
+
+			_mutedUsers.Add(new UserData {User = user, MuteExpiration = expiration});
+			await user.AddRoleAsync(_dataServices.MuteRole);
+
+			await user.SendMessageAsync($"You were muted for {duration} minute because:\n{reason}.\n");
+			await _dataServices.ChannelLog(
+				$"{user} muted by {mod}",
+				$"Muted for {duration} minutes (expires {expiration}) because:\n{reason}");
+		}
+
+		/// <summary>
+		/// Unmutes a user with a <paramref name="reason"/> (for logging).
+		/// </summary>
+		/// <param name="user">The user to unmute.</param>
+		/// <param name="reason">The reason for the unmute.</param>
+		/// <returns>No object or value is returned by this method when it completes.</returns>
+		public async Task Unmute(UserData user, string reason = "")
+		{
+			if (!_mutedUsers.Remove(user)) return; // Attempts to remove the user. Returns if not muted.
+
+			await user.User.RemoveRoleAsync(_dataServices.MuteRole); // No need to check if the user has the role.
+
+			await user.User.SendMessageAsync("You have been unmuted!");
+			await _dataServices.ChannelLog($"{user.User} unmuted", reason);
 		}
 	}
 
 	public class ModerationModule : InteractiveBase
 	{
 		private readonly DiscordSocketClient _client;
-		private readonly ModerationServices _mod;
+		private readonly ModerationService _mod;
 		private readonly LevelTesting _levelTesting;
 		private readonly DataServices _dataServices;
 		private readonly TimerService _timer;
 		private readonly DownloaderService _downloaderService;
+		private string[] _testInfo;
 
 		public ModerationModule(
 			DiscordSocketClient client,
-			ModerationServices mod,
+			ModerationService mod,
 			LevelTesting levelTesting,
 			DataServices dataServices,
 			TimerService timer,
@@ -750,7 +781,7 @@ namespace BotHATTwaffle.Modules
 
 			if (action.ToLower() == "pre")
 			{
-				_mod.TestInfo = _levelTesting.CurrentEventInfo; //Set the test info so we can use it when getting the demo back.
+				_testInfo = _levelTesting.CurrentEventInfo; //Set the test info so we can use it when getting the demo back.
 				var result = Regex.Match(_levelTesting.CurrentEventInfo[6], @"\d+$").Value;
 
 				await _dataServices.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
@@ -765,7 +796,7 @@ namespace BotHATTwaffle.Modules
 			}
 			else if (action.ToLower() == "start")
 			{
-				_mod.TestInfo = _levelTesting.CurrentEventInfo; //Set the test info so we can use it when getting the demo back.
+				_testInfo = _levelTesting.CurrentEventInfo; //Set the test info so we can use it when getting the demo back.
 
 				DateTime testTime = Convert.ToDateTime(_levelTesting.CurrentEventInfo[1]);
 				string demoName = $"{testTime:MM_dd_yyyy}_{_levelTesting.CurrentEventInfo[2].Substring(0, _levelTesting.CurrentEventInfo[2].IndexOf(" "))}_{_levelTesting.CurrentEventInfo[7]}";
@@ -845,7 +876,7 @@ namespace BotHATTwaffle.Modules
 		{
 			var authBuilder = new EmbedAuthorBuilder()
 			{
-				Name = $"Download Playtest Demo for {_mod.TestInfo[2]}",
+				Name = $"Download Playtest Demo for {_testInfo[2]}",
 				IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
 			};
 
@@ -854,15 +885,15 @@ namespace BotHATTwaffle.Modules
 				Author = authBuilder,
 				Url = "http://demos.tophattwaffle.com",
 				Title = "Download Here",
-				ThumbnailUrl = _mod.TestInfo[4],
+				ThumbnailUrl = _testInfo[4],
 				Color = new Color(243, 128, 72),
 				Description = $"You can get the demo for this playtest by clicking above!" +
 				$"\n\n*Thanks for testing with us!*" +
-				$"\n\n[Map Images]({_mod.TestInfo[5]}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)"
+				$"\n\n[Map Images]({_testInfo[5]}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)"
 
 			};
 
-			var result = Regex.Match(_mod.TestInfo[6], @"\d+$").Value;
+			var result = Regex.Match(_testInfo[6], @"\d+$").Value;
 			await _dataServices.RconCommand($"host_workshop_map {result}", server);
 			await Task.Delay(15000);
 			await _dataServices.RconCommand($"exec {_dataServices.PostConfig}; say Please join the Level Testing voice channel for feedback!", server);
@@ -876,9 +907,9 @@ namespace BotHATTwaffle.Modules
 			await _dataServices.RconCommand($"say Please join the Level Testing voice channel for feedback!", server);
 
 			// Starts downloading playtesting files in the background.
-			_downloaderService.Start(_mod.TestInfo, server);
+			_downloaderService.Start(_testInfo, server);
 
-			var splitUser = _mod.TestInfo[3].Split('#');
+			var splitUser = _testInfo[3].Split('#');
 
 			try
 			{
@@ -895,7 +926,7 @@ namespace BotHATTwaffle.Modules
 				catch
 				{
 					//If it cannot get the name from the event info, nag them in level testing.
-					await _dataServices.TestingChannel.SendMessageAsync($"Hey {_mod.TestInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
+					await _dataServices.TestingChannel.SendMessageAsync($"Hey {_testInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so I can mention you. You can download your demo here:");
 				}
 			}
 			await _dataServices.TestingChannel.SendMessageAsync($"", false, builder);
@@ -949,18 +980,13 @@ namespace BotHATTwaffle.Modules
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.Moderators)]
 		public async Task MuteAsync(
-			[Summary("The user to mute.")]
-			SocketGuildUser user,
+			[Summary("The user to mute.")] SocketGuildUser user,
 			[Summary("The duration, in minutes, of the mute.")]
-			int durationInMinutes = 5,
+			int durationMin = 5,
 			[Summary("The reason for the mute.")] [Remainder]
-			string reason = "No reason provided")
+			string reason = "No reason provided.")
 		{
-			DateTime unmuteTime = DateTime.Now.AddMinutes(durationInMinutes);
-			_mod.AddMute(user, unmuteTime);
-			await _dataServices.ChannelLog($"{Context.User} muted {user}", $"They were muted for {durationInMinutes} minutes because:\n{reason}.");
-			await user.AddRoleAsync(_dataServices.MuteRole);
-			await user.SendMessageAsync($"You were muted for {durationInMinutes} minutes because:\n{reason}.\n");
+			await _mod.Mute(user, durationMin, Context.User, reason);
 		}
 
 		[Command("ClearReservations")]
@@ -978,6 +1004,5 @@ namespace BotHATTwaffle.Modules
 
 			await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
 		}
-
 	}
 }

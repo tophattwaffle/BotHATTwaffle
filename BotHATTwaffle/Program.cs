@@ -66,7 +66,7 @@ namespace BotHATTwaffle
 				.AddSingleton(_client)
 				.AddSingleton(_commands)
 				.AddSingleton<TimerService>()
-				.AddSingleton<ModerationServices>()
+				.AddSingleton<ModerationService>()
 				.AddSingleton<LevelTesting>()
 				.AddSingleton<Eavesdropping>()
 				.AddSingleton<DataServices>()
@@ -84,7 +84,7 @@ namespace BotHATTwaffle
 
 			// Constructs services explicitly. Modules are transient so their dependencies would normally be constructed when
 			// the module is initially used e.g. a command is invoked.
-			_services.GetRequiredService<ModerationServices>();
+			_services.GetRequiredService<ModerationService>();
 			_services.GetRequiredService<LevelTesting>();
 
 			// Retrieves the bot's token from the config file; effectively exits the program if botToken can't be retrieved.
