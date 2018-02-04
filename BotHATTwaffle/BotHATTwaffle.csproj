@@ -205,6 +205,7 @@
     <Compile Include="GoogleCalendar.cs" />
     <Compile Include="DataService.cs" />
     <Compile Include="Modules\Help.cs" />
+    <Compile Include="Objects\ChannelTypeReader.cs" />
     <Compile Include="Objects\Json\LevelTestingServer.cs" />
     <Compile Include="Modules\Shaders.cs" />
     <Compile Include="Modules\Tools.cs" />
