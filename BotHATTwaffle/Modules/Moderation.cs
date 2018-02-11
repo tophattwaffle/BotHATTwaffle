@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Timers;
 
 using Discord;
 using Discord.Addons.Interactive;
@@ -13,107 +12,36 @@ using Discord.WebSocket;
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
 using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Embed;
 
 namespace BotHATTwaffle.Modules
 {
-	public class ModerationService
-	{
-		private readonly DataServices _dataServices;
-		private readonly List<UserData> _mutedUsers = new List<UserData>();
-
-		public ModerationService(DataServices dataServices, TimerService timer)
-		{
-			_dataServices = dataServices;
-			timer.AddHandler(CheckMutes);
-		}
-
-		/// <summary>
-		/// Checks for expired or manually removed mutes and appropriately unmutes users.
-		/// </summary>
-		/// <param name="sender">The source of the event.</param>
-		/// <param name="e">Provides data for the <see cref="Timer.Elapsed"/> event.</param>
-		public async void CheckMutes(object sender, ElapsedEventArgs e)
-		{
-			foreach (UserData user in _mutedUsers.ToList())
-			{
-				if (!user.User.Roles.Contains(_dataServices.MuteRole))
-				{
-					await Unmute(user, $"The {_dataServices.MuteRole.Name} role was manually removed.");
-
-					continue;
-				}
-
-				if (!user.MuteExpired()) continue;
-
-				await Unmute(user, "The mute expired.");
-
-				await Task.Delay(1000);
-			}
-		}
-
-		/// <summary>
-		/// Mutes a <paramref name="user"/> for a <paramref name="reason"/> and the given <paramref name="duration"/>.
-		/// </summary>
-		/// <param name="user">The user to mute.</param>
-		/// <param name="duration">The duration, in minutes, of the mute.</param>
-		/// <param name="mod">The user which issued the mute.</param>
-		/// <param name="reason">The reason for the mute.</param>
-		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task Mute(SocketGuildUser user, double duration, SocketUser mod, string reason = "")
-		{
-			DateTime expiration = DateTime.Now.AddMinutes(duration);
-
-			_mutedUsers.Add(new UserData {User = user, MuteExpiration = expiration});
-			await user.AddRoleAsync(_dataServices.MuteRole);
-
-			await user.SendMessageAsync($"You were muted for {duration} minute because:\n{reason}.\n");
-			await _dataServices.ChannelLog(
-				$"{user} muted by {mod}",
-				$"Muted for {duration} minutes (expires {expiration}) because:\n{reason}");
-		}
-
-		/// <summary>
-		/// Unmutes a user with a <paramref name="reason"/> (for logging).
-		/// </summary>
-		/// <param name="user">The user to unmute.</param>
-		/// <param name="reason">The reason for the unmute.</param>
-		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task Unmute(UserData user, string reason = "")
-		{
-			if (!_mutedUsers.Remove(user)) return; // Attempts to remove the user. Returns if not muted.
-
-			await user.User.RemoveRoleAsync(_dataServices.MuteRole); // No need to check if the user has the role.
-
-			await user.User.SendMessageAsync("You have been unmuted!");
-			await _dataServices.ChannelLog($"{user.User} unmuted", reason);
-		}
-	}
-
 	public class ModerationModule : InteractiveBase
 	{
 		private readonly DiscordSocketClient _client;
-		private readonly ModerationService _mod;
-		private readonly LevelTesting _levelTesting;
-		private readonly DataServices _dataServices;
-		private readonly TimerService _timer;
+		private readonly DataServices _data;
 		private readonly DownloaderService _downloader;
+		private readonly LevelTesting _levelTesting;
+		private readonly IMuteService _mute;
+		private readonly TimerService _timer;
+
 		private string[] _testInfo;
 
 		public ModerationModule(
 			DiscordSocketClient client,
-			ModerationService mod,
+			DataServices data,
+			DownloaderService downloader,
 			LevelTesting levelTesting,
-			DataServices dataServices,
-			TimerService timer,
-			DownloaderService downloader)
+			IMuteService mute,
+			TimerService timer)
 		{
 			_client = client;
-			_timer = timer;
-			_dataServices = dataServices;
-			_levelTesting = levelTesting;
-			_mod = mod;
+			_data = data;
 			_downloader = downloader;
+			_levelTesting = levelTesting;
+			_mute = mute;
+			_timer = timer;
 		}
 
 		[Command("announce", RunMode = RunMode.Async)]
@@ -171,9 +99,9 @@ namespace BotHATTwaffle.Modules
 				foreach (SocketTextChannel channel in channels)
 					await channel.SendMessageAsync(string.Empty, false, embed);
 
-				await _dataServices.ChannelLog(
+				await _data.ChannelLog(
 					$"Embed created by {Context.User} was sent to {string.Join(", ", channels.Select(c => c.Name))}.");
-				await _dataServices.LogChannel.SendMessageAsync(string.Empty, false, embed);
+				await _data.LogChannel.SendMessageAsync(string.Empty, false, embed);
 			}
 		}
 
@@ -195,12 +123,12 @@ namespace BotHATTwaffle.Modules
 			    command.Contains("exit", StringComparison.OrdinalIgnoreCase ))
 			{
 				await ReplyAsync("```This command cannot be run from here. Ask TopHATTwaffle to do it.```");
-				await _dataServices.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverCode}");
+				await _data.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverCode}");
 
 				return;
 			}
 
-			LevelTestingServer server = _dataServices.GetServer(serverCode);
+			LevelTestingServer server = _data.GetServer(serverCode);
 
 			if (server == null)
 			{
@@ -214,7 +142,7 @@ namespace BotHATTwaffle.Modules
 
 			try
 			{
-				reply = await _dataServices.RconCommand(command, server);
+				reply = await _data.RconCommand(command, server);
 
 				// Remove log messages from the log.
 				string[] replyArray = reply.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None);
@@ -244,14 +172,14 @@ namespace BotHATTwaffle.Modules
 					await Context.Message.DeleteAsync();
 
 					await ReplyAsync($"```Command sent to {server.Name}\nA password was set on the server.```");
-					await _dataServices.ChannelLog(
+					await _data.ChannelLog(
 						$"{Context.User} Sent RCON command",
 						$"A password command was sent to: {server.Address}");
 				}
 				else
 				{
 					await ReplyAsync($"```{command} sent to {server.Name}\n{reply}```");
-					await _dataServices.ChannelLog(
+					await _data.ChannelLog(
 						$"{Context.User} Sent RCON command",
 						$"{command} was sent to: {server.Address}\n{reply}");
 				}
@@ -289,28 +217,28 @@ namespace BotHATTwaffle.Modules
 			string gameMode = _levelTesting.CurrentEventInfo[7];
 
 			// Gets the given server. Otherwise, uses the current event's server.
-			LevelTestingServer server = _dataServices.GetServer(serverCode ?? _levelTesting.CurrentEventInfo[10].Substring(0, 3));
+			LevelTestingServer server = _data.GetServer(serverCode ?? _levelTesting.CurrentEventInfo[10].Substring(0, 3));
 
 			if (gameMode.Equals("competitive", StringComparison.OrdinalIgnoreCase ) ||
 			    gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
 			{
-				config = _dataServices.CompConfig;
+				config = _data.CompConfig;
 			}
 			else
-				config = _dataServices.CasualConfig; // If not comp, casual.
+				config = _data.CasualConfig; // If not comp, casual.
 
 			if (action.Equals("pre", StringComparison.OrdinalIgnoreCase ))
 			{
 				_testInfo = _levelTesting.CurrentEventInfo; // Stores the test info for later use in retrieving the demo.
 				string workshopId = Regex.Match(_levelTesting.CurrentEventInfo[6], @"\d+$").Value;
 
-				await _dataServices.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
+				await _data.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
 					$"\nhost_workshop_map {workshopId}");
 
-				await _dataServices.RconCommand($"exec {config}", server);
+				await _data.RconCommand($"exec {config}", server);
 				await Task.Delay(1000);
 
-				await _dataServices.RconCommand($"host_workshop_map {workshopId}", server);
+				await _data.RconCommand($"host_workshop_map {workshopId}", server);
 
 				await ReplyAsync($"```Playtest Prestart on {server.Name}\nexec {config}\nhost_workshop_map {workshopId}```");
 			}
@@ -323,59 +251,59 @@ namespace BotHATTwaffle.Modules
 				string demoName = $"{time:MM_dd_yyyy}_{title}_{gameMode}";
 
 				await ReplyAsync($"```Playtest Start on {server.Name}\nexec {config}\ntv_record {demoName}```");
-				await _dataServices.ChannelLog(
+				await _data.ChannelLog(
 					$"Playtest Start on {server.Name}",
 					$"exec {config}\ntv_record {demoName}\nsay Playtest of {title} is now live! Be respectiful and GLHF!");
 
-				await _dataServices.RconCommand($"exec {config}", server);
+				await _data.RconCommand($"exec {config}", server);
 				await Task.Delay(3250);
 
-				await _dataServices.RconCommand($"tv_record {demoName}", server);
+				await _data.RconCommand($"tv_record {demoName}", server);
 				await Task.Delay(1000);
 
-				await _dataServices.RconCommand($"say Demo started! {demoName}", server);
+				await _data.RconCommand($"say Demo started! {demoName}", server);
 				await Task.Delay(1000);
 
-				await _dataServices.RconCommand($"say Playtest of {title} is now live! Be respectful and GLHF!", server);
+				await _data.RconCommand($"say Playtest of {title} is now live! Be respectful and GLHF!", server);
 				await Task.Delay(1000);
 
-				await _dataServices.RconCommand($"say Playtest of {title} is now live! Be respectful and GLHF!", server);
+				await _data.RconCommand($"say Playtest of {title} is now live! Be respectful and GLHF!", server);
 				await Task.Delay(1000);
 
-				await _dataServices.RconCommand($"say Playtest of {title} is now live! Be respectful and GLHF!", server);
+				await _data.RconCommand($"say Playtest of {title} is now live! Be respectful and GLHF!", server);
 			}
 			else if (action.Equals("post", StringComparison.OrdinalIgnoreCase ))
 			{
 				Task _ = PostTasks(server); // Fired and forgotten.
 
 				await ReplyAsync("```Playtest post started. Begin feedback!```");
-				await _dataServices.ChannelLog(
+				await _data.ChannelLog(
 					$"Playtest Post on {server.Name}",
-					$"exec {_dataServices.PostConfig}\nsv_voiceenable 0\nGetting Demo and BSP file and moving into DropBox");
+					$"exec {_data.PostConfig}\nsv_voiceenable 0\nGetting Demo and BSP file and moving into DropBox");
 			}
 			else if (action.Equals("scramble", StringComparison.OrdinalIgnoreCase ) ||
 			         action.Equals("s", StringComparison.OrdinalIgnoreCase ))
 			{
-				await _dataServices.RconCommand("mp_scrambleteams 1", server);
+				await _data.RconCommand("mp_scrambleteams 1", server);
 
 				await ReplyAsync($"```Playtest Scramble on {server.Name}\nmp_scrambleteams 1```");
-				await _dataServices.ChannelLog($"Playtest Scramble on {server.Name}", "mp_scrambleteams 1");
+				await _data.ChannelLog($"Playtest Scramble on {server.Name}", "mp_scrambleteams 1");
 			}
 			else if (action.Equals("pause", StringComparison.OrdinalIgnoreCase ) ||
 			         action.Equals("p", StringComparison.OrdinalIgnoreCase ))
 			{
-				await _dataServices.RconCommand(@"mp_pause_match; say Pausing Match", server);
+				await _data.RconCommand(@"mp_pause_match; say Pausing Match", server);
 
 				await ReplyAsync($"```Playtest Scramble on {server.Name}\nmp_pause_match```");
-				await _dataServices.ChannelLog($"Playtest Pause on {server.Name}", "mp_pause_match");
+				await _data.ChannelLog($"Playtest Pause on {server.Name}", "mp_pause_match");
 			}
 			else if (action.Equals("unpause", StringComparison.OrdinalIgnoreCase ) ||
 			         action.Equals("u", StringComparison.OrdinalIgnoreCase ))
 			{
-				await _dataServices.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
+				await _data.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
 
 				await ReplyAsync($"```Playtest Unpause on {server.Name}\nmp_unpause_match```");
-				await _dataServices.ChannelLog($"Playtest Unpause on {server.Name}", "mp_unpause_match");
+				await _data.ChannelLog($"Playtest Unpause on {server.Name}", "mp_unpause_match");
 			}
 			else
 			{
@@ -394,28 +322,28 @@ namespace BotHATTwaffle.Modules
 		{
 			string workshopId = Regex.Match(_testInfo[6], @"\d+$").Value;
 
-			await _dataServices.RconCommand($"host_workshop_map {workshopId}", server);
+			await _data.RconCommand($"host_workshop_map {workshopId}", server);
 			await Task.Delay(15000);
 
-			await _dataServices.RconCommand(
-				$"exec {_dataServices.PostConfig}; say Please join the Level Testing voice channel for feedback!",
+			await _data.RconCommand(
+				$"exec {_data.PostConfig}; say Please join the Level Testing voice channel for feedback!",
 				server);
 			await Task.Delay(3000);
 
-			await _dataServices.RconCommand(
+			await _data.RconCommand(
 				"sv_voiceenable 0; say Please join the Level Testing voice channel for feedback!",
 				server);
 			await Task.Delay(3000);
 
-			await _dataServices.RconCommand(
+			await _data.RconCommand(
 				"sv_cheats 1; say Please join the Level Testing voice channel for feedback!",
 				server);
 			await Task.Delay(3000);
 
-			await _dataServices.RconCommand("say Please join the Level Testing voice channel for feedback!", server);
+			await _data.RconCommand("say Please join the Level Testing voice channel for feedback!", server);
 			await Task.Delay(3000);
 
-			await _dataServices.RconCommand("say Please join the Level Testing voice channel for feedback!", server);
+			await _data.RconCommand("say Please join the Level Testing voice channel for feedback!", server);
 
 			// Starts downloading playtesting files in the background.
 			_downloader.Start(_testInfo, server);
@@ -443,7 +371,7 @@ namespace BotHATTwaffle.Modules
 			if (author == null)
 			{
 				// Author's user could not be found.
-				await _dataServices.TestingChannel.SendMessageAsync(
+				await _data.TestingChannel.SendMessageAsync(
 					$"Hey {_testInfo[3]}! Next time you submit for a playtest, make sure to include your full Discord name so " +
 					"I can mention you. You can download your demo here:");
 			}
@@ -457,11 +385,11 @@ namespace BotHATTwaffle.Modules
 				catch
 				{
 					// Mentions the author in the playtesting channel instead.
-					await _dataServices.TestingChannel.SendMessageAsync($"{author.Mention} You can download your demo here:");
+					await _data.TestingChannel.SendMessageAsync($"{author.Mention} You can download your demo here:");
 				}
 			}
 
-			await _dataServices.TestingChannel.SendMessageAsync(string.Empty, false, embed.Build());
+			await _data.TestingChannel.SendMessageAsync(string.Empty, false, embed.Build());
 		}
 
 		[Command("shutdown", RunMode = RunMode.Async)]
@@ -471,7 +399,7 @@ namespace BotHATTwaffle.Modules
 		public async Task ShutdownAsync()
 		{
 			await Context.Message.DeleteAsync();
-			await _dataServices.ChannelLog($"{Context.Message.Author} is shutting down the bot.");
+			await _data.ChannelLog($"{Context.Message.Author} is shutting down the bot.");
 
 			await Context.Client.SetStatusAsync(UserStatus.Invisible); // Workaround for an issue with StopAsync.
 			await Context.Client.StopAsync();
@@ -486,9 +414,9 @@ namespace BotHATTwaffle.Modules
 		public async Task ReloadAsync()
 		{
 			await ReplyAsync("```Reloading Settings!```");
-			await _dataServices.ChannelLog($"{Context.User} is reloading the bot's settings.");
+			await _data.ChannelLog($"{Context.User} is reloading the bot's settings.");
 
-			_dataServices.ReloadSettings();
+			_data.ReloadSettings();
 			_timer.Stop();
 			_timer.Start();
 		}
@@ -501,8 +429,8 @@ namespace BotHATTwaffle.Modules
 		{
 			await Context.Message.DeleteAsync();
 
-			string reply = string.Join("\n", _dataServices.Config.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
-			reply = reply.Replace(_dataServices.Config["botToken"], "[REDACTED]");
+			string reply = string.Join("\n", _data.Config.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+			reply = reply.Replace(_data.Config["botToken"], "[REDACTED]");
 
 			try
 			{
@@ -513,7 +441,7 @@ namespace BotHATTwaffle.Modules
 				// Do nothing if the user doesn't accept DMs.
 			}
 
-			await _dataServices.ChannelLog($"{Context.User} dumped the settings.");
+			await _data.ChannelLog($"{Context.User} dumped the settings.");
 		}
 
 		[Command("mute")]
@@ -528,7 +456,7 @@ namespace BotHATTwaffle.Modules
 			[Summary("The reason for the mute.")] [Remainder]
 			string reason = "No reason provided.")
 		{
-			await _mod.Mute(user, durationMin, Context.User, reason);
+			await _mute.MuteAsync(user, durationMin, Context.User, reason);
 		}
 
 		[Command("ClearReservations")]

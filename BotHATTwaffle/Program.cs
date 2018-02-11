@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using BotHATTwaffle.Modules;
 using BotHATTwaffle.Objects.Downloader;
+using BotHATTwaffle.Services;
 
 using Discord;
 using Discord.Addons.Interactive;
@@ -24,8 +25,8 @@ namespace BotHATTwaffle
 		private CommandService _commands;
 		private DiscordSocketClient _client;
 		private IServiceProvider _services;
-		private DataServices _dataServices;
-		private TimerService _timerService;
+		private DataServices _data;
+		private TimerService _timer;
 		private Eavesdropping _eavesdropping;
 
 		/// <summary>
@@ -66,7 +67,6 @@ namespace BotHATTwaffle
 				.AddSingleton(_client)
 				.AddSingleton(_commands)
 				.AddSingleton<TimerService>()
-				.AddSingleton<ModerationService>()
 				.AddSingleton<LevelTesting>()
 				.AddSingleton<Eavesdropping>()
 				.AddSingleton<DataServices>()
@@ -74,23 +74,24 @@ namespace BotHATTwaffle
 				.AddSingleton<DownloaderService>()
 				.AddSingleton<GoogleCalendar>()
 				.AddSingleton<IHelpService, HelpService>()
+				.AddSingleton<IMuteService, MuteService>()
 				.AddSingleton(s => new InteractiveService(_client, TimeSpan.FromSeconds(120)))
 				.BuildServiceProvider();
 
 			// Retrieves services that this class uses.
-			_dataServices = _services.GetRequiredService<DataServices>();
-			_timerService = _services.GetRequiredService<TimerService>();
+			_data = _services.GetRequiredService<DataServices>();
+			_timer = _services.GetRequiredService<TimerService>();
 			_eavesdropping = _services.GetRequiredService<Eavesdropping>();
 
 			// Constructs services explicitly. Modules are transient so their dependencies would normally be constructed when
 			// the module is initially used e.g. a command is invoked.
-			_services.GetRequiredService<ModerationService>();
+			_services.GetRequiredService<IHelpService>();
 			_services.GetRequiredService<LevelTesting>();
 
 			// Retrieves the bot's token from the config file; effectively exits the program if botToken can't be retrieved.
 			// This is the only setting that has to be retreived this way so it can start up properly.
 			// Once the guild becomes ready the rest of the settings are fully loaded.
-			if (!_dataServices.Config.TryGetValue("botToken", out string botToken)) return;
+			if (!_data.Config.TryGetValue("botToken", out string botToken)) return;
 
 			// Event subscriptions.
 			_client.GuildAvailable += GuildAvailableEventHandler;
@@ -156,7 +157,7 @@ namespace BotHATTwaffle
 		private Task ConnectedEventHandler()
 		{
 			Console.WriteLine($"\n{DateTime.Now}\nCLIENT CONNECTED\n");
-			_timerService.Start(); // TODO: Remove if it is determined that it is redundant due to ReadyHandler.
+			_timer.Start(); // TODO: Remove if it is determined that it is redundant due to ReadyHandler.
 
 			return Task.CompletedTask;
 		}
@@ -173,7 +174,7 @@ namespace BotHATTwaffle
 		{
 			Console.WriteLine(
 				$"\n{DateTime.Now}\nCLIENT DISCONNECTED\nMessage: {e.Message}\n---STACK TRACE---\n{e.StackTrace}\n\n");
-			_timerService.Stop();
+			_timer.Stop();
 
 			return Task.CompletedTask;
 		}
@@ -193,7 +194,7 @@ namespace BotHATTwaffle
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private Task GuildAvailableEventHandler(SocketGuild guild)
 		{
-			_dataServices.ReloadSettings();
+			_data.ReloadSettings();
 
 			return Task.CompletedTask;
 		}
@@ -227,8 +228,8 @@ namespace BotHATTwaffle
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private Task ReadyHandler()
 		{
-			_timerService.Stop();
-			_timerService.Start();
+			_timer.Stop();
+			_timer.Start();
 
 			return Task.CompletedTask;
 		}
@@ -296,7 +297,7 @@ namespace BotHATTwaffle
 					break;
 			}
 
-			await _dataServices.ChannelLog(
+			await _data.ChannelLog(
 				$"An error occurred!\nInvoking command: {context.Message}",
 				logMessage,
 				alert);
