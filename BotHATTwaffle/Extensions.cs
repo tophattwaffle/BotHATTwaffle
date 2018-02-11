@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+
+using Discord.WebSocket;
 
 namespace BotHATTwaffle
 {
@@ -49,5 +53,13 @@ namespace BotHATTwaffle
 		/// </returns>
 		public static bool Contains(this string source, string toCheck, StringComparison comp) =>
 			source?.IndexOf(toCheck, comp) >= 0;
+
+		/// <summary>
+		/// Retrieves distinct text channel mentions from a message.
+		/// </summary>
+		/// <param name="message">The message for which to retrieve mentions.</param>
+		/// <returns>A distinct collection of mentioned text channels.</returns>
+		public static IReadOnlyCollection<SocketTextChannel> GetChannelMentions(this SocketMessage message) =>
+			message.MentionedChannels.Distinct().OfType<SocketTextChannel>().ToImmutableArray();
 	}
 }

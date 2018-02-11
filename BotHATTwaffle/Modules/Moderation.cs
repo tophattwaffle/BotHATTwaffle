@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 using System.Timers;
 
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
 using BotHATTwaffle.Objects.Json;
-
-using Discord.Addons.Interactive;
+using BotHATTwaffle.Services.Embed;
 
 namespace BotHATTwaffle.Modules
 {
@@ -129,555 +129,52 @@ namespace BotHATTwaffle.Modules
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.Moderators)]
 		public async Task AnnounceAsync(
-			[Summary("A template or the input for the interactive builder's current prompt.")] [Remainder]
+			[Summary("A format string or the input for the interactive builder's current prompt.")] [Remainder]
 			string input = null)
 		{
 			await Context.Message.DeleteAsync();
 
-			var embedLayout = new EmbedBuilder()
-			{
-				ImageUrl = "https://content.tophattwaffle.com/BotHATTwaffle/embed.png",
-			};
-
-			string quickSendChannel = null;
-
-			string embedDescription = null;
-			Color embedColor = new Color(243, 128, 72);
-			string embedThumbUrl = null;
-			string embedTitle = null;
-			string embedUrl = null;
-			string footText = null;
-			string authName = null;
-			string footIconUrl = null;
-			string embedImageUrl = null;
-
-			List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-
 			if (input != null)
 			{
-				//Reg ex match for {TAGNAME}
-				Regex regex = new Regex("{([^}]*)}", RegexOptions.IgnoreCase);
-				if (IsValidTag(input, regex))
-				{
-					string errors = null;
+				// Builds the embed from a supplied formatting string.
+				var builder = new QuickBuilder(Context);
+				Embed embed = builder.Build(input);
 
-					/*
-					 * While the string isn't Null, the beginning will always contain a tag like {title}
-					 * The tag is removed and the following text is consumed until either the next tag is found
-					 * or the end of the string is hit.
-					 */
-					while (input.Length > 0)
-					{
-						if (input.ToLower().StartsWith("{author name}"))
-						{
-							input = input.Substring(13);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
+				if (!string.IsNullOrWhiteSpace(builder.Errors))
+					await ReplyAndDeleteAsync($"```{builder.Errors}```", timeout: TimeSpan.FromSeconds(15));
 
-							authName = input.Substring(0, textLength);
-							input = input.Substring(textLength);
-						}
+				if (embed == null) return; // Builder was cancelled.
 
-						if (input.ToLower().StartsWith("{thumbnail}"))
-						{
-							input = input.Substring(11);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
+				await SendEmbedAsync(embed, await builder.ParseChannels());
+			}
+			else
+			{
+				// No formatting string given; interactively builds the embed by prompting the user.
+				var builder = new InteractiveBuilder(Context, Interactive);
+				Embed embed = await builder.BuildAsync();
 
-							embedThumbUrl = input.Substring(0, textLength);
-							if (!Uri.IsWellFormedUriString(embedThumbUrl, UriKind.Absolute))
-							{
-								embedThumbUrl = null;
-								errors += "THUMBNAIL URL NOT A PROPER URL. SET TO NULL\n";
-							}
+				if (embed == null) return; // Builder was cancelled or timed out.
 
-							input = input.Substring(textLength);
-						}
-
-						if (input.ToLower().StartsWith("{title}"))
-						{
-							input = input.Substring(7);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							embedTitle = input.Substring(0, textLength);
-							input = input.Substring(textLength);
-						}
-
-						if (input.ToLower().StartsWith("{url}"))
-						{
-							input = input.Substring(5);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							embedUrl = input.Substring(0, textLength);
-							if (!Uri.IsWellFormedUriString(embedUrl, UriKind.Absolute))
-							{
-								embedUrl = null;
-								errors += "TITLE URL NOT A PROPER URL. SET TO NULL\n";
-							}
-;
-							input = input.Substring(textLength);
-						}
-
-						if (input.ToLower().StartsWith("{color}"))
-						{
-							input = input.Substring(7);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							string[] splitString = { null, null, null };
-							splitString = input.Substring(0, textLength).Split(' ');
-							try
-							{
-								var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
-								embedColor = new Color(splitInts[0], splitInts[1], splitInts[2]);
-							}
-							catch
-							{
-								errors += "INVALID RGB STRUCTURE. DEFUALT COLOR USED\n";
-							}
-
-							input = input.Substring(textLength);
-						}
-
-						if (input.ToLower().StartsWith("{description}"))
-						{
-							input = input.Substring(13);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							embedDescription = input.Substring(0, textLength);
-							input = input.Substring(textLength);
-						}
-
-						if (input.ToLower().StartsWith("{image}"))
-						{
-							input = input.Substring(7);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							embedImageUrl = input.Substring(0, textLength);
-							if (!Uri.IsWellFormedUriString(embedImageUrl, UriKind.Absolute))
-							{
-								embedImageUrl = null;
-								errors += "IMAGE URL NOT A PROPER URL. SET TO NULL\n";
-							}
-							input = input.Substring(textLength);
-						}
-
-						if (input.ToLower().StartsWith("{footer text}"))
-						{
-							input = input.Substring(13);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							footText = input.Substring(0, textLength);
-							input = input.Substring(textLength);
-						}
-
-						if (input.ToLower().StartsWith("{field}"))
-						{
-							input = input.Substring(7);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							string fieldTi = input.Substring(0, textLength);
-
-							input = input.Substring(textLength + 2);
-
-							//Match field text
-							m = regex.Match(input);
-							textLength = input.IndexOf(m.ToString());
-							string fieldCo = input.Substring(0, textLength);
-
-							input = input.Substring(textLength + 2);
-
-							//Match field inline
-							m = regex.Match(input);
-
-							textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							string tfStr = input.Substring(0, textLength);
-
-							bool fieldIn = tfStr.ToLower().StartsWith("t");
-
-							input = input.Substring(textLength);
-
-							fieldBuilder.Add(new EmbedFieldBuilder { Name = fieldTi, Value = fieldCo, IsInline = fieldIn });
-						}
-
-						if (input.ToLower().StartsWith("{submit}"))
-						{
-							input = input.Substring(8);
-							Match m = regex.Match(input);
-							int textLength = m.ToString() != "" ? input.IndexOf(m.ToString()) : input.Length;
-
-							quickSendChannel = input.Substring(0, textLength);
-							input = input.Substring(textLength);
-						}
-					}
-					if (errors != null)
-						await ReplyAndDeleteAsync($"```The following errors occurred:\n{errors}```", timeout: TimeSpan.FromSeconds(15));
-				}
+				await SendEmbedAsync(embed, await builder.PromptDestinationAsync(Context));
 			}
 
-			var authBuilder = new EmbedAuthorBuilder()
+			// Helper function the send the embed to all given channels.
+			async Task SendEmbedAsync(Embed embed, IReadOnlyCollection<SocketTextChannel> channels)
 			{
-				Name = authName,
-				IconUrl = Context.Message.Author.GetAvatarUrl(),
-			};
-			var footBuilder = new EmbedFooterBuilder()
-			{
-				Text = footText,
-				IconUrl = footIconUrl
-			};
-			var builder = new EmbedBuilder()
-			{
-				Fields = fieldBuilder,
-				Footer = footBuilder,
-				Author = authBuilder,
-
-				ImageUrl = embedImageUrl,
-				Url = embedUrl,
-				Title = embedTitle,
-				ThumbnailUrl = embedThumbUrl,
-				Color = embedColor,
-				Description = embedDescription
-
-			};
-			bool submit = false;
-
-			//We aren't quick sending the message. Enter wizard mode.
-			if (quickSendChannel == null)
-			{
-				const string INSTRUCTIONS_STR = "Type one of the options. Do not include `>`. Auto timeout in 120 seconds:" +
-											   "\n`Author Name` `Thumbnail` `Title` `URL` `Color` `Description` `Image` `Footer Text` `Field`" +
-											   "\n`submit` to send it." + "\n`cancel` to abort.";
-				var pic = await ReplyAsync("", false, embedLayout);
-				var preview = await ReplyAsync("__**PREVIEW**__", false, builder);
-				var instructions = await ReplyAsync(INSTRUCTIONS_STR);
-				bool run = true;
-				while (run)
+				if (!channels.Any())
 				{
-					var response = await NextMessageAsync();
-					if (response != null)
-					{
-						try
-						{
-							await response.DeleteAsync();
-						}
-						catch
-						{
-							// ignored
-						}
+					await ReplyAndDeleteAsync("```No channel mentions were found.```", timeout: TimeSpan.FromSeconds(15));
 
-						bool valid = true;
-						switch (response.Content.ToLower())
-						{
-							case "author name":
-								await instructions.ModifyAsync(x => { x.Content = "Enter Author Name text:"; });
-								response = await NextMessageAsync();
-								if (response != null)
-								{
-									authName = response.Content;
-								}
-
-								break;
-
-							case "thumbnail":
-								await instructions.ModifyAsync(x => { x.Content = "Enter Thumbnail URL:"; });
-								response = await NextMessageAsync();
-								if (response != null)
-								{
-									if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
-									{
-										embedThumbUrl = response.Content;
-									}
-									else
-									{
-										await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
-									}
-								}
-
-								break;
-
-							case "title":
-								await instructions.ModifyAsync(x => { x.Content = "Enter Title text:"; });
-								response = await NextMessageAsync();
-								if (response != null)
-								{
-									embedTitle = response.Content;
-								}
-
-								break;
-
-							case "url":
-								await instructions.ModifyAsync(x => { x.Content = "Enter Title URL:"; });
-								response = await NextMessageAsync();
-								if (response != null)
-								{
-									if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
-									{
-										embedUrl = response.Content;
-									}
-									else
-									{
-										await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
-									}
-								}
-
-								break;
-
-							case "color":
-								await instructions.ModifyAsync(x =>
-								{
-									x.Content = "Enter Color in form of `R G B` Example: `250 120 50` :";
-								});
-								response = await NextMessageAsync();
-								string[] splitString = { null, null, null };
-								splitString = response.Content.Split(' ');
-								try
-								{
-									var splitInts = splitString.Select(item => int.Parse(item)).ToArray();
-									embedColor = new Color(splitInts[0], splitInts[1], splitInts[2]);
-								}
-								catch
-								{
-									await ReplyAndDeleteAsync("```INVALID R G B STRUCTURE!```",
-										timeout: TimeSpan.FromSeconds(3));
-								}
-
-								break;
-
-							case "description":
-								await instructions.ModifyAsync(x => { x.Content = "Enter Description text:"; });
-								response = await NextMessageAsync();
-								if (response != null)
-								{
-									embedDescription = response.Content;
-								}
-
-								break;
-
-							case "image":
-								await instructions.ModifyAsync(x => { x.Content = "Enter Image URL:"; });
-								response = await NextMessageAsync();
-								if (response != null)
-								{
-									if (Uri.IsWellFormedUriString(response.Content, UriKind.Absolute))
-									{
-										embedImageUrl = response.Content;
-									}
-									else
-									{
-										await ReplyAndDeleteAsync("```INVALID URL!```", timeout: TimeSpan.FromSeconds(3));
-									}
-								}
-
-								break;
-
-							case "field":
-								await instructions.ModifyAsync(x => { x.Content = "Enter Field Name text:"; });
-
-								response = await NextMessageAsync();
-								if (response != null)
-								{
-									string fTitle = response.Content;
-									await response.DeleteAsync();
-
-									await instructions.ModifyAsync(x => { x.Content = "Enter Field Content text:"; });
-
-									response = await NextMessageAsync();
-									if (response != null)
-									{
-										string fContent = response.Content;
-										await response.DeleteAsync();
-
-										await instructions.ModifyAsync(x => { x.Content = "Inline? [T]rue or [F]alse?"; });
-										bool fInline = false;
-
-										response = await NextMessageAsync();
-										if (response != null)
-										{
-											if (response.Content.ToLower().StartsWith("t"))
-												fInline = true;
-
-											fieldBuilder.Add(new EmbedFieldBuilder
-											{
-												Name = fTitle,
-												Value = fContent,
-												IsInline = fInline
-											});
-										}
-									}
-								}
-
-								break;
-
-							case "footer text":
-								await instructions.ModifyAsync(x => { x.Content = "Enter Footer text:"; });
-								response = await NextMessageAsync();
-								if (response != null)
-								{
-									footText = response.Content;
-								}
-
-								break;
-
-							case "submit":
-								submit = true;
-								await preview.DeleteAsync();
-								await instructions.DeleteAsync();
-								await pic.DeleteAsync();
-								run = false;
-								valid = false;
-								break;
-
-							case "cancel":
-								await preview.DeleteAsync();
-								await instructions.DeleteAsync();
-								await pic.DeleteAsync();
-								run = false;
-								valid = false;
-								break;
-							default:
-								await ReplyAndDeleteAsync(
-									"```UNKNOWN OPTION. PLEASE ENTER ONLY THE OPTIONS LISTED ABOVE.\nFor example \"title\"```",
-									timeout: TimeSpan.FromSeconds(5));
-								valid = false;
-								break;
-						}
-
-						if (valid) //Unknown command was sent. Don't delete.
-						{
-							try
-							{
-								await response.DeleteAsync();
-							}
-							catch
-							{
-								// ignored
-							}
-						}
-
-						authBuilder = new EmbedAuthorBuilder()
-						{
-							Name = authName,
-							IconUrl = Context.Message.Author.GetAvatarUrl()
-						};
-						footBuilder = new EmbedFooterBuilder()
-						{
-							Text = footText,
-							IconUrl = Context.Message.Author.GetAvatarUrl()
-						};
-						builder = new EmbedBuilder()
-						{
-							Fields = fieldBuilder,
-							Footer = footBuilder,
-							Author = authBuilder,
-							ImageUrl = embedImageUrl,
-							Url = embedUrl,
-							Title = embedTitle,
-							ThumbnailUrl = embedThumbUrl,
-							Color = embedColor,
-							Description = embedDescription
-						};
-						if (valid)
-						{
-							await preview.ModifyAsync(x =>
-							{
-								x.Content = "__**PREVIEW**__";
-								x.Embed = builder.Build();
-							});
-							await instructions.ModifyAsync(x => { x.Content = INSTRUCTIONS_STR; });
-						}
-					}
-					else
-					{
-						await ReplyAsync("```Announce Builder Timed out after 120 seconds!!```");
-						await instructions.DeleteAsync();
-						await pic.DeleteAsync();
-						await preview.DeleteAsync();
-					}
-				}
-			}
-
-			//Where do send the message, my dudes.
-			if (submit)
-			{
-				var msg = await ReplyAsync("Send this to what channel?", false, builder);
-				bool sent = false;
-				while (!sent)
-				{
-					var response = await NextMessageAsync();
-					if (response != null)
-					{
-						if (response.Content.ToLower() == "cancel")
-							return;
-
-						foreach (SocketTextChannel s in Context.Guild.TextChannels)
-						{
-							if (s.Name.ToLower() == response.Content)
-							{
-								await s.SendMessageAsync("", false, builder);
-								await _dataServices.ChannelLog($"Embed created by {Context.User} was sent to {s.Name}!");
-								await _dataServices.LogChannel.SendMessageAsync("", false, builder);
-								sent = true;
-								await msg.ModifyAsync(x =>
-								{
-									x.Content = "__**SENT!**__";
-									x.Embed = builder.Build();
-								});
-								await response.DeleteAsync();
-								return;
-							}
-						}
-						await ReplyAndDeleteAsync("```CHANNEL NOT FOUND TRY AGAIN.```", timeout: TimeSpan.FromSeconds(3));
-						await response.DeleteAsync();
-					}
-					else
-					{
-						await msg.DeleteAsync();
-						await ReplyAsync("```Announce Builder Timed out after 120 seconds!!```");
-					}
-				}
-			}
-
-			//There was a {submit} just send it.
-			if (quickSendChannel != null)
-			{
-				bool sent = false;
-				foreach (SocketTextChannel s in Context.Guild.TextChannels)
-				{
-					if (s.Name.ToLower() == quickSendChannel)
-					{
-						await s.SendMessageAsync("", false, builder);
-						await _dataServices.ChannelLog($"Embed created by {Context.User} was sent to {s.Name}!");
-						await _dataServices.LogChannel.SendMessageAsync("", false, builder);
-						sent = true;
-					}
+					return;
 				}
 
-				if (!sent)
-				{
-					await ReplyAndDeleteAsync("```CHANNEL NOT FOUND```", timeout: TimeSpan.FromSeconds(3));
-				}
-			}
-		}
+				foreach (SocketTextChannel channel in channels)
+					await channel.SendMessageAsync(string.Empty, false, embed);
 
-		// TODO: Move to ModerationServices.
-		private bool IsValidTag(string inString, Regex regex)
-		{
-			string[] validTags = { "{author name}", "{thumbnail}", "{title}", "{url}", "{color}", "{description}", "{image}", "{footer text}", "{field}", "{}", "{submit}" };
-			MatchCollection matches = regex.Matches(inString);
-			matches.Cast<Match>().Select(m => m.Value).Distinct().ToList();
-			foreach (var m in matches)
-			{
-				if (!validTags.Contains(m.ToString().ToLower()))
-					return false;
+				await _dataServices.ChannelLog(
+					$"Embed created by {Context.User} was sent to {string.Join(", ", channels.Select(c => c.Name))}.");
+				await _dataServices.LogChannel.SendMessageAsync(string.Empty, false, embed);
 			}
-			return true;
 		}
 
 		[Command("rcon")]
@@ -695,7 +192,7 @@ namespace BotHATTwaffle.Modules
 			// Command blacklist.
 			// TODO: Move to a config file.
 			if (command.Contains("rcon_password", StringComparison.OrdinalIgnoreCase ) ||
-				command.Contains("exit", StringComparison.OrdinalIgnoreCase ))
+			    command.Contains("exit", StringComparison.OrdinalIgnoreCase ))
 			{
 				await ReplyAsync("```This command cannot be run from here. Ask TopHATTwaffle to do it.```");
 				await _dataServices.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverCode}");
@@ -765,7 +262,7 @@ namespace BotHATTwaffle.Modules
 		[Summary("Peforms an action on a server.")]
 		[Remarks(
 			"Actions:\n" +
-			"`pre` - Sets the testing config and reloads the map to clear cheats.\n" +
+		    "`pre` - Sets the testing config and reloads the map to clear cheats.\n" +
 			"`start` - Starts the playtest, starts recording a demo, and then tells the server it is live.\n" +
 			"`post` - Starts the postgame config. Gets the playtest's demo and BSP files and stores them in the public " +
 			"DropBox folder.\n" +
@@ -795,7 +292,7 @@ namespace BotHATTwaffle.Modules
 			LevelTestingServer server = _dataServices.GetServer(serverCode ?? _levelTesting.CurrentEventInfo[10].Substring(0, 3));
 
 			if (gameMode.Equals("competitive", StringComparison.OrdinalIgnoreCase ) ||
-				gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
+			    gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
 			{
 				config = _dataServices.CompConfig;
 			}
@@ -857,7 +354,7 @@ namespace BotHATTwaffle.Modules
 					$"exec {_dataServices.PostConfig}\nsv_voiceenable 0\nGetting Demo and BSP file and moving into DropBox");
 			}
 			else if (action.Equals("scramble", StringComparison.OrdinalIgnoreCase ) ||
-					 action.Equals("s", StringComparison.OrdinalIgnoreCase ))
+			         action.Equals("s", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _dataServices.RconCommand("mp_scrambleteams 1", server);
 
@@ -865,7 +362,7 @@ namespace BotHATTwaffle.Modules
 				await _dataServices.ChannelLog($"Playtest Scramble on {server.Name}", "mp_scrambleteams 1");
 			}
 			else if (action.Equals("pause", StringComparison.OrdinalIgnoreCase ) ||
-					 action.Equals("p", StringComparison.OrdinalIgnoreCase ))
+			         action.Equals("p", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _dataServices.RconCommand(@"mp_pause_match; say Pausing Match", server);
 
@@ -873,7 +370,7 @@ namespace BotHATTwaffle.Modules
 				await _dataServices.ChannelLog($"Playtest Pause on {server.Name}", "mp_pause_match");
 			}
 			else if (action.Equals("unpause", StringComparison.OrdinalIgnoreCase ) ||
-					 action.Equals("u", StringComparison.OrdinalIgnoreCase ))
+			         action.Equals("u", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _dataServices.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
 
@@ -890,9 +387,9 @@ namespace BotHATTwaffle.Modules
 		/// <summary>
 		/// Post takes are here so we can just fire and forget them. Nothing relies on them so we can forget about waiting.
 		/// </summary>
-		/// <param name="server">Server Object</param>
+		/// <param name="server">The server on which the event was hosted.</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		// TODO: Move to ModerationServices.
+		// TODO: Move to a service.
 		private async Task PostTasks(LevelTestingServer server)
 		{
 			string workshopId = Regex.Match(_testInfo[6], @"\d+$").Value;
@@ -935,9 +432,9 @@ namespace BotHATTwaffle.Modules
 				ThumbnailUrl = _testInfo[4],
 				Color = new Color(243, 128, 72),
 				Description = "You can get the demo for this playtest by clicking above!\n\n*Thanks for testing with us!*\n\n" +
-							  $"[Map Images]({_testInfo[5]}) | [Schedule a Playtest]" +
-							  "(https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar]" +
-							  "(http://playtesting.tophattwaffle.com)"
+				              $"[Map Images]({_testInfo[5]}) | [Schedule a Playtest]" +
+				              "(https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar]" +
+				              "(http://playtesting.tophattwaffle.com)"
 			};
 
 			string[] splitUser = _testInfo[3].Split('#');

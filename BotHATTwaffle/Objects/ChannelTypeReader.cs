@@ -60,7 +60,7 @@ namespace BotHATTwaffle.Objects
 		/// <param name="context">The context in which to search for the channel.</param>
 		/// <param name="input">A string representing a channel by mention, id, or name.</param>
 		/// <returns>The channel result with the highest score or <c>null</c> if no results exist.</returns>
-		public static async Task<T> GetBestResult(ICommandContext context, string input)
+		public static async Task<T> GetBestResultAsync(ICommandContext context, string input)
 		{
 			TypeReaderResult result = await ReadAsync(context, input);
 
