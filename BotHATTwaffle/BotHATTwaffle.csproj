@@ -230,6 +230,8 @@
     <Compile Include="Services\Embed\BuilderAction.cs" />
     <Compile Include="Services\Embed\InteractiveBuilder.cs" />
     <Compile Include="Services\Embed\QuickBuilder.cs" />
+    <Compile Include="Services\HelpService.cs" />
+    <Compile Include="Services\IHelpService.cs" />
     <Compile Include="Services\IMuteService.cs" />
     <Compile Include="Services\MuteService.cs" />
     <Compile Include="WorkshopItem.cs" />
