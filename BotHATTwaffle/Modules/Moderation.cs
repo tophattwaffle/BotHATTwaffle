@@ -446,17 +446,18 @@ namespace BotHATTwaffle.Modules
 
 		[Command("mute")]
 		[Summary("Mutes a user.")]
+		[Remarks("Only supports integer durations because expired mutes are checked at an interval of one minute.")]
 		[Alias("m")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.Moderators)]
 		public async Task MuteAsync(
 			[Summary("The user to mute.")] SocketGuildUser user,
 			[Summary("The duration, in minutes, of the mute.")]
-			int durationMin = 5,
+			int duration = 5,
 			[Summary("The reason for the mute.")] [Remainder]
 			string reason = "No reason provided.")
 		{
-			await _mute.MuteAsync(user, durationMin, Context.User, reason);
+			await _mute.MuteAsync(user, duration, Context.User, reason);
 		}
 
 		[Command("ClearReservations")]

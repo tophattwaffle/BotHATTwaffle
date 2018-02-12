@@ -125,7 +125,10 @@ namespace BotHATTwaffle.Modules
 
 				// Appends default value if parameter is optional.
 				if (p.IsOptional)
-					param.Append($" Default: `{p.DefaultValue ?? "null"}`");
+				{
+					object value = string.IsNullOrWhiteSpace(p.DefaultValue?.ToString()) ? "null/empty" : p.DefaultValue;
+					param.Append($" Default: `{value}`");
+				}
 
 				param.AppendLine();
 			}
@@ -175,21 +178,11 @@ namespace BotHATTwaffle.Modules
 		/// Contains the command's prefix, name, and parameters. Normal parameters are surrounded in square brackets, optional
 		/// ones in angled brackets.
 		/// </remarks>
-		public string GetUsage(CommandInfo command)
-		{
-			var usage = new StringBuilder(Program.COMMAND_PREFIX);
-			usage.Append(command.Name);
-
-			if (command.Parameters.Any())
-			{
-				usage.Append(" ");
-
-				foreach (ParameterInfo p in command.Parameters)
-					usage.Append(p.IsOptional ? $"<{p.Name}>" : $"[{p.Name}]");
-			}
-
-			return usage.ToString();
-		}
+		public string GetUsage(CommandInfo command) =>
+			Program.COMMAND_PREFIX +
+			command.Name +
+			" " +
+			string.Join(" ", command.Parameters.Select(p => p.IsOptional ? $"<{p.Name}>" : $"[{p.Name}]"));
 	}
 
 	public class HelpModule : ModuleBase<SocketCommandContext>
