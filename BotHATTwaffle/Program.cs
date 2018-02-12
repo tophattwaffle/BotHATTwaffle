@@ -26,7 +26,7 @@ namespace BotHATTwaffle
 		private DiscordSocketClient _client;
 		private IServiceProvider _services;
 		private DataServices _data;
-		private TimerService _timer;
+		private ITimerService _timer;
 		private Eavesdropping _eavesdropping;
 
 		/// <summary>
@@ -66,7 +66,7 @@ namespace BotHATTwaffle
 			_services = new ServiceCollection()
 				.AddSingleton(_client)
 				.AddSingleton(_commands)
-				.AddSingleton<TimerService>()
+				.AddSingleton<ITimerService, TimerService>()
 				.AddSingleton<LevelTesting>()
 				.AddSingleton<Eavesdropping>()
 				.AddSingleton<DataServices>()
@@ -80,7 +80,7 @@ namespace BotHATTwaffle
 
 			// Retrieves services that this class uses.
 			_data = _services.GetRequiredService<DataServices>();
-			_timer = _services.GetRequiredService<TimerService>();
+			_timer = _services.GetRequiredService<ITimerService>();
 			_eavesdropping = _services.GetRequiredService<Eavesdropping>();
 
 			// Constructs services explicitly. Modules are transient so their dependencies would normally be constructed when

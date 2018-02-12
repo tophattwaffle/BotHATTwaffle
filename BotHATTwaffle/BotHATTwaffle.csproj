@@ -216,7 +216,8 @@
     <Compile Include="Objects\Json\Tutorial.cs" />
     <Compile Include="Modules\LevelTesting.cs" />
     <Compile Include="Modules\Moderation.cs" />
-    <Compile Include="Modules\TimerService.cs" />
+    <Compile Include="Services\ITimerService.cs" />
+    <Compile Include="Services\TimerService.cs" />
     <Compile Include="Modules\Utilities.cs" />
     <Compile Include="Objects\Downloader\Downloader.cs" />
     <Compile Include="Objects\Downloader\DownloaderService.cs" />

@@ -24,7 +24,7 @@ namespace BotHATTwaffle.Modules
 		private readonly DownloaderService _downloader;
 		private readonly LevelTesting _levelTesting;
 		private readonly IMuteService _mute;
-		private readonly TimerService _timer;
+		private readonly ITimerService _timer;
 
 		private string[] _testInfo;
 
@@ -34,7 +34,7 @@ namespace BotHATTwaffle.Modules
 			DownloaderService downloader,
 			LevelTesting levelTesting,
 			IMuteService mute,
-			TimerService timer)
+			ITimerService timer)
 		{
 			_client = client;
 			_data = data;

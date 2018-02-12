@@ -12,6 +12,7 @@ using System.Timers;
 
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Services;
 
 using Imgur.API.Authentication.Impl;
 using Imgur.API.Endpoints.Impl;
@@ -48,7 +49,7 @@ namespace BotHATTwaffle.Modules
 			DataServices dataServices,
 			GoogleCalendar calendar,
 			Random random,
-			TimerService timer)
+			ITimerService timer)
 		{
 			_client = client;
 			_dataServices = dataServices;

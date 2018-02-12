@@ -18,7 +18,7 @@ namespace BotHATTwaffle.Services
 		private readonly DataServices _data;
 		private readonly List<UserData> _mutedUsers = new List<UserData>();
 
-		public MuteService(DataServices data, TimerService timer)
+		public MuteService(DataServices data, ITimerService timer)
 		{
 			_data = data;
 			timer.AddHandler(CheckMutesAsync);
