@@ -281,8 +281,6 @@ namespace BotHATTwaffle.Modules
 			if (type) //Change map
 			{
 				var result = Regex.Match(CurrentEventInfo[6], @"\d+$").Value;
-				await _dataServices.RconCommand($"exec postgame", server);
-				await Task.Delay(5000);
 				await _dataServices.RconCommand($"host_workshop_map {result}", server);
 				await _dataServices.ChannelLog("Changing Map on Test Server", $"'host_workshop_map {result}' on {server.Address}");
 			}
@@ -797,7 +795,8 @@ namespace BotHATTwaffle.Modules
 
 		[Command("PublicServer")]
 		[Summary("Reserves a public server under the invoking user for personal testing purposes.")]
-		[Remarks("A reservation lasts 2 hours. A Workshop ID can be included in order to have that map automatically hosted.")]
+		[Remarks("A reservation lasts 2 hours. A Workshop ID can be included in order to have that map automatically hosted. " +
+		         "Type `>servers` to see a list of servers that can be used")]
 		[Alias("ps")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.ActiveMember)]

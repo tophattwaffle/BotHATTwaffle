@@ -340,7 +340,7 @@ namespace BotHATTwaffle.Modules
 				server);
 			await Task.Delay(3000);
 
-			await _data.RconCommand("say Please join the Level Testing voice channel for feedback!", server);
+			await _data.RconCommand("sv_full_alltalk 1; say Please join the Level Testing voice channel for feedback!", server);
 			await Task.Delay(3000);
 
 			await _data.RconCommand("say Please join the Level Testing voice channel for feedback!", server);
