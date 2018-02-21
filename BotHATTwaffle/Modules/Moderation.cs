@@ -26,7 +26,7 @@ namespace BotHATTwaffle.Modules
 		private readonly IMuteService _mute;
 		private readonly ITimerService _timer;
 
-		private string[] _testInfo;
+		private static string[] _testInfo;
 
 		public ModerationModule(
 			DiscordSocketClient client,
@@ -187,7 +187,7 @@ namespace BotHATTwaffle.Modules
 		}
 
 		[Command("playtest")]
-		[Summary("Peforms an action on a server.")]
+		[Summary("Preforms an action on a server.")]
 		[Remarks(
 			"Actions:\n" +
 		    "`pre` - Sets the testing config and reloads the map to clear cheats.\n" +
@@ -212,7 +212,6 @@ namespace BotHATTwaffle.Modules
 				await ReplyAsync("```Cannot use this command unless a test is scheduled.```");
 				return;
 			}
-
 			string config;
 			string gameMode = _levelTesting.CurrentEventInfo[7];
 
@@ -245,7 +244,7 @@ namespace BotHATTwaffle.Modules
 			else if (action.Equals("start", StringComparison.OrdinalIgnoreCase ))
 			{
 				_testInfo = _levelTesting.CurrentEventInfo; // Stores the test info for later use in retrieving the demo.
-
+				
 				DateTime time = Convert.ToDateTime(_levelTesting.CurrentEventInfo[1]);
 				string title = _levelTesting.CurrentEventInfo[2].Split(new[] { ' ' }, 2).FirstOrDefault() ?? string.Empty;
 				string demoName = $"{time:MM_dd_yyyy}_{title}_{gameMode}";
@@ -275,7 +274,7 @@ namespace BotHATTwaffle.Modules
 			else if (action.Equals("post", StringComparison.OrdinalIgnoreCase ))
 			{
 				Task _ = PostTasks(server); // Fired and forgotten.
-
+				
 				await ReplyAsync("```Playtest post started. Begin feedback!```");
 				await _data.ChannelLog(
 					$"Playtest Post on {server.Name}",
