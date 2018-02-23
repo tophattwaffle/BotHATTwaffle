@@ -113,11 +113,6 @@ namespace BotHATTwaffle
 					.Select(line => line.Substring(line.IndexOf(':') + 1).Trim())
 					.ToImmutableArray();
 
-				foreach (var r in description)
-				{
-					Console.WriteLine(r);
-				}
-
 				//TODO: Do we need to set strings to empty? In what event would they get set this way?
 				//If they do end up getting set to empty, maybe we should set them to "default" safe values.
 
@@ -146,14 +141,6 @@ namespace BotHATTwaffle
 				finalEvent = Enumerable.Repeat<string>(null, 11).ToArray();
 				finalEvent[0] = "BAD_DESCRIPTION";
 			}
-
-			Console.WriteLine("------");
-			foreach (var s in finalEvent)
-			{
-				Console.WriteLine(s);
-			}
-
-			Console.ReadLine();
 
 			return finalEvent;
 		}
