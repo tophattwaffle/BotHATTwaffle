@@ -109,9 +109,17 @@ namespace BotHATTwaffle
 			try
 			{
 				// Splits description into lines and keeps only the part after the colon, if one exists.
-				ImmutableArray<string> description = eventItem.Description.Split('\n')
+				ImmutableArray<string> description = eventItem.Description.Trim().Split('\n')
 					.Select(line => line.Substring(line.IndexOf(':') + 1).Trim())
 					.ToImmutableArray();
+
+				foreach (var r in description)
+				{
+					Console.WriteLine(r);
+				}
+
+				//TODO: Do we need to set strings to empty? In what event would they get set this way?
+				//If they do end up getting set to empty, maybe we should set them to "default" safe values.
 
 				finalEvent[0] = "BEGIN_EVENT";
 				finalEvent[1] = eventItem.Start.DateTime?.ToString() ?? eventItem.Start.Date; // Accounts for all-day events.
@@ -138,6 +146,14 @@ namespace BotHATTwaffle
 				finalEvent = Enumerable.Repeat<string>(null, 11).ToArray();
 				finalEvent[0] = "BAD_DESCRIPTION";
 			}
+
+			Console.WriteLine("------");
+			foreach (var s in finalEvent)
+			{
+				Console.WriteLine(s);
+			}
+
+			Console.ReadLine();
 
 			return finalEvent;
 		}
