@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using Discord.Rest;
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 using System.Text.RegularExpressions;
 using System.Timers;
 
@@ -117,6 +118,7 @@ namespace BotHATTwaffle.Modules
 			if (_firstRun && File.Exists(_ANNOUNCE_PATH))
 			{
 				_firstRun = false;
+				await LaunchSuppress();
 				GetPreviousAnnounceAsync();
 			}
 			_caltick++;
@@ -139,6 +141,56 @@ namespace BotHATTwaffle.Modules
 				}
 			}
 
+		}
+
+		/// <summary>
+		/// Auto suppresses any announcements on load if they had already been fired.
+		/// This is typically used if the bot starts after an announcement has been fired.
+		/// </summary>
+		/// <returns></returns>
+		private Task LaunchSuppress()
+		{
+			Console.ForegroundColor = ConsoleColor.Yellow;
+			Console.WriteLine("\nChecking if playtest announcements need to be suppressed...");
+			DateTime time = Convert.ToDateTime(CurrentEventInfo[1]);
+
+			TimeSpan singleHour = new TimeSpan(1, 0, 0);
+			DateTime adjusted = DateTime.Now.Add(singleHour);
+			int hourTimeCompare = DateTime.Compare(adjusted, time);
+			if (hourTimeCompare > 0)
+			{
+				_alertedHour = true;
+				Console.WriteLine("Suppressing Hour Announcement!");
+			}
+
+			TimeSpan twentyMinutes = new TimeSpan(0, 20, 0);
+			DateTime twentyAdjusted = DateTime.Now.Add(twentyMinutes);
+			int twentyTimeCompare = DateTime.Compare(twentyAdjusted, time);
+			if (twentyTimeCompare > 0)
+			{
+				_alertedTwenty = true;
+				Console.WriteLine("Suppressing Twenty Announcement!");
+			}
+
+			TimeSpan fifteenMinutes = new TimeSpan(0, 15, 0);
+			DateTime fifteenAdjusted = DateTime.Now.Add(fifteenMinutes);
+			int fifteenTimeCompare = DateTime.Compare(fifteenAdjusted, time);
+			if (fifteenTimeCompare > 0)
+			{
+				_alertedFifteen = true;
+				Console.WriteLine("Suppressing Fifteen Announcement!");
+			}
+
+			if (time.CompareTo(DateTime.Now) < 0)
+			{
+				_alertedStart = true;
+				Console.WriteLine("Suppressing Started Announcement!");
+			}
+
+			Console.WriteLine();
+			Console.ResetColor();
+
+			return Task.CompletedTask;
 		}
 
 		/// <summary>
@@ -778,6 +830,38 @@ namespace BotHATTwaffle.Modules
 			}
 			return true;
 		}
+
+		/// <summary>
+		/// Toggles the bot's announce flags for firing timed alerts for playtests.
+		/// </summary>
+		/// <param name="type"></param>
+		public void SuppressAnnounce(int type)
+		{
+			switch (type)
+			{
+				case 1:
+					_alertedHour = !_alertedHour;
+					break;
+				case 2:
+					_alertedTwenty = !_alertedTwenty;
+					break;
+				case 3:
+					_alertedFifteen = !_alertedFifteen;
+					break;
+				case 4:
+					_alertedStart = !_alertedStart;
+					break;
+				case 5:
+					_alertedHour = !_alertedHour;
+					_alertedTwenty = !_alertedTwenty;
+					_alertedFifteen = !_alertedFifteen;
+					_alertedStart = !_alertedStart;
+					break;
+			}
+		}
+
+		public string GetAnnounceFlags() => $"Alerted Hour: {_alertedHour}\nAlerted Start: {_alertedStart}\nAlerted Twenty: " + 
+		                                    $"{_alertedTwenty}\nAlerted Fifteen: {_alertedFifteen}";
 	}
 
 	public class LevelTestingModule : ModuleBase<SocketCommandContext>
@@ -1091,10 +1175,7 @@ namespace BotHATTwaffle.Modules
 		[Summary("Displays all currently reserved servers.")]
 		[Alias("sr")]
 		[RequireContext(ContextType.Guild)]
-		public async Task ShowReservationsAsync()
-		{
-			await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
-		}
+		public async Task ShowReservationsAsync() => await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
 
 		[Command("playtester")]
 		[Summary("Toggles the Playtester role for the invoking user.")]

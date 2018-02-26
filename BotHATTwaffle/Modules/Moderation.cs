@@ -44,6 +44,27 @@ namespace BotHATTwaffle.Modules
 			_timer = timer;
 		}
 
+		[Command("suppress")]
+		[Summary("Toggles the bot's announce flags for firing timed alerts for playtests.")]
+		[Remarks("Different inputs will suppress different flags.\n1 = Hour\n2 = Twenty\n3 = Fifteen\n4 = Start\n5 = All")]
+		[RequireContext(ContextType.Guild)]
+		[RequireRole(Role.Moderators)]
+		public async Task SuppressAsync(int input = 0)
+		{
+			if (input == 0)
+			{
+				await ReplyAsync($"```True means this alert will not be fired until the announcement " +
+				                 $"message has changed.\n\nCurrent Alert Flags:\n{_levelTesting.GetAnnounceFlags()}```");
+
+				return;
+			}
+
+			_levelTesting.SuppressAnnounce(input);
+
+			await ReplyAsync($"```True means this alert will not be fired until the announcement " +
+			                 $"message has changed.\n\nCurrent Alert Flags:\n{_levelTesting.GetAnnounceFlags()}```");
+		}
+
 		[Command("announce", RunMode = RunMode.Async)]
 		[Summary("Interactively create an embed message to be sent to any channel.")]
 		[Remarks(
