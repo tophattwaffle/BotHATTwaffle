@@ -63,6 +63,7 @@ namespace BotHATTwaffle.Modules
 
 			await ReplyAsync($"```True means this alert will not be fired until the announcement " +
 			                 $"message has changed.\n\nCurrent Alert Flags:\n{_levelTesting.GetAnnounceFlags()}```");
+			await _data.ChannelLog($"{Context.User} changed playtest alert flag suppression", _levelTesting.GetAnnounceFlags());
 		}
 
 		[Command("announce", RunMode = RunMode.Async)]
