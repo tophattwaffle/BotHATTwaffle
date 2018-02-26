@@ -852,10 +852,10 @@ namespace BotHATTwaffle.Modules
 					_alertedStart = !_alertedStart;
 					break;
 				case 5:
-					_alertedHour = !_alertedHour;
-					_alertedTwenty = !_alertedTwenty;
-					_alertedFifteen = !_alertedFifteen;
-					_alertedStart = !_alertedStart;
+					_alertedHour = true;
+					_alertedTwenty = true;
+					_alertedFifteen = true;
+					_alertedStart = true;
 					break;
 			}
 		}
