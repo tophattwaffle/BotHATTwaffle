@@ -860,8 +860,8 @@ namespace BotHATTwaffle.Modules
 			}
 		}
 
-		public string GetAnnounceFlags() => $"Alerted Hour: {_alertedHour}\nAlerted Start: {_alertedStart}\nAlerted Twenty: " + 
-		                                    $"{_alertedTwenty}\nAlerted Fifteen: {_alertedFifteen}";
+		public string GetAnnounceFlags() => $"Alerted Hour: {_alertedHour}\nAlerted Twenty: " + 
+		                                    $"{_alertedTwenty}\nAlerted Fifteen: {_alertedFifteen}\nAlerted Start: {_alertedStart}";
 	}
 
 	public class LevelTestingModule : ModuleBase<SocketCommandContext>
