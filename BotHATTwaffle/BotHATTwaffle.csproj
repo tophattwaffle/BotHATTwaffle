@@ -201,43 +201,43 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\ConsoleCopy.cs" />
-    <Compile Include="src\Eavesdropping.cs" />
+    <Compile Include="src\Commands\Preconditions\RequireRoleAttribute.cs" />
+    <Compile Include="src\Commands\Readers\ChannelTypeReader.cs" />
+    <Compile Include="src\Commands\HelpModule.cs" />
+    <Compile Include="src\Commands\InformationModule.cs" />
+    <Compile Include="src\Commands\PlaytestingModule.cs" />
+    <Compile Include="src\Commands\ModerationModule.cs" />
+    <Compile Include="src\Commands\ShadersModule.cs" />
+    <Compile Include="src\Commands\ToolsModule.cs" />
+    <Compile Include="src\Commands\UtilitiesModule.cs" />
     <Compile Include="src\Extensions\DictionaryExtensions.cs" />
     <Compile Include="src\Extensions\IEnumerableExtensions.cs" />
     <Compile Include="src\Extensions\MessageExtensions.cs" />
     <Compile Include="src\Extensions\StringExtensions.cs" />
-    <Compile Include="src\GoogleCalendar.cs" />
-    <Compile Include="src\DataService.cs" />
-    <Compile Include="src\Modules\Help.cs" />
-    <Compile Include="src\Objects\ChannelTypeReader.cs" />
-    <Compile Include="src\Objects\Json\LevelTestingServer.cs" />
-    <Compile Include="src\Modules\Shaders.cs" />
-    <Compile Include="src\Modules\Tools.cs" />
-    <Compile Include="src\Modules\Information.cs" />
-    <Compile Include="src\Objects\Json\TutorialSeries.cs" />
-    <Compile Include="src\Objects\Json\Tutorial.cs" />
-    <Compile Include="src\Modules\LevelTesting.cs" />
-    <Compile Include="src\Modules\Moderation.cs" />
-    <Compile Include="src\Services\ITimerService.cs" />
-    <Compile Include="src\Services\TimerService.cs" />
-    <Compile Include="src\Modules\Utilities.cs" />
     <Compile Include="src\Objects\Downloader\Downloader.cs" />
     <Compile Include="src\Objects\Downloader\DownloaderService.cs" />
     <Compile Include="src\Objects\Downloader\FtpDownloader.cs" />
     <Compile Include="src\Objects\Downloader\SftpDownloader.cs" />
-    <Compile Include="src\Objects\RequireRoleAttribute.cs" />
+    <Compile Include="src\Objects\Json\LevelTestingServer.cs" />
+    <Compile Include="src\Objects\Json\Tutorial.cs" />
+    <Compile Include="src\Objects\Json\TutorialSeries.cs" />
     <Compile Include="src\Objects\Role.cs" />
-    <Compile Include="src\Program.cs" />
-    <Compile Include="src\Properties\AssemblyInfo.cs" />
     <Compile Include="src\Objects\UserData.cs" />
+    <Compile Include="src\Properties\AssemblyInfo.cs" />
     <Compile Include="src\Services\Embed\BuilderAction.cs" />
     <Compile Include="src\Services\Embed\InteractiveBuilder.cs" />
     <Compile Include="src\Services\Embed\QuickBuilder.cs" />
     <Compile Include="src\Services\HelpService.cs" />
     <Compile Include="src\Services\IHelpService.cs" />
     <Compile Include="src\Services\IMuteService.cs" />
+    <Compile Include="src\Services\ITimerService.cs" />
     <Compile Include="src\Services\MuteService.cs" />
+    <Compile Include="src\Services\TimerService.cs" />
+    <Compile Include="src\ConsoleCopy.cs" />
+    <Compile Include="src\DataService.cs" />
+    <Compile Include="src\Eavesdropping.cs" />
+    <Compile Include="src\GoogleCalendar.cs" />
+    <Compile Include="src\Program.cs" />
     <Compile Include="src\WorkshopItem.cs" />
   </ItemGroup>
   <ItemGroup>
