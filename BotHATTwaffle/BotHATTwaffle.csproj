@@ -201,41 +201,41 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConsoleCopy.cs" />
-    <Compile Include="Eavesdropping.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="GoogleCalendar.cs" />
-    <Compile Include="DataService.cs" />
-    <Compile Include="Modules\Help.cs" />
-    <Compile Include="Objects\ChannelTypeReader.cs" />
-    <Compile Include="Objects\Json\LevelTestingServer.cs" />
-    <Compile Include="Modules\Shaders.cs" />
-    <Compile Include="Modules\Tools.cs" />
-    <Compile Include="Modules\Information.cs" />
-    <Compile Include="Objects\Json\TutorialSeries.cs" />
-    <Compile Include="Objects\Json\Tutorial.cs" />
-    <Compile Include="Modules\LevelTesting.cs" />
-    <Compile Include="Modules\Moderation.cs" />
-    <Compile Include="Services\ITimerService.cs" />
-    <Compile Include="Services\TimerService.cs" />
-    <Compile Include="Modules\Utilities.cs" />
-    <Compile Include="Objects\Downloader\Downloader.cs" />
-    <Compile Include="Objects\Downloader\DownloaderService.cs" />
-    <Compile Include="Objects\Downloader\FtpDownloader.cs" />
-    <Compile Include="Objects\Downloader\SftpDownloader.cs" />
-    <Compile Include="Objects\RequireRoleAttribute.cs" />
-    <Compile Include="Objects\Role.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Objects\UserData.cs" />
-    <Compile Include="Services\Embed\BuilderAction.cs" />
-    <Compile Include="Services\Embed\InteractiveBuilder.cs" />
-    <Compile Include="Services\Embed\QuickBuilder.cs" />
-    <Compile Include="Services\HelpService.cs" />
-    <Compile Include="Services\IHelpService.cs" />
-    <Compile Include="Services\IMuteService.cs" />
-    <Compile Include="Services\MuteService.cs" />
-    <Compile Include="WorkshopItem.cs" />
+    <Compile Include="src\ConsoleCopy.cs" />
+    <Compile Include="src\Eavesdropping.cs" />
+    <Compile Include="src\Extensions.cs" />
+    <Compile Include="src\GoogleCalendar.cs" />
+    <Compile Include="src\DataService.cs" />
+    <Compile Include="src\Modules\Help.cs" />
+    <Compile Include="src\Objects\ChannelTypeReader.cs" />
+    <Compile Include="src\Objects\Json\LevelTestingServer.cs" />
+    <Compile Include="src\Modules\Shaders.cs" />
+    <Compile Include="src\Modules\Tools.cs" />
+    <Compile Include="src\Modules\Information.cs" />
+    <Compile Include="src\Objects\Json\TutorialSeries.cs" />
+    <Compile Include="src\Objects\Json\Tutorial.cs" />
+    <Compile Include="src\Modules\LevelTesting.cs" />
+    <Compile Include="src\Modules\Moderation.cs" />
+    <Compile Include="src\Services\ITimerService.cs" />
+    <Compile Include="src\Services\TimerService.cs" />
+    <Compile Include="src\Modules\Utilities.cs" />
+    <Compile Include="src\Objects\Downloader\Downloader.cs" />
+    <Compile Include="src\Objects\Downloader\DownloaderService.cs" />
+    <Compile Include="src\Objects\Downloader\FtpDownloader.cs" />
+    <Compile Include="src\Objects\Downloader\SftpDownloader.cs" />
+    <Compile Include="src\Objects\RequireRoleAttribute.cs" />
+    <Compile Include="src\Objects\Role.cs" />
+    <Compile Include="src\Program.cs" />
+    <Compile Include="src\Properties\AssemblyInfo.cs" />
+    <Compile Include="src\Objects\UserData.cs" />
+    <Compile Include="src\Services\Embed\BuilderAction.cs" />
+    <Compile Include="src\Services\Embed\InteractiveBuilder.cs" />
+    <Compile Include="src\Services\Embed\QuickBuilder.cs" />
+    <Compile Include="src\Services\HelpService.cs" />
+    <Compile Include="src\Services\IHelpService.cs" />
+    <Compile Include="src\Services\IMuteService.cs" />
+    <Compile Include="src\Services\MuteService.cs" />
+    <Compile Include="src\WorkshopItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -257,7 +257,8 @@
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bothattwaffle_icon.ico" />
+    <Content Include="res\icon.ico" />
+    <Content Include="res\icon.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreRCON\CoreRCON.csproj">
