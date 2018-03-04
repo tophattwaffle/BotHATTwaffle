@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 
-using BotHATTwaffle.Objects;
+using BotHATTwaffle.Models;
 
 using Discord;
 using Discord.WebSocket;
@@ -14,10 +14,10 @@ namespace BotHATTwaffle.Services
 	/// <inheritdoc />
 	public class MuteService : IMuteService
 	{
-		private readonly DataServices _data;
+		private readonly DataService _data;
 		private readonly List<UserData> _mutedUsers = new List<UserData>();
 
-		public MuteService(DataServices data, ITimerService timer)
+		public MuteService(DataService data, ITimerService timer)
 		{
 			_data = data;
 			timer.AddHandler(CheckMutesAsync);

@@ -6,8 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using BotHATTwaffle.Commands;
-using BotHATTwaffle.Objects.Downloader;
 using BotHATTwaffle.Services;
+using BotHATTwaffle.Services.Download;
+using BotHATTwaffle.Services.Playtesting;
 
 using Discord;
 using Discord.Addons.Interactive;
@@ -25,9 +26,9 @@ namespace BotHATTwaffle
 		private CommandService _commands;
 		private DiscordSocketClient _client;
 		private IServiceProvider _services;
-		private DataServices _data;
+		private DataService _data;
 		private ITimerService _timer;
-		private Eavesdropping _eavesdropping;
+		private MessageListener _messageListener;
 
 		/// <summary>
 		/// The entry point of the program. Creates an asyncronous environment to run the bot.
@@ -68,20 +69,20 @@ namespace BotHATTwaffle
 				.AddSingleton(_commands)
 				.AddSingleton<ITimerService, TimerService>()
 				.AddSingleton<PlaytestingService>()
-				.AddSingleton<Eavesdropping>()
-				.AddSingleton<DataServices>()
+				.AddSingleton<MessageListener>()
+				.AddSingleton<DataService>()
 				.AddSingleton<Random>()
-				.AddSingleton<DownloaderService>()
-				.AddSingleton<GoogleCalendar>()
+				.AddSingleton<DownloadService>()
+				.AddSingleton<EventCalendarService>()
 				.AddSingleton<IHelpService, HelpService>()
 				.AddSingleton<IMuteService, MuteService>()
 				.AddSingleton(s => new InteractiveService(_client, TimeSpan.FromSeconds(120)))
 				.BuildServiceProvider();
 
 			// Retrieves services that this class uses.
-			_data = _services.GetRequiredService<DataServices>();
+			_data = _services.GetRequiredService<DataService>();
 			_timer = _services.GetRequiredService<ITimerService>();
-			_eavesdropping = _services.GetRequiredService<Eavesdropping>();
+			_messageListener = _services.GetRequiredService<MessageListener>();
 
 			// Constructs services explicitly. Modules are transient so their dependencies would normally be constructed when
 			// the module is initially used e.g. a command is invoked.
@@ -97,7 +98,7 @@ namespace BotHATTwaffle
 			_client.GuildAvailable += GuildAvailableEventHandler;
 			_client.Log += LogEventHandler;
 			_client.Ready += ReadyHandler;
-			_client.UserJoined += _eavesdropping.UserJoin; // When a user joins the server.
+			_client.UserJoined += _messageListener.UserJoin; // When a user joins the server.
 
 			await InstallCommandsAsync();
 
@@ -202,7 +203,7 @@ namespace BotHATTwaffle
 		/// <summary>
 		/// Raised when a message is received.
 		/// <para>
-		/// Listens to all messages with <see cref="Eavesdropping"/> and determines if messages are commands.
+		/// Listens to all messages with <see cref="MessageListener"/> and determines if messages are commands.
 		/// </para>
 		/// </summary>
 		/// <param name="messageParam">The message recieved.</param>
@@ -219,7 +220,7 @@ namespace BotHATTwaffle
 			if (message.HasCharPrefix(COMMAND_PREFIX, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
 				await ProcessCommandAsync(message, argPos);
 
-			Task _ = _eavesdropping.Listen(messageParam); // Fired and forgotten.
+			Task _ = _messageListener.Listen(messageParam); // Fired and forgotten.
 		}
 
 		/// <summary>

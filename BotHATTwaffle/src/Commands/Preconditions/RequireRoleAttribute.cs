@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
-using BotHATTwaffle.Objects;
+using BotHATTwaffle.Models;
 
 using Discord;
 using Discord.Commands;

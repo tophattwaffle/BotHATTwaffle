@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using BotHATTwaffle.Commands.Preconditions;
-using BotHATTwaffle.Objects;
+using BotHATTwaffle.Models;
 
 using Discord;
 using Discord.Commands;

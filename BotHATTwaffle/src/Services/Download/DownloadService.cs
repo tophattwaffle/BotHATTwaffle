@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
-using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Models;
 
-namespace BotHATTwaffle.Objects.Downloader
+namespace BotHATTwaffle.Services.Download
 {
-	public class DownloaderService
+	public class DownloadService
 	{
-		private readonly DataServices dataSvc;
+		private readonly DataService dataSvc;
 		private readonly BackgroundWorker worker;
 
-		public DownloaderService(DataServices dataSvc)
+		public DownloadService(DataService dataSvc)
 		{
 			this.dataSvc = dataSvc;
 			worker = new BackgroundWorker();
@@ -20,7 +20,7 @@ namespace BotHATTwaffle.Objects.Downloader
 			worker.DoWork += DownloadFiles;
 		}
 
-		public void Start(IReadOnlyList<string> testInfo, LevelTestingServer server)
+		public void Start(IReadOnlyList<string> testInfo, Server server)
 		{
 			if (!worker.IsBusy)
 			{
@@ -32,7 +32,7 @@ namespace BotHATTwaffle.Objects.Downloader
 		private void DownloadFiles(object sender, DoWorkEventArgs e)
 		{
 			Console.ForegroundColor = ConsoleColor.Cyan;
-			var (testInfo, server) = (ValueTuple<IReadOnlyList<string>, LevelTestingServer>) e.Argument;
+			var (testInfo, server) = (ValueTuple<IReadOnlyList<string>, Server>) e.Argument;
 
 			switch (server.FtpType.ToLower())
 			{

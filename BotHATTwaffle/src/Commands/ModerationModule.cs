@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 using BotHATTwaffle.Commands.Preconditions;
 using BotHATTwaffle.Extensions;
-using BotHATTwaffle.Objects;
-using BotHATTwaffle.Objects.Downloader;
-using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Models;
 using BotHATTwaffle.Services;
+using BotHATTwaffle.Services.Download;
 using BotHATTwaffle.Services.Embed;
 
 using Discord;
@@ -22,8 +21,8 @@ namespace BotHATTwaffle.Commands
 	public class ModerationModule : InteractiveBase
 	{
 		private readonly DiscordSocketClient _client;
-		private readonly DataServices _data;
-		private readonly DownloaderService _downloader;
+		private readonly DataService _data;
+		private readonly DownloadService _download;
 		private readonly PlaytestingService _playtesting;
 		private readonly IMuteService _mute;
 		private readonly ITimerService _timer;
@@ -32,15 +31,15 @@ namespace BotHATTwaffle.Commands
 
 		public ModerationModule(
 			DiscordSocketClient client,
-			DataServices data,
-			DownloaderService downloader,
+			DataService data,
+			DownloadService download,
 			PlaytestingService playtesting,
 			IMuteService mute,
 			ITimerService timer)
 		{
 			_client = client;
 			_data = data;
-			_downloader = downloader;
+			_download = download;
 			_playtesting = playtesting;
 			_mute = mute;
 			_timer = timer;
@@ -152,7 +151,7 @@ namespace BotHATTwaffle.Commands
 				return;
 			}
 
-			LevelTestingServer server = _data.GetServer(serverCode);
+			Server server = _data.GetServer(serverCode);
 
 			if (server == null)
 			{
@@ -240,7 +239,7 @@ namespace BotHATTwaffle.Commands
 			string gameMode = _playtesting.CurrentEventInfo[7];
 
 			// Gets the given server. Otherwise, uses the current event's server.
-			LevelTestingServer server = _data.GetServer(serverCode ?? _playtesting.CurrentEventInfo[10].Substring(0, 3));
+			Server server = _data.GetServer(serverCode ?? _playtesting.CurrentEventInfo[10].Substring(0, 3));
 
 			if (gameMode.Equals("competitive", StringComparison.OrdinalIgnoreCase ) ||
 			    gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
@@ -341,7 +340,7 @@ namespace BotHATTwaffle.Commands
 		/// <param name="server">The server on which the event was hosted.</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		// TODO: Move to a service.
-		private async Task PostTasks(LevelTestingServer server)
+		private async Task PostTasks(Server server)
 		{
 			string workshopId = Regex.Match(_testInfo[6], @"\d+$").Value;
 
@@ -369,7 +368,7 @@ namespace BotHATTwaffle.Commands
 			await _data.RconCommand("say Please join the Level Testing voice channel for feedback!", server);
 
 			// Starts downloading playtesting files in the background.
-			_downloader.Start(_testInfo, server);
+			_download.Start(_testInfo, server);
 
 			var embed = new EmbedBuilder
 			{

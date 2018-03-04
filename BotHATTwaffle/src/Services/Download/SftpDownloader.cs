@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Models;
 
 using Renci.SshNet;
 using Renci.SshNet.Sftp;
 
-namespace BotHATTwaffle.Objects.Downloader
+namespace BotHATTwaffle.Services.Download
 {
 	public sealed class SftpDownloader : Downloader<SftpClient>
 	{
-		public SftpDownloader(IReadOnlyList<string> testInfo, LevelTestingServer server, DataServices dataSvc) : base(testInfo, server,
+		public SftpDownloader(IReadOnlyList<string> testInfo, Server server, DataService dataSvc) : base(testInfo, server,
 			dataSvc)
 		{
 			Client = new SftpClient(testInfo[10], server.FtpUser, server.FtpPass);

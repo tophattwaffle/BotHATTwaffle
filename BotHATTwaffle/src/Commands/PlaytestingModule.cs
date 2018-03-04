@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Timers;
 
 using BotHATTwaffle.Commands.Preconditions;
-using BotHATTwaffle.Objects;
-using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Models;
 using BotHATTwaffle.Services;
+using BotHATTwaffle.Services.Playtesting;
 
 using Discord;
 using Discord.Commands;
@@ -25,9 +25,9 @@ namespace BotHATTwaffle.Commands
 	{
 		public List<UserData> UserData = new List<UserData>();
 		private readonly DiscordSocketClient _client;
-		private readonly DataServices _dataServices;
+		private readonly DataService _dataService;
 		public IUserMessage  AnnounceMessage { get; set; }
-		public GoogleCalendar GoogleCalendar;
+		public EventCalendarService EventCalendarService;
 		public string[] LastEventInfo;
 		public string[] CurrentEventInfo;
 		private bool _alertedHour = false;
@@ -47,16 +47,16 @@ namespace BotHATTwaffle.Commands
 
 		public PlaytestingService(
 			DiscordSocketClient client,
-			DataServices dataServices,
-			GoogleCalendar calendar,
+			DataService dataService,
+			EventCalendarService calendarService,
 			Random random,
 			ITimerService timer)
 		{
 			_client = client;
-			_dataServices = dataServices;
+			_dataService = dataService;
 			_random = random;
-			GoogleCalendar = calendar;
-			CurrentEventInfo = GoogleCalendar.GetEvents(); //Initial get of playtest.
+			EventCalendarService = calendarService;
+			CurrentEventInfo = EventCalendarService.GetEvents(); //Initial get of playtest.
 			LastEventInfo = CurrentEventInfo; //Make sure array is same size for doing compares later.
 
 			timer.AddHandler(async (sender, e) => await Announce());
@@ -82,7 +82,7 @@ namespace BotHATTwaffle.Commands
 				Console.WriteLine("Titles match! Attempting to reattach!");
 				try
 				{
-					AnnounceMessage = await _dataServices.AnnouncementChannel.GetMessageAsync(announceId) as IUserMessage;
+					AnnounceMessage = await _dataService.AnnouncementChannel.GetMessageAsync(announceId) as IUserMessage;
 					Console.WriteLine("SUCCESS!");
 				}
 				catch (Exception)
@@ -97,7 +97,7 @@ namespace BotHATTwaffle.Commands
 				Console.WriteLine("Titles do not match. Attempting to delete old message!");
 				try
 				{
-					AnnounceMessage = await _dataServices.AnnouncementChannel.GetMessageAsync(announceId) as IUserMessage;
+					AnnounceMessage = await _dataService.AnnouncementChannel.GetMessageAsync(announceId) as IUserMessage;
 					await AnnounceMessage.DeleteAsync();
 					AnnounceMessage = null;
 					Console.WriteLine("Old message Deleted!\nForcing refresh to post new message.");
@@ -122,10 +122,10 @@ namespace BotHATTwaffle.Commands
 				GetPreviousAnnounceAsync();
 			}
 			_caltick++;
-			if (_dataServices.CalUpdateTicks < _caltick)
+			if (_dataService.CalUpdateTicks < _caltick)
 			{
 				_caltick = 0;
-				CurrentEventInfo = GoogleCalendar.GetEvents();
+				CurrentEventInfo = EventCalendarService.GetEvents();
 
 				if (AnnounceMessage == null) //No current message.
 				{
@@ -204,7 +204,7 @@ namespace BotHATTwaffle.Commands
 			{
 				string albumUrl = CurrentEventInfo[5];
 				string albumId = albumUrl.Substring(albumUrl.IndexOf("/a/") + 3);
-				var client = new ImgurClient(_dataServices.ImgurApi);
+				var client = new ImgurClient(_dataService.ImgurApi);
 				var endpoint = new AlbumEndpoint(client);
 
 				_featureAlbum = await endpoint.GetAlbumAsync(albumId);
@@ -216,14 +216,14 @@ namespace BotHATTwaffle.Commands
 					foundImages += $"{i.Link}\n";
 				}
 
-				await _dataServices.ChannelLog("Getting Imgur Info from IMGUR API", $"Album URL: {albumUrl}" +
+				await _dataService.ChannelLog("Getting Imgur Info from IMGUR API", $"Album URL: {albumUrl}" +
 				$"\nAlbum ID: {albumId}" +
 				$"\nClient Credits Remaining: {client.RateLimit.ClientRemaining} of {client.RateLimit.ClientLimit}" +
 				$"\nImages Found: {foundImages}");
 			}
 			catch
 			{
-				await _dataServices.ChannelLog($"Unable to get Imgur Album for Random Image for {CurrentEventInfo[2]}","Falling back to the image in the cal event.");
+				await _dataService.ChannelLog($"Unable to get Imgur Album for Random Image for {CurrentEventInfo[2]}","Falling back to the image in the cal event.");
 				_canRandomImage = false;
 			}
 		}
@@ -235,7 +235,7 @@ namespace BotHATTwaffle.Commands
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private async Task PostAnnounce(Embed embed)
 		{
-			AnnounceMessage = await _dataServices.AnnouncementChannel.SendMessageAsync("",false,embed) as IUserMessage;
+			AnnounceMessage = await _dataService.AnnouncementChannel.SendMessageAsync("",false,embed) as IUserMessage;
 			await GetAlbum();
 			//If the file exists, just delete it so it can be remade with the new test info.
 			if (File.Exists(_ANNOUNCE_PATH))
@@ -252,7 +252,7 @@ namespace BotHATTwaffle.Commands
 					sw.WriteLine(AnnounceMessage.Id);
 				}
 			}
-			await _dataServices.ChannelLog("Posting Playtest Announcement", $"Posting Playtest for {CurrentEventInfo[2]}");
+			await _dataService.ChannelLog("Posting Playtest Announcement", $"Posting Playtest for {CurrentEventInfo[2]}");
 			LastEventInfo = CurrentEventInfo;
 		}
 
@@ -281,7 +281,7 @@ namespace BotHATTwaffle.Commands
 				{
 					Console.WriteLine($"{e.GetType()}: {e.Message}\n{e.StackTrace}\n");
 
-					await _dataServices.ChannelLog(
+					await _dataService.ChannelLog(
 						"Attempted to modify announcement message, but I could not find it. Did someone delete it? Recreating a new message.");
 
 					AnnounceMessage = null;
@@ -302,7 +302,7 @@ namespace BotHATTwaffle.Commands
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private async Task RebuildAnnounce()
 		{
-			await _dataServices.ChannelLog("Scrubbing Playtest Announcement", "Playtest is different from the last one. This is probably because" +
+			await _dataService.ChannelLog("Scrubbing Playtest Announcement", "Playtest is different from the last one. This is probably because" +
 				"the last playtest is past. Let's tear it down and get the next test.");
 			await AnnounceMessage.DeleteAsync();
 			AnnounceMessage = null;
@@ -328,13 +328,13 @@ namespace BotHATTwaffle.Commands
 		{
 			//type true = Change map
 			//type false = set config
-			var server = _dataServices.GetServer(serverStr.Substring(0, 3));
+			var server = _dataService.GetServer(serverStr.Substring(0, 3));
 
 			if (type) //Change map
 			{
 				var result = Regex.Match(CurrentEventInfo[6], @"\d+$").Value;
-				await _dataServices.RconCommand($"host_workshop_map {result}", server);
-				await _dataServices.ChannelLog("Changing Map on Test Server", $"'host_workshop_map {result}' on {server.Address}");
+				await _dataService.RconCommand($"host_workshop_map {result}", server);
+				await _dataService.ChannelLog("Changing Map on Test Server", $"'host_workshop_map {result}' on {server.Address}");
 			}
 			else //Set config and post about it
 			{
@@ -358,9 +358,9 @@ namespace BotHATTwaffle.Commands
 
 					Description = $"**{server.Description}**\n\n{CurrentEventInfo[9]}"
 				};
-				await _dataServices.TestingChannel.SendMessageAsync("", false, builder);
-				await _dataServices.ChannelLog("Setting postgame config", $"'exec postgame' on {server.Address}");
-				await _dataServices.RconCommand($"exec postgame", server);
+				await _dataService.TestingChannel.SendMessageAsync("", false, builder);
+				await _dataService.ChannelLog("Setting postgame config", $"'exec postgame' on {server.Address}");
+				await _dataService.RconCommand($"exec postgame", server);
 			}
 		}
 
@@ -423,23 +423,23 @@ namespace BotHATTwaffle.Commands
 						_alertedStart = true;
 
 						//Enable mentions for playtester role
-						await  _dataServices.PlayTesterRole.ModifyAsync(x =>
+						await  _dataService.PlayTesterRole.ModifyAsync(x =>
 						{
 							x.Mentionable = true;
 						});
 
 						//Display the map to be tested.
-						await _dataServices.TestingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(CurrentEventInfo, true));
-						await _dataServices.TestingChannel.SendMessageAsync($"{_dataServices.PlayTesterRole.Mention}" +
+						await _dataService.TestingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(CurrentEventInfo, true));
+						await _dataService.TestingChannel.SendMessageAsync($"{_dataService.PlayTesterRole.Mention}" +
 						$"\n**Playtest starting now!** `connect {eventInfo[10]}`" +
 						$"\n*Type `>playtester` to unsubscribe*");
 
-						await _dataServices.ChannelLog($"Posing start playtest message for {CurrentEventInfo[2]}");
+						await _dataService.ChannelLog($"Posing start playtest message for {CurrentEventInfo[2]}");
 
 						_alertedStart = true;
 
 						//Disable mentions for playtester role
-						await _dataServices.PlayTesterRole.ModifyAsync(x =>
+						await _dataService.PlayTesterRole.ModifyAsync(x =>
 						{
 							x.Mentionable = false;
 						});
@@ -460,21 +460,21 @@ namespace BotHATTwaffle.Commands
 					await ClearServerReservations();
 
 					_alertedHour = true;
-					await _dataServices.PlayTesterRole.ModifyAsync(x =>
+					await _dataService.PlayTesterRole.ModifyAsync(x =>
 					{
 						x.Mentionable = true;
 					});
 
 					//Display the map to be tested.
-					await _dataServices.TestingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(CurrentEventInfo, true));
+					await _dataService.TestingChannel.SendMessageAsync("", false, await FormatPlaytestInformationAsync(CurrentEventInfo, true));
 
-					await _dataServices.TestingChannel.SendMessageAsync($"{_dataServices.PlayTesterRole.Mention}" +
+					await _dataService.TestingChannel.SendMessageAsync($"{_dataService.PlayTesterRole.Mention}" +
 							$"\n**Playtest starting in 1 hour**" +
 							$"\n*Type `>playtester` to unsubscribe*");
 
-					await _dataServices.ChannelLog($"Posing 1 hour playtest message for {CurrentEventInfo[2]}");
+					await _dataService.ChannelLog($"Posing 1 hour playtest message for {CurrentEventInfo[2]}");
 
-					await _dataServices.PlayTesterRole.ModifyAsync(x =>
+					await _dataService.PlayTesterRole.ModifyAsync(x =>
 					{
 						x.Mentionable = false;
 					});
@@ -644,11 +644,11 @@ namespace BotHATTwaffle.Commands
 					}
 					catch
 					{
-						await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
+						await _dataService.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 					}
 
-					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
-					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.ReservedServer);
+					await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+					await _dataService.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.ReservedServer);
 					UserData.Remove(u);
 					await Task.Delay(1000);
 				}
@@ -662,10 +662,10 @@ namespace BotHATTwaffle.Commands
 		/// <param name="inServerReleaseTime">Release Time</param>
 		/// <param name="server">Reserved Server</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, LevelTestingServer server)
+		public async Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, Server server)
 		{
-			await _dataServices.ChannelLog($"{inUser} reservation on {server.Address} has started.", $"Reservation expires at {inServerReleaseTime}");
-			await _dataServices.RconCommand($"say Hey everyone! {inUser.Username} has reserved this server!", server);
+			await _dataService.ChannelLog($"{inUser} reservation on {server.Address} has started.", $"Reservation expires at {inServerReleaseTime}");
+			await _dataService.RconCommand($"say Hey everyone! {inUser.Username} has reserved this server!", server);
 			UserData.Add(new UserData()
 			{
 				User = inUser,
@@ -710,11 +710,11 @@ namespace BotHATTwaffle.Commands
 				}
 				catch
 				{
-					await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
+					await _dataService.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 				}
 
-				await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
-				await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
+				await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+				await _dataService.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
 				UserData.Remove(u);
 				await Task.Delay(1000);
 			}
@@ -727,7 +727,7 @@ namespace BotHATTwaffle.Commands
 		/// <returns></returns>
 		public async Task ClearServerReservations(string serverStr)
 		{
-			var server = _dataServices.GetServer(serverStr);
+			var server = _dataService.GetServer(serverStr);
 
 			if (server == null)
 				return;
@@ -764,11 +764,11 @@ namespace BotHATTwaffle.Commands
 					}
 					catch
 					{
-						await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
+						await _dataService.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 					}
 
-					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
-					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
+					await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+					await _dataService.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
 					UserData.Remove(u);
 					await Task.Delay(1000);
 				}
@@ -821,7 +821,7 @@ namespace BotHATTwaffle.Commands
 		/// </summary>
 		/// <param name="server">Server to check</param>
 		/// <returns>True if server is open, false if reserved</returns>
-		public bool IsServerOpen(LevelTestingServer server)
+		public bool IsServerOpen(Server server)
 		{
 			foreach (UserData u in UserData.ToList())
 			{
@@ -868,13 +868,13 @@ namespace BotHATTwaffle.Commands
 	{
 		private readonly DiscordSocketClient _client;
 		private readonly PlaytestingService _playtesting;
-		private readonly DataServices _dataServices;
+		private readonly DataService _dataService;
 
-		public PlaytestingModule(DiscordSocketClient client, PlaytestingService playtesting, DataServices dataServices)
+		public PlaytestingModule(DiscordSocketClient client, PlaytestingService playtesting, DataService dataService)
 		{
 			_client = client;
 			_playtesting = playtesting;
-			_dataServices = dataServices;
+			_dataService = dataService;
 		}
 
 		[Command("PublicServer")]
@@ -908,7 +908,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			//Get the server
-			var server = _dataServices.GetServer(serverCode);
+			var server = _dataService.GetServer(serverCode);
 
 			//Cannot find server
 			if (server == null)
@@ -973,7 +973,7 @@ namespace BotHATTwaffle.Commands
 				if (mapId != null)
 				{
 					await Task.Delay(3000);
-					await _dataServices.RconCommand($"host_workshop_map {mapId}", server);
+					await _dataService.RconCommand($"host_workshop_map {mapId}", server);
 				}
 			}
 			//Server is already reserved by someone else
@@ -1011,7 +1011,7 @@ namespace BotHATTwaffle.Commands
 		[Alias("list", "ListServers", "ls")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.ActiveMember, Role.Moderators, Role.RconAccess)]
-		public async Task ListServersAsync() => await ReplyAsync(string.Empty, false, _dataServices.GetAllServers());
+		public async Task ListServersAsync() => await ReplyAsync(string.Empty, false, _dataService.GetAllServers());
 
 		[Command("PublicCommand")]
 		[Summary("Invokes a command on the invoking user's reserved test server.")]
@@ -1023,7 +1023,7 @@ namespace BotHATTwaffle.Commands
 		[RequireRole(Role.ActiveMember)]
 		public async Task PublicTestCommandAsync([Remainder]string command = null)
 		{
-			LevelTestingServer server = null;
+			Server server = null;
 
 			if (!_playtesting.CanReserve)
 			{
@@ -1035,7 +1035,7 @@ namespace BotHATTwaffle.Commands
 			//Display all the commands the user can use.
 			if (command == null)
 			{
-				string reply = _dataServices.PublicCommandWhiteList.Aggregate<string, string>(null, (current, s) => current + $"{s}, ");
+				string reply = _dataService.PublicCommandWhiteList.Aggregate<string, string>(null, (current, s) => current + $"{s}, ");
 
 				await ReplyAsync($"__**Commands that can be used on public test servers**__" +
 								$"```{reply}```");
@@ -1080,10 +1080,10 @@ namespace BotHATTwaffle.Commands
 						return;
 					}
 					bool valid = false;
-					if (_dataServices.PublicCommandWhiteList.Any(s => command.ToLower().Contains(s))) {
+					if (_dataService.PublicCommandWhiteList.Any(s => command.ToLower().Contains(s))) {
 
 					valid = true;
-					string reply = await _dataServices.RconCommand(command, server);
+					string reply = await _dataService.RconCommand(command, server);
 					Console.WriteLine($"RCON:\n{reply}");
 
 					//Remove log messages from log
@@ -1105,7 +1105,7 @@ namespace BotHATTwaffle.Commands
 					else
 						await ReplyAsync($"```{command} sent to {server.Name}\n{reply}```");
 
-					await _dataServices.ChannelLog($"{Context.User} Sent RCON command using public command", $"{command} was sent to: {server.Address}\n{reply}");
+					await _dataService.ChannelLog($"{Context.User} Sent RCON command using public command", $"{command} was sent to: {server.Address}\n{reply}");
 				}
 				//Command isn't valid
 				if (!valid)
@@ -1143,7 +1143,7 @@ namespace BotHATTwaffle.Commands
 		[RequireRole(Role.ActiveMember)]
 		public async Task ReleasePublicTestCommandAsync([Remainder]string command = null)
 		{
-			LevelTestingServer server = null;
+			Server server = null;
 
 			if (!_playtesting.CanReserve)
 			{
@@ -1186,17 +1186,17 @@ namespace BotHATTwaffle.Commands
 		{
 			var user = Context.User as SocketGuildUser;
 
-			if (user.Roles.Contains(_dataServices.PlayTesterRole))
+			if (user.Roles.Contains(_dataService.PlayTesterRole))
 			{
-				await _dataServices.ChannelLog($"{Context.User} has unsubscribed from playtest notifications!");
+				await _dataService.ChannelLog($"{Context.User} has unsubscribed from playtest notifications!");
 				await ReplyAsync($"Sorry to see you go from playtest notifications {Context.User.Mention}!");
-				await ((IGuildUser)user).RemoveRoleAsync(_dataServices.PlayTesterRole);
+				await ((IGuildUser)user).RemoveRoleAsync(_dataService.PlayTesterRole);
 			}
 			else
 			{
-				await _dataServices.ChannelLog($"{Context.User} has subscribed to playtest notifications!");
+				await _dataService.ChannelLog($"{Context.User} has subscribed to playtest notifications!");
 				await ReplyAsync($"Thanks for subscribing to playtest notifications {Context.User.Mention}!");
-				await ((IGuildUser)user).AddRoleAsync(_dataServices.PlayTesterRole);
+				await ((IGuildUser)user).AddRoleAsync(_dataService.PlayTesterRole);
 			}
 		}
 
@@ -1208,7 +1208,7 @@ namespace BotHATTwaffle.Commands
 		{
 			//Purges last and current stored info about the test. This is a easy way to reset the stored info manually
 			//if something happens and the announcement glitches out.
-			_playtesting.CurrentEventInfo = _playtesting.GoogleCalendar.GetEvents();
+			_playtesting.CurrentEventInfo = _playtesting.EventCalendarService.GetEvents();
 			_playtesting.LastEventInfo = _playtesting.CurrentEventInfo;
 
 			await ReplyAsync("", false, await _playtesting.FormatPlaytestInformationAsync(_playtesting.CurrentEventInfo, true));

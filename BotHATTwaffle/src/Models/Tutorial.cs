@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace BotHATTwaffle.Objects.Json
+namespace BotHATTwaffle.Models
 {
 	public class Tutorial
 	{

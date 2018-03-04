@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Models;
 
-namespace BotHATTwaffle.Objects.Downloader
+namespace BotHATTwaffle.Services.Download
 {
 	public abstract class Downloader<TClient> : IDisposable where TClient : IDisposable
 	{
 		protected TClient Client;
-		protected readonly DataServices DataSvc;
+		protected readonly DataService DataSvc;
 		protected readonly string DemoName;
 		protected readonly string FtpPath;
 		protected readonly string LocalPath;
 		protected readonly string WorkshopId;
 
-		protected Downloader(IReadOnlyList<string> testInfo, LevelTestingServer server, DataServices dataSvc)
+		protected Downloader(IReadOnlyList<string> testInfo, Server server, DataService dataSvc)
 		{
 			DataSvc = dataSvc;
 			DateTime time = Convert.ToDateTime(testInfo[1]);

@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using BotHATTwaffle.Services;
+
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -15,12 +17,12 @@ namespace BotHATTwaffle.Commands
 	public class UtilitiesModule : ModuleBase<SocketCommandContext>
 	{
 		private readonly DiscordSocketClient _client;
-		private readonly DataServices _dataServices;
+		private readonly DataService _dataService;
 
-		public UtilitiesModule(DiscordSocketClient client, DataServices dataServices)
+		public UtilitiesModule(DiscordSocketClient client, DataService dataService)
 		{
 			_client = client;
-			_dataServices = dataServices;
+			_dataService = dataService;
 		}
 
 		/// <summary>
@@ -64,13 +66,13 @@ namespace BotHATTwaffle.Commands
 		{
 			if (string.IsNullOrWhiteSpace(roles))
 			{
-				await ReplyAsync($"Toggleable roles are:```\n{string.Join("\n", _dataServices.RoleMeWhiteList)}```");
+				await ReplyAsync($"Toggleable roles are:```\n{string.Join("\n", _dataService.RoleMeWhiteList)}```");
 				return;
 			}
 
 			var roleNames = new List<string>();
 
-			foreach (string role in _dataServices.RoleMeWhiteList)
+			foreach (string role in _dataService.RoleMeWhiteList)
 			{
 				Match match = Regex.Match(roles, $@"\b{role}\b", RegexOptions.IgnoreCase);
 
@@ -145,7 +147,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			await ReplyAsync(string.Empty, false, embed.Build());
-			await _dataServices.ChannelLog($"Toggled Roles for {Context.User}", logMessage.ToString());
+			await _dataService.ChannelLog($"Toggled Roles for {Context.User}", logMessage.ToString());
 		}
 	}
 }

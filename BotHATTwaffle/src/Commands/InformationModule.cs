@@ -6,6 +6,8 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using BotHATTwaffle.Services;
+
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -15,13 +17,13 @@ namespace BotHATTwaffle.Commands
 	public class InformationModule : ModuleBase<SocketCommandContext>
 	{
 		private readonly DiscordSocketClient _client;
-		private readonly DataServices _dataServices;
+		private readonly DataService _dataService;
 		private readonly Random _random;
 
-		public InformationModule(DiscordSocketClient client, DataServices data, Random random)
+		public InformationModule(DiscordSocketClient client, DataService data, Random random)
 		{
 			_client = client;
-			_dataServices = data;
+			_dataService = data;
 			_random = random;
 		}
 
@@ -108,9 +110,9 @@ namespace BotHATTwaffle.Commands
 				$":eyes: Searching for **{term}** in **{series}**. This may take a moment! :eyes:");
 
 			bool isPrivate = Context.IsPrivate;
-			List<List<string>> results = _dataServices.Search(series, term, isPrivate); // Peforms a search.
+			List<List<string>> results = _dataService.Search(series, term, isPrivate); // Peforms a search.
 
-			await _dataServices.ChannelLog($"{Context.User} ran a search", $"Series: {series}\nSearch Term: {term}");
+			await _dataService.ChannelLog($"{Context.User} ran a search", $"Series: {series}\nSearch Term: {term}");
 
 			// A dump was requested.
 			if (term.Equals("dump", StringComparison.InvariantCultureIgnoreCase) ||
@@ -329,9 +331,9 @@ namespace BotHATTwaffle.Commands
 			var name = "Cat Fact 0";
 
 			// Gets a fact from the file.
-			if (File.Exists(_dataServices.CatFactPath))
+			if (File.Exists(_dataService.CatFactPath))
 			{
-				string[] allLines = File.ReadAllLines(_dataServices.CatFactPath);
+				string[] allLines = File.ReadAllLines(_dataService.CatFactPath);
 				int lineNumber = _random.Next(0, allLines.Length);
 				catFact = allLines[lineNumber];
 
@@ -343,7 +345,7 @@ namespace BotHATTwaffle.Commands
 
 			var embed = new EmbedBuilder
 			{
-				ThumbnailUrl = _dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/catfacts/"),
+				ThumbnailUrl = _dataService.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/catfacts/"),
 				Color = new Color(230, 235, 240)
 			};
 
@@ -351,7 +353,7 @@ namespace BotHATTwaffle.Commands
 			embed.WithFooter("This was cat facts, you cannot unsubscribe.");
 			embed.AddField(name, catFact);
 
-			await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A CAT FACT");
+			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A CAT FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
 		}
 
@@ -370,16 +372,16 @@ namespace BotHATTwaffle.Commands
 			var penguinFact = "Did you know penguins have big bushy tails?";
 
 			// Gets a fact from the file.
-			if (File.Exists(_dataServices.PenguinFactPath))
+			if (File.Exists(_dataService.PenguinFactPath))
 			{
-				string[] allLines = File.ReadAllLines(_dataServices.PenguinFactPath);
+				string[] allLines = File.ReadAllLines(_dataService.PenguinFactPath);
 				int lineNumber = _random.Next(0, allLines.Length);
 				penguinFact = allLines[lineNumber];
 			}
 
 			var embed = new EmbedBuilder
 			{
-				ThumbnailUrl = _dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/penguinfacts/"),
+				ThumbnailUrl = _dataService.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/penguinfacts/"),
 				Color = new Color(230, 235, 240),
 				Description = penguinFact
 			};
@@ -387,7 +389,7 @@ namespace BotHATTwaffle.Commands
 			embed.WithAuthor("PENGUIN FACTS!", Context.Message.Author.GetAvatarUrl());
 			embed.WithFooter("This was penguin facts; you cannot unsubscribe.");
 
-			await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
+			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
 		}
 
@@ -401,16 +403,16 @@ namespace BotHATTwaffle.Commands
 			var tanookiFact = "Did you know Tanooki has a big bushy tail?";
 
 			// Gets a fact from the file.
-			if (File.Exists(_dataServices.TanookiFactPath))
+			if (File.Exists(_dataService.TanookiFactPath))
 			{
-				string[] allLines = File.ReadAllLines(_dataServices.TanookiFactPath);
+				string[] allLines = File.ReadAllLines(_dataService.TanookiFactPath);
 				int lineNumber = _random.Next(0, allLines.Length);
 				tanookiFact = allLines[lineNumber];
 			}
 
 			var embed = new EmbedBuilder
 			{
-				ThumbnailUrl = _dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
+				ThumbnailUrl = _dataService.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
 				Color = new Color(230, 235, 240),
 				Description = tanookiFact
 			};
@@ -418,7 +420,7 @@ namespace BotHATTwaffle.Commands
 			embed.WithAuthor("TANOOKI FACTS!", Context.Message.Author.GetAvatarUrl());
 			embed.WithFooter("This was Tanooki facts; you cannot unsubscribe.");
 
-			await _dataServices.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A TANOOKI FACT");
+			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A TANOOKI FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
 		}
 
@@ -429,7 +431,7 @@ namespace BotHATTwaffle.Commands
 		{
 			var embed = new EmbedBuilder
 			{
-				ImageUrl = _dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/kimjongillookingatthings/"),
+				ImageUrl = _dataService.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/kimjongillookingatthings/"),
 				Color = new Color(138, 43, 226)
 			};
 

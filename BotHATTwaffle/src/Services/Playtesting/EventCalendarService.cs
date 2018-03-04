@@ -10,19 +10,19 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 
-namespace BotHATTwaffle
+namespace BotHATTwaffle.Services.Playtesting
 {
 	/// <summary>
 	/// A service for interacting with Google Calendars.
 	/// </summary>
-	public class GoogleCalendar
+	public class EventCalendarService
 	{
 		private readonly CalendarService _calendar;
-		private readonly DataServices _dataServices;
+		private readonly DataService _dataService;
 
-		public GoogleCalendar(DataServices dataServices)
+		public EventCalendarService(DataService dataService)
 		{
-			_dataServices = dataServices;
+			_dataService = dataService;
 			_calendar = new CalendarService(new BaseClientService.Initializer
 			{
 				HttpClientInitializer = GetCredential(),
@@ -86,7 +86,7 @@ namespace BotHATTwaffle
 			var finalEvent = new string[11];
 
 			// Defines request and parameters.
-			EventsResource.ListRequest request = _calendar.Events.List(_dataServices.Config["testCalID"]);
+			EventsResource.ListRequest request = _calendar.Events.List(_dataService.Config["testCalID"]);
 
 			request.Q = " by "; // This will limit all search requests to ONLY get playtest events.
 			request.TimeMin = DateTime.Now;
@@ -133,7 +133,7 @@ namespace BotHATTwaffle
 				// TODO: Narrow the exception being caught.
 
 				// TODO: Is this even needed now that the description is parsed more safely?
-				_dataServices.ChannelLog(
+				_dataService.ChannelLog(
 					"There is an issue with the description on the next playtest event. This is likely caused by HTML " +
 					$"formatting on the description.\n{e}");
 

@@ -4,17 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Security.Authentication;
 
-using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Models;
 
 using FluentFTP;
 
-namespace BotHATTwaffle.Objects.Downloader
+namespace BotHATTwaffle.Services.Download
 {
 	public sealed class FtpDownloader : Downloader<FtpClient>
 	{
 		private readonly string gamemode;
 
-		public FtpDownloader(IReadOnlyList<string> testInfo, LevelTestingServer server, DataServices dataSvc) : base(testInfo, server, dataSvc)
+		public FtpDownloader(IReadOnlyList<string> testInfo, Server server, DataService dataSvc) : base(testInfo, server, dataSvc)
 		{
 			gamemode = testInfo[7];
 			Client = new FtpClient(server.Address, server.FtpUser, server.FtpPass);

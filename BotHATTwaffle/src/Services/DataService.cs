@@ -1,30 +1,32 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json.Linq;
 using System.IO;
-
-using HtmlAgilityPack;
-using System.Threading.Tasks;
-using CoreRCON;
+using System.Linq;
 using System.Net;
-using Discord;
-using Discord.WebSocket;
+using System.Threading.Tasks;
 using System.Web;
 
 using BotHATTwaffle.Extensions;
-using BotHATTwaffle.Objects.Json;
+using BotHATTwaffle.Models;
+
+using CoreRCON;
+
+using Discord;
+using Discord.WebSocket;
+
+using HtmlAgilityPack;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace BotHATTwaffle
+namespace BotHATTwaffle.Services
 {
-	public class DataServices
+	public class DataService
 	{
 		public Dictionary<string, string> Config;
 
 		private List<TutorialSeries> _series;
-		private List<LevelTestingServer> _servers;
+		private List<Server> _servers;
 		private readonly DiscordSocketClient _client;
 		private readonly Random _random;
 		public string DemoPath;
@@ -81,7 +83,7 @@ namespace BotHATTwaffle
 		public int CalUpdateTicks = 2;
 		public string ImgurApi;
 
-		public DataServices(DiscordSocketClient client, Random random)
+		public DataService(DiscordSocketClient client, Random random)
 		{
 			Config = ReadSettings(); //Needed when the data is first DI'd
 			VariableAssignment();
@@ -107,7 +109,7 @@ namespace BotHATTwaffle
 			_series = DeserialiseToken<List<TutorialSeries>>(@"searchData.json", "Series");
 
 			//Read in the server JSON data
-			_servers = DeserialiseToken<List<LevelTestingServer>>(@"servers.json", "servers");
+			_servers = DeserialiseToken<List<Server>>(@"servers.json", "servers");
 
 			Console.ForegroundColor = ConsoleColor.Magenta;
 			Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
@@ -429,14 +431,14 @@ namespace BotHATTwaffle
 		/// </summary>
 		/// <param name="serverStr">3 letter server code</param>
 		/// <returns>Server object that was located in JSON file</returns>
-		public LevelTestingServer GetServer(string serverStr) => _servers.Find(x => x.Name == serverStr.ToLower());
+		public Server GetServer(string serverStr) => _servers.Find(x => x.Name == serverStr.ToLower());
 
 		/// <summary>
 		/// Gets all the servers that exist in the servers JSON file
 		/// and gives you an embed that lets you visualize their information.
 		/// </summary>
 		/// <returns>Embed object with server information</returns>
-		public Embed GetAllServers()
+		public Discord.Embed GetAllServers()
 		{
 			var authBuilder = new EmbedAuthorBuilder()
 			{
@@ -468,7 +470,7 @@ namespace BotHATTwaffle
 		/// <param name="command">Command to send</param>
 		/// <param name="server">3 letter server code</param>
 		/// <returns>Output from RCON command</returns>
-		public async Task<string> RconCommand(string command, LevelTestingServer server)
+		public async Task<string> RconCommand(string command, Server server)
 		{
 			string reply = null;
 

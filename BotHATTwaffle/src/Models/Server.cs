@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace BotHATTwaffle.Objects.Json
+namespace BotHATTwaffle.Models
 {
-	public class LevelTestingServer
+	public class Server
 	{
 		[JsonProperty("name")]
 		public string Name { get; set; }

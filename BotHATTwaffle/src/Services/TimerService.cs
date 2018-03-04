@@ -9,7 +9,7 @@ namespace BotHATTwaffle.Services
 	public class TimerService : ITimerService
 	{
 		private readonly DiscordSocketClient _client;
-		private readonly DataServices _data;
+		private readonly DataService _data;
 		private readonly Random _random;
 		private readonly Timer _timer;
 
@@ -19,7 +19,7 @@ namespace BotHATTwaffle.Services
 		/// <param name="client"></param>
 		/// <param name="data"></param>
 		/// <param name="rand"></param>
-		public TimerService(DiscordSocketClient client, DataServices data, Random rand)
+		public TimerService(DiscordSocketClient client, DataService data, Random rand)
 		{
 			_client = client;
 			_data = data;

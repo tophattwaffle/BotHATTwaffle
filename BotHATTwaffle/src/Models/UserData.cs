@@ -1,11 +1,9 @@
 ﻿using System;
 
-using BotHATTwaffle.Objects.Json;
-
 using Discord;
 using Discord.WebSocket;
 
-namespace BotHATTwaffle.Objects
+namespace BotHATTwaffle.Models
 {
 	/// <summary>
 	/// Stores data tied to a specific user.
@@ -17,7 +15,7 @@ namespace BotHATTwaffle.Objects
 		public DateTime ReservationExpiration { get; set; }
 		public DateTime HandleJoinTime { get; set; }
 		public Embed JoinMessage { get; set; }
-		public LevelTestingServer ReservedServer { get; set; }
+		public Server ReservedServer { get; set; }
 
 		/// <summary>
 		/// Determines if a user's mute has expired.

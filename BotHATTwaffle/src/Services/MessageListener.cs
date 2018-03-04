@@ -1,40 +1,42 @@
 ﻿#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-using Discord.WebSocket;
-using System.Threading.Tasks;
-using Discord;
+
 using System;
-using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-using BotHATTwaffle.Objects;
+using BotHATTwaffle.Models;
 
-namespace BotHATTwaffle
+using Discord;
+using Discord.WebSocket;
+
+namespace BotHATTwaffle.Services
 {
-	class Eavesdropping
+	public class MessageListener
 	{
 		private readonly Timer _timer;
 		private const int _JOIN_DELAY_ROLE_TIME = 10;
 		private readonly List<UserData> _joinDelayList = new List<UserData>();
 		private readonly DiscordSocketClient _client;
-		private readonly DataServices _dataServices;
+		private readonly DataService _dataService;
 		private readonly Random _random;
 		private DateTime _canShitPost;
 
-		public Eavesdropping(DiscordSocketClient client, DataServices dataService, Random random)
+		public MessageListener(DiscordSocketClient client, DataService dataService, Random random)
 		{
 			_client = client;
-			_dataServices = dataService;
+			_dataService = dataService;
 			_random = random;
 
-			_dataServices.AgreeStrings = new string[]{
+			_dataService.AgreeStrings = new string[]{
 				"^",
 				"^^^",
 				"^^^ I agree with ^^^",
 			};
 
 			//Subtract value so we can shitpost once right away.
-			_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay * -1);
+			_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay * -1);
 
 			//Start a timer. Starts after 10 seconds, and re-fires every 60 seconds.
 			_timer = new Timer(_ =>
@@ -45,7 +47,7 @@ namespace BotHATTwaffle
 					if (u.CanHandleJoin())
 					{
 						//Give them playtester role
-						u.User.AddRoleAsync(_dataServices.PlayTesterRole);
+						u.User.AddRoleAsync(_dataService.PlayTesterRole);
 
 						//Fire and forget to avoid compiler warning. We can't await this call because
 						//we are not in an async method.
@@ -55,7 +57,7 @@ namespace BotHATTwaffle
 						_joinDelayList.Remove(u);
 
 						//Log
-						_dataServices.ChannelLog($"{u.User} now has playtester role. Welcome DM was sent.");
+						_dataService.ChannelLog($"{u.User} now has playtester role. Welcome DM was sent.");
 					}
 				}
 			},
@@ -70,10 +72,10 @@ namespace BotHATTwaffle
 		/// <param name="inUser">User that joined</param>
 		/// <param name="inRoleTime">What time can they get processed</param>
 		/// <param name="message">Message to send user after they are processed</param>
-		public void AddNewUserJoin(SocketGuildUser inUser, DateTime inRoleTime, Embed message)
+		public void AddNewUserJoin(SocketGuildUser inUser, DateTime inRoleTime, Discord.Embed message)
 		{
 			//Log the user join
-			_dataServices.ChannelLog($"USER JOINED {inUser}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
+			_dataService.ChannelLog($"USER JOINED {inUser}", $"I will apply a roles at {inRoleTime}. They will then have playtester and can talk." +
 				$"\nCreated At: {inUser.CreatedAt}" +
 				$"\nJoined At: {inUser.JoinedAt}" +
 				$"\nUser ID: {inUser.Id}");
@@ -243,7 +245,7 @@ namespace BotHATTwaffle
 						ThumbnailUrl = "https://content.tophattwaffle.com/BotHATTwaffle/doit.jpg",
 					};
 					await message.Channel.SendMessageAsync("",false, builder);
-					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 					return;
 				}
 			}
@@ -254,7 +256,7 @@ namespace BotHATTwaffle
 				if (message.Content.ToLower().Contains("who is daddy") || message.Content.ToLower().Contains("who is tophattwaffle"))
 				{
 					await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
-					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 					return;
 				}
 			}
@@ -266,30 +268,30 @@ namespace BotHATTwaffle
 				{
 					await message.Channel.SendMessageAsync("Yes my lord.");
 					await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
-					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 					return;
 				}
 			}
 
 			//Is a shit post.
 
-			if (this._dataServices.AgreeEavesDrop.Any( s => message.Content.Equals("^") && message.Author.Username.Equals(s) ||
-					 ((SocketGuildUser)message.Author).Roles.Contains(this._dataServices.PatreonsRole) && message.Content.Equals("^")))
+			if (this._dataService.AgreeEavesDrop.Any( s => message.Content.Equals("^") && message.Author.Username.Equals(s) ||
+					 ((SocketGuildUser)message.Author).Roles.Contains(this._dataService.PatreonsRole) && message.Content.Equals("^")))
 			{
 				await message.Channel.SendMessageAsync(
-					this._dataServices.AgreeStrings[this._random.Next(0, this._dataServices.AgreeStrings.Length)]);
+					this._dataService.AgreeStrings[this._random.Next(0, this._dataService.AgreeStrings.Length)]);
 
 				return;
 			}
 
-			if (_dataServices.PakRatEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+			if (_dataService.PakRatEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
 			{
 				await PakRat(message);
 
 				return;
 			}
 
-			if (_dataServices.HowToPackEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+			if (_dataService.HowToPackEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
 			{
 				await HowToPack(message);
 
@@ -298,15 +300,15 @@ namespace BotHATTwaffle
 
 			if (CanShitPost())
 			{
-				if (_dataServices.CarveEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+				if (_dataService.CarveEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
 				{
 					await Carve(message);
-					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 					return;
 				}
 			}
 
-			if (_dataServices.PropperEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+			if (_dataService.PropperEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
 			{
 				await Propper(message);
 
@@ -315,20 +317,20 @@ namespace BotHATTwaffle
 
 			if (CanShitPost())
 			{
-				if (_dataServices.VbEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+				if (_dataService.VbEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
 				{
 					await VB(message);
-					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 					return;
 				}
 			}
 
 			if (CanShitPost())
 			{
-				if (_dataServices.YorkEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+				if (_dataService.YorkEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
 				{
 					await DeYork(message);
-					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 
 					return;
 				}
@@ -337,10 +339,10 @@ namespace BotHATTwaffle
 			//Is a shit post.
 			if (CanShitPost())
 			{
-				if (message.Content.ToLower().Contains(_dataServices.TanookiEavesDrop))
+				if (message.Content.ToLower().Contains(_dataService.TanookiEavesDrop))
 				{
 					await Tanooki(message);
-					_canShitPost = DateTime.Now.AddMinutes(_dataServices.ShitPostDelay);
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 					return;
 				}
 			}
@@ -359,7 +361,7 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		private Task PakRat(SocketMessage message)
 		{
-			_dataServices.ChannelLog($"{message.Author} was asking about PakRat in #{message.Channel}");
+			_dataService.ChannelLog($"{message.Author} was asking about PakRat in #{message.Channel}");
 
 			var authBuilder = new EmbedAuthorBuilder() {
 				Name = $"Hey there {message.Author.Username}!",
@@ -391,7 +393,7 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		private Task HowToPack(SocketMessage message)
 		{
-			_dataServices.ChannelLog($"{message.Author} was asking how to pack a level in #{message.Channel}");
+			_dataService.ChannelLog($"{message.Author} was asking how to pack a level in #{message.Channel}");
 
 			var authBuilder = new EmbedAuthorBuilder()
 			{
@@ -424,7 +426,7 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		private Task Carve(SocketMessage message)
 		{
-			_dataServices.ChannelLog($"{message.Author} was asking how to carve in #{message.Channel}. You should probably kill them.");
+			_dataService.ChannelLog($"{message.Author} was asking how to carve in #{message.Channel}. You should probably kill them.");
 
 			var authBuilder = new EmbedAuthorBuilder()
 			{
@@ -456,7 +458,7 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		private Task Propper(SocketMessage message)
 		{
-			_dataServices.ChannelLog($"{message.Author} was asking about Propper in #{message.Channel}. You should go WWMT fanboy.");
+			_dataService.ChannelLog($"{message.Author} was asking about Propper in #{message.Channel}. You should go WWMT fanboy.");
 
 			var authBuilder = new EmbedAuthorBuilder()
 			{
@@ -491,7 +493,7 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		private Task VB(SocketMessage message)
 		{
-			_dataServices.ChannelLog($"{message.Author} posted about Velocity Brawl #{message.Channel}. You should go kill them.");
+			_dataService.ChannelLog($"{message.Author} posted about Velocity Brawl #{message.Channel}. You should go kill them.");
 			message.DeleteAsync(); //Delete their message about shit game
 			var authBuilder = new EmbedAuthorBuilder()
 			{
@@ -522,7 +524,7 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		private Task DeYork(SocketMessage message)
 		{
-			_dataServices.ChannelLog($"{message.Author} posted about de_york #{message.Channel}. You should go meme them.");
+			_dataService.ChannelLog($"{message.Author} posted about de_york #{message.Channel}. You should go meme them.");
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {message.Author.Username}!",
@@ -534,7 +536,7 @@ namespace BotHATTwaffle
 				Author = authBuilder,
 				Title = $"You talking about the best level ever?",
 
-				ImageUrl = _dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/york/"),
+				ImageUrl = _dataService.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/york/"),
 				Color = new Color(243, 128, 72),
 
 				Description = $"I see that we both share the same love for amazing levels."
@@ -552,7 +554,7 @@ namespace BotHATTwaffle
 		/// <returns></returns>
 		private Task Tanooki(SocketMessage message)
 		{
-			_dataServices.ChannelLog($"{message.Author} posted about Tanooki #{message.Channel}. You should go meme them.");
+			_dataService.ChannelLog($"{message.Author} posted about Tanooki #{message.Channel}. You should go meme them.");
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {message.Author.Username}!",
@@ -564,7 +566,7 @@ namespace BotHATTwaffle
 				Author = authBuilder,
 				Title = $"You talking about the worst csgo player ever?",
 
-				ThumbnailUrl = _dataServices.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
+				ThumbnailUrl = _dataService.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
 				Color = new Color(243, 128, 72),
 
 				Description = $"I see that we both share the same love for terrible admins."
