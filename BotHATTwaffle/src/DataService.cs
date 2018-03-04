@@ -12,6 +12,7 @@ using Discord;
 using Discord.WebSocket;
 using System.Web;
 
+using BotHATTwaffle.Extensions;
 using BotHATTwaffle.Objects.Json;
 
 using Newtonsoft.Json;

@@ -203,7 +203,10 @@
   <ItemGroup>
     <Compile Include="src\ConsoleCopy.cs" />
     <Compile Include="src\Eavesdropping.cs" />
-    <Compile Include="src\Extensions.cs" />
+    <Compile Include="src\Extensions\DictionaryExtensions.cs" />
+    <Compile Include="src\Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="src\Extensions\MessageExtensions.cs" />
+    <Compile Include="src\Extensions\StringExtensions.cs" />
     <Compile Include="src\GoogleCalendar.cs" />
     <Compile Include="src\DataService.cs" />
     <Compile Include="src\Modules\Help.cs" />

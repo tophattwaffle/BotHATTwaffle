@@ -9,6 +9,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 
+using BotHATTwaffle.Extensions;
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
 using BotHATTwaffle.Objects.Json;
@@ -266,7 +267,7 @@ namespace BotHATTwaffle.Modules
 			else if (action.Equals("start", StringComparison.OrdinalIgnoreCase ))
 			{
 				_testInfo = _levelTesting.CurrentEventInfo; // Stores the test info for later use in retrieving the demo.
-				
+
 				DateTime time = Convert.ToDateTime(_levelTesting.CurrentEventInfo[1]);
 				string title = _levelTesting.CurrentEventInfo[2].Split(new[] { ' ' }, 2).FirstOrDefault() ?? string.Empty;
 				string demoName = $"{time:MM_dd_yyyy}_{title}_{gameMode}";
@@ -296,7 +297,7 @@ namespace BotHATTwaffle.Modules
 			else if (action.Equals("post", StringComparison.OrdinalIgnoreCase ))
 			{
 				Task _ = PostTasks(server); // Fired and forgotten.
-				
+
 				await ReplyAsync("```Playtest post started. Begin feedback!```");
 				await _data.ChannelLog(
 					$"Playtest Post on {server.Name}",
