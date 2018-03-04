@@ -10,6 +10,7 @@ using BotHATTwaffle.Models;
 using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Download;
 using BotHATTwaffle.Services.Embed;
+using BotHATTwaffle.Services.Playtesting;
 
 using Discord;
 using Discord.Addons.Interactive;

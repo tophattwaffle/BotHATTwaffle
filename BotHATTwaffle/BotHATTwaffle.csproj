@@ -235,6 +235,7 @@
     <Compile Include="src\Services\ITimerService.cs" />
     <Compile Include="src\Services\MessageListener.cs" />
     <Compile Include="src\Services\MuteService.cs" />
+    <Compile Include="src\Services\Playtesting\PlaytestingService.cs" />
     <Compile Include="src\Services\TimerService.cs" />
     <Compile Include="src\ConsoleCopy.cs" />
     <Compile Include="src\Program.cs" />
