@@ -1,0 +1,3 @@
+[submodule "CoreRCON"]
+	path = CoreRCON
+	url = https://github.com/tophattwaffle/CoreRCON.git

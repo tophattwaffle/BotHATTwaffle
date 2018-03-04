@@ -55,7 +55,7 @@
     </CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>bothattwaffle_icon.ico</ApplicationIcon>
+    <ApplicationIcon>res\icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Costura, Version=1.6.2.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
@@ -261,7 +261,7 @@
     <Content Include="res\icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CoreRCON\CoreRCON.csproj">
+    <ProjectReference Include="..\CoreRCON\src\CoreRCON\CoreRCON.csproj">
       <Project>{ada7d876-fb7a-4ab0-901f-5149cccc47cd}</Project>
       <Name>CoreRCON</Name>
     </ProjectReference>
