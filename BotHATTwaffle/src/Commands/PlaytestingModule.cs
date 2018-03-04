@@ -1,27 +1,27 @@
-﻿using Discord.Commands;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord.WebSocket;
-using Discord;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Discord.Rest;
 using System.IO;
-using System.Runtime.Remoting.Messaging;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Timers;
 
+using BotHATTwaffle.Commands.Preconditions;
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Json;
 using BotHATTwaffle.Services;
+
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
 
 using Imgur.API.Authentication.Impl;
 using Imgur.API.Endpoints.Impl;
 using Imgur.API.Models;
 
-namespace BotHATTwaffle.Modules
+namespace BotHATTwaffle.Commands
 {
-	public class LevelTesting
+	public class PlaytestingService
 	{
 		public List<UserData> UserData = new List<UserData>();
 		private readonly DiscordSocketClient _client;
@@ -45,7 +45,7 @@ namespace BotHATTwaffle.Modules
 		private int _failedToFetch = 0;
 		private int _failedRetryCount = 10;
 
-		public LevelTesting(
+		public PlaytestingService(
 			DiscordSocketClient client,
 			DataServices dataServices,
 			GoogleCalendar calendar,
@@ -860,20 +860,20 @@ namespace BotHATTwaffle.Modules
 			}
 		}
 
-		public string GetAnnounceFlags() => $"Alerted Hour: {_alertedHour}\nAlerted Twenty: " + 
+		public string GetAnnounceFlags() => $"Alerted Hour: {_alertedHour}\nAlerted Twenty: " +
 		                                    $"{_alertedTwenty}\nAlerted Fifteen: {_alertedFifteen}\nAlerted Start: {_alertedStart}";
 	}
 
-	public class LevelTestingModule : ModuleBase<SocketCommandContext>
+	public class PlaytestingModule : ModuleBase<SocketCommandContext>
 	{
 		private readonly DiscordSocketClient _client;
-		private readonly LevelTesting _levelTesting;
+		private readonly PlaytestingService _playtesting;
 		private readonly DataServices _dataServices;
 
-		public LevelTestingModule(DiscordSocketClient client, LevelTesting levelTesting, DataServices dataServices)
+		public PlaytestingModule(DiscordSocketClient client, PlaytestingService playtesting, DataServices dataServices)
 		{
 			_client = client;
-			_levelTesting = levelTesting;
+			_playtesting = playtesting;
 			_dataServices = dataServices;
 		}
 
@@ -890,14 +890,14 @@ namespace BotHATTwaffle.Modules
 			[Summary("The ID of a Steam Workshop map for the server to host.")]
 			string mapId = null)
 		{
-			if (!_levelTesting.CanReserve)
+			if (!_playtesting.CanReserve)
 			{
 				await ReplyAsync($"```Servers cannot be reserved at this time." +
 					$"\nServer reservation is blocked 1 hour before a scheduled test, and resumes once the calendar event has passed.```");
 				return;
 			}
 
-			foreach (UserData u in _levelTesting.UserData)
+			foreach (UserData u in _playtesting.UserData)
 			{
 				if (u.User == Context.Message.Author)
 				{
@@ -934,10 +934,10 @@ namespace BotHATTwaffle.Modules
 
 			//Check if there is already a reservation on that server
 			//If the server is open, reserve it
-			if (_levelTesting.IsServerOpen(server))
+			if (_playtesting.IsServerOpen(server))
 			{
 				//Add reservation
-				await _levelTesting.AddServerReservation((SocketGuildUser)Context.User, DateTime.Now.AddHours(2), server);
+				await _playtesting.AddServerReservation((SocketGuildUser)Context.User, DateTime.Now.AddHours(2), server);
 
 				var authBuilder = new EmbedAuthorBuilder()
 				{
@@ -980,7 +980,7 @@ namespace BotHATTwaffle.Modules
 			else
 			{
 				DateTime time = DateTime.Now;
-				foreach (UserData u in _levelTesting.UserData)
+				foreach (UserData u in _playtesting.UserData)
 				{
 					if (u.ReservedServer == server)
 						time = u.ReservationExpiration;
@@ -1025,7 +1025,7 @@ namespace BotHATTwaffle.Modules
 		{
 			LevelTestingServer server = null;
 
-			if (!_levelTesting.CanReserve)
+			if (!_playtesting.CanReserve)
 			{
 				await ReplyAsync($"```Servers cannot be reserved at this time." +
 					$"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
@@ -1044,7 +1044,7 @@ namespace BotHATTwaffle.Modules
 
 				//Find the server that the user has reserved
 				UserData user = null;
-				foreach (UserData u in _levelTesting.UserData)
+				foreach (UserData u in _playtesting.UserData)
 				{
 					if (u.User == Context.Message.Author)
 					{
@@ -1145,14 +1145,14 @@ namespace BotHATTwaffle.Modules
 		{
 			LevelTestingServer server = null;
 
-			if (!_levelTesting.CanReserve)
+			if (!_playtesting.CanReserve)
 			{
 				await ReplyAsync($"```Servers cannot be reserved at this time." +
 				                 $"\nServer reservation is blocked 1 hour before a scheduled test, and resumes once the calendar event has passed.```");
 				return;
 			}
 			bool hasServer = false;
-			foreach (UserData u in _levelTesting.UserData)
+			foreach (UserData u in _playtesting.UserData)
 			{
 				if (u.User != Context.Message.Author)
 					continue;
@@ -1163,7 +1163,7 @@ namespace BotHATTwaffle.Modules
 			if (hasServer)
 			{
 				await ReplyAsync("```Releasing Server reservation.```");
-				await _levelTesting.ClearServerReservations(server.Name);
+				await _playtesting.ClearServerReservations(server.Name);
 			}
 			else
 			{
@@ -1175,7 +1175,7 @@ namespace BotHATTwaffle.Modules
 		[Summary("Displays all currently reserved servers.")]
 		[Alias("sr")]
 		[RequireContext(ContextType.Guild)]
-		public async Task ShowReservationsAsync() => await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
+		public async Task ShowReservationsAsync() => await ReplyAsync("", false, _playtesting.DisplayServerReservations());
 
 		[Command("playtester")]
 		[Summary("Toggles the Playtester role for the invoking user.")]
@@ -1208,10 +1208,10 @@ namespace BotHATTwaffle.Modules
 		{
 			//Purges last and current stored info about the test. This is a easy way to reset the stored info manually
 			//if something happens and the announcement glitches out.
-			_levelTesting.CurrentEventInfo = _levelTesting.GoogleCalendar.GetEvents();
-			_levelTesting.LastEventInfo = _levelTesting.CurrentEventInfo;
+			_playtesting.CurrentEventInfo = _playtesting.GoogleCalendar.GetEvents();
+			_playtesting.LastEventInfo = _playtesting.CurrentEventInfo;
 
-			await ReplyAsync("", false, await _levelTesting.FormatPlaytestInformationAsync(_levelTesting.CurrentEventInfo, true));
+			await ReplyAsync("", false, await _playtesting.FormatPlaytestInformationAsync(_playtesting.CurrentEventInfo, true));
 		}
 	}
 }

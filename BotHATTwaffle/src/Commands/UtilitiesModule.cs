@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace BotHATTwaffle.Modules
+namespace BotHATTwaffle.Commands
 {
 	public class UtilitiesModule : ModuleBase<SocketCommandContext>
 	{

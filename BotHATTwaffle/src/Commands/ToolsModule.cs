@@ -3,7 +3,7 @@
 using Discord;
 using Discord.Commands;
 
-namespace BotHATTwaffle.Modules
+namespace BotHATTwaffle.Commands
 {
 	/// <summary>
 	/// Contains commands which provide links to various Source development tools.

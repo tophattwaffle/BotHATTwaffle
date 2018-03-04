@@ -1,22 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
-using BotHATTwaffle.Objects;
 using BotHATTwaffle.Services;
 
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using ParameterInfo = Discord.Commands.ParameterInfo;
-
-namespace BotHATTwaffle.Modules
+namespace BotHATTwaffle.Commands
 {
 	/// <summary>
 	/// Contains commands which provide help and bot information to users of the bot.

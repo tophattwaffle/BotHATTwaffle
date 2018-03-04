@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-using BotHATTwaffle.Objects;
+using BotHATTwaffle.Commands.Readers;
 
 using Discord;
 using Discord.Commands;

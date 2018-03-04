@@ -4,11 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Discord.WebSocket;
-
+using BotHATTwaffle.Commands.Preconditions;
 using BotHATTwaffle.Extensions;
 using BotHATTwaffle.Objects;
 using BotHATTwaffle.Objects.Downloader;
@@ -16,14 +12,19 @@ using BotHATTwaffle.Objects.Json;
 using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Embed;
 
-namespace BotHATTwaffle.Modules
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
+
+namespace BotHATTwaffle.Commands
 {
 	public class ModerationModule : InteractiveBase
 	{
 		private readonly DiscordSocketClient _client;
 		private readonly DataServices _data;
 		private readonly DownloaderService _downloader;
-		private readonly LevelTesting _levelTesting;
+		private readonly PlaytestingService _playtesting;
 		private readonly IMuteService _mute;
 		private readonly ITimerService _timer;
 
@@ -33,14 +34,14 @@ namespace BotHATTwaffle.Modules
 			DiscordSocketClient client,
 			DataServices data,
 			DownloaderService downloader,
-			LevelTesting levelTesting,
+			PlaytestingService playtesting,
 			IMuteService mute,
 			ITimerService timer)
 		{
 			_client = client;
 			_data = data;
 			_downloader = downloader;
-			_levelTesting = levelTesting;
+			_playtesting = playtesting;
 			_mute = mute;
 			_timer = timer;
 		}
@@ -55,16 +56,16 @@ namespace BotHATTwaffle.Modules
 			if (input == 0)
 			{
 				await ReplyAsync($"```True means this alert will not be fired until the announcement " +
-				                 $"message has changed.\n\nCurrent Alert Flags:\n{_levelTesting.GetAnnounceFlags()}```");
+				                 $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
 
 				return;
 			}
 
-			_levelTesting.SuppressAnnounce(input);
+			_playtesting.SuppressAnnounce(input);
 
 			await ReplyAsync($"```True means this alert will not be fired until the announcement " +
-			                 $"message has changed.\n\nCurrent Alert Flags:\n{_levelTesting.GetAnnounceFlags()}```");
-			await _data.ChannelLog($"{Context.User} changed playtest alert flag suppression", _levelTesting.GetAnnounceFlags());
+			                 $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
+			await _data.ChannelLog($"{Context.User} changed playtest alert flag suppression", _playtesting.GetAnnounceFlags());
 		}
 
 		[Command("announce", RunMode = RunMode.Async)]
@@ -230,16 +231,16 @@ namespace BotHATTwaffle.Modules
 			[Summary("The three-letter code which identifies the server on which to perform the action.")]
 			string serverCode = null)
 		{
-			if (_levelTesting.CurrentEventInfo[0] == "NO_EVENT_FOUND")
+			if (_playtesting.CurrentEventInfo[0] == "NO_EVENT_FOUND")
 			{
 				await ReplyAsync("```Cannot use this command unless a test is scheduled.```");
 				return;
 			}
 			string config;
-			string gameMode = _levelTesting.CurrentEventInfo[7];
+			string gameMode = _playtesting.CurrentEventInfo[7];
 
 			// Gets the given server. Otherwise, uses the current event's server.
-			LevelTestingServer server = _data.GetServer(serverCode ?? _levelTesting.CurrentEventInfo[10].Substring(0, 3));
+			LevelTestingServer server = _data.GetServer(serverCode ?? _playtesting.CurrentEventInfo[10].Substring(0, 3));
 
 			if (gameMode.Equals("competitive", StringComparison.OrdinalIgnoreCase ) ||
 			    gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
@@ -251,8 +252,8 @@ namespace BotHATTwaffle.Modules
 
 			if (action.Equals("pre", StringComparison.OrdinalIgnoreCase ))
 			{
-				_testInfo = _levelTesting.CurrentEventInfo; // Stores the test info for later use in retrieving the demo.
-				string workshopId = Regex.Match(_levelTesting.CurrentEventInfo[6], @"\d+$").Value;
+				_testInfo = _playtesting.CurrentEventInfo; // Stores the test info for later use in retrieving the demo.
+				string workshopId = Regex.Match(_playtesting.CurrentEventInfo[6], @"\d+$").Value;
 
 				await _data.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
 					$"\nhost_workshop_map {workshopId}");
@@ -266,10 +267,10 @@ namespace BotHATTwaffle.Modules
 			}
 			else if (action.Equals("start", StringComparison.OrdinalIgnoreCase ))
 			{
-				_testInfo = _levelTesting.CurrentEventInfo; // Stores the test info for later use in retrieving the demo.
+				_testInfo = _playtesting.CurrentEventInfo; // Stores the test info for later use in retrieving the demo.
 
-				DateTime time = Convert.ToDateTime(_levelTesting.CurrentEventInfo[1]);
-				string title = _levelTesting.CurrentEventInfo[2].Split(new[] { ' ' }, 2).FirstOrDefault() ?? string.Empty;
+				DateTime time = Convert.ToDateTime(_playtesting.CurrentEventInfo[1]);
+				string title = _playtesting.CurrentEventInfo[2].Split(new[] { ' ' }, 2).FirstOrDefault() ?? string.Empty;
 				string demoName = $"{time:MM_dd_yyyy}_{title}_{gameMode}";
 
 				await ReplyAsync($"```Playtest Start on {server.Name}\nexec {config}\ntv_record {demoName}```");
@@ -493,11 +494,11 @@ namespace BotHATTwaffle.Modules
 			string serverCode = null)
 		{
 			if (serverCode == null)
-				await _levelTesting.ClearServerReservations();
+				await _playtesting.ClearServerReservations();
 			else
-				await _levelTesting.ClearServerReservations(serverCode);
+				await _playtesting.ClearServerReservations(serverCode);
 
-			await ReplyAsync(string.Empty, false, _levelTesting.DisplayServerReservations());
+			await ReplyAsync(string.Empty, false, _playtesting.DisplayServerReservations());
 		}
 	}
 }

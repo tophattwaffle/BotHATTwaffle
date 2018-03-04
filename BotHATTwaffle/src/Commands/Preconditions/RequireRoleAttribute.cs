@@ -4,10 +4,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
+using BotHATTwaffle.Objects;
+
 using Discord;
 using Discord.Commands;
 
-namespace BotHATTwaffle.Objects
+namespace BotHATTwaffle.Commands.Preconditions
 {
 	/// <summary>
 	/// This attribute requires that the user invoking the command has any of the specified roles.

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 
-namespace BotHATTwaffle.Objects
+namespace BotHATTwaffle.Commands.Readers
 {
 	/// <summary>
 	/// Retrieves a channel by parsing a string.

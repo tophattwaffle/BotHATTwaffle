@@ -10,7 +10,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace BotHATTwaffle.Modules
+namespace BotHATTwaffle.Commands
 {
 	public class InformationModule : ModuleBase<SocketCommandContext>
 	{

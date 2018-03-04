@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using BotHATTwaffle.Modules;
+using BotHATTwaffle.Commands;
 using BotHATTwaffle.Objects.Downloader;
 using BotHATTwaffle.Services;
 
@@ -67,7 +67,7 @@ namespace BotHATTwaffle
 				.AddSingleton(_client)
 				.AddSingleton(_commands)
 				.AddSingleton<ITimerService, TimerService>()
-				.AddSingleton<LevelTesting>()
+				.AddSingleton<PlaytestingService>()
 				.AddSingleton<Eavesdropping>()
 				.AddSingleton<DataServices>()
 				.AddSingleton<Random>()
@@ -86,7 +86,7 @@ namespace BotHATTwaffle
 			// Constructs services explicitly. Modules are transient so their dependencies would normally be constructed when
 			// the module is initially used e.g. a command is invoked.
 			_services.GetRequiredService<IHelpService>();
-			_services.GetRequiredService<LevelTesting>();
+			_services.GetRequiredService<PlaytestingService>();
 
 			// Retrieves the bot's token from the config file; effectively exits the program if botToken can't be retrieved.
 			// This is the only setting that has to be retreived this way so it can start up properly.

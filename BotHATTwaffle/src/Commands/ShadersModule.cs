@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
 
-namespace BotHATTwaffle.Modules
+namespace BotHATTwaffle.Commands
 {
 	/// <summary>
 	/// Contains commands related to Source shader development.
