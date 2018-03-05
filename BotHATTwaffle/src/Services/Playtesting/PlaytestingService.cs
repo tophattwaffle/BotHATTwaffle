@@ -55,8 +55,8 @@ namespace BotHATTwaffle.Services.Playtesting
 			CurrentEventInfo = EventCalendarService.GetEvents(); //Initial get of playtest.
 			LastEventInfo = CurrentEventInfo; //Make sure array is same size for doing compares later.
 
-			timer.AddHandler(async (sender, e) => await Announce());
-			timer.AddHandler(CheckServerReservations);
+			timer.AddCallback(Announce);
+			timer.AddCallback(CheckServerReservations);
 		}
 
 		/// <summary>
@@ -605,7 +605,7 @@ namespace BotHATTwaffle.Services.Playtesting
 		/// Checks all the server reservations to see if they have expired or not.
 		/// </summary>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async void CheckServerReservations(object sender, ElapsedEventArgs e)
+		public async Task CheckServerReservations()
 		{
 			//Loop reservations and clear them if needed.
 			foreach (UserData u in UserData.ToList())

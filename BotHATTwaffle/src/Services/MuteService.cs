@@ -20,7 +20,7 @@ namespace BotHATTwaffle.Services
 		public MuteService(DataService data, ITimerService timer)
 		{
 			_data = data;
-			timer.AddHandler(CheckMutesAsync);
+			timer.AddCallback(CheckMutesAsync);
 		}
 
 		/// <inheritdoc />
@@ -40,9 +40,8 @@ namespace BotHATTwaffle.Services
 		/// <summary>
 		/// Checks for expired or manually removed mutes and appropriately unmutes users.
 		/// </summary>
-		/// <param name="sender">The source of the event.</param>
-		/// <param name="e">Provides data for the <see cref="Timer.Elapsed"/> event.</param>
-		private async void CheckMutesAsync(object sender, ElapsedEventArgs e)
+		/// <returns>No object or value is returned by this method when it completes.</returns>
+		private async Task CheckMutesAsync()
 		{
 			foreach (UserData user in _mutedUsers.ToList())
 			{

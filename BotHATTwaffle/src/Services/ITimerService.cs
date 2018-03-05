@@ -1,4 +1,6 @@
-﻿using System.Timers;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace BotHATTwaffle.Services
 {
@@ -8,17 +10,19 @@ namespace BotHATTwaffle.Services
 	public interface ITimerService
 	{
 		/// <summary>
-		/// Subscribes to the <see cref="Timer.Elapsed"/> event with the given <paramref name="handler"/>.
+		/// Gets a value indicating whether the Timer is running.
 		/// </summary>
-		/// <param name="handler">The event handler with which to subscribe.</param>
-		void AddHandler(ElapsedEventHandler handler);
+		bool Running { get; }
 
 		/// <summary>
-		/// Starts the timer.
+		/// Adds a function which the timer will execute in parallel with other added functions.
 		/// </summary>
-		/// <remarks>
-		/// The timer doesn't start raising <see cref="Timer.Elapsed"/> until one interval elapses after startup.
-		/// </remarks>
+		/// <param name="callback">The function to add.</param>
+		void AddCallback(Func<Task> callback);
+
+		/// <summary>
+		/// Starts the timer after the configured <see cref="DataService.StartDelay"/>.
+		/// </summary>
 		void Start();
 
 		/// <summary>
