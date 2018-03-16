@@ -41,6 +41,7 @@ namespace BotHATTwaffle.Services
 		private string _rconRoleStr;
 		private string _activeRoleStr;
 		private string _patreonsRoleStr;
+		private string _CommunityTesterRoleStr;
 		public SocketTextChannel LogChannel { get; set; }
 		public SocketTextChannel AnnouncementChannel  { get; set; }
 		public SocketTextChannel TestingChannel  { get; set; }
@@ -50,6 +51,7 @@ namespace BotHATTwaffle.Services
 		public SocketRole ModRole { get; set; }
 		public SocketRole ActiveRole { get; set; }
 		public SocketRole PatreonsRole { get; set; }
+		public SocketRole CommunityTesterRole { get; set; }
 
 		//Misc setting vars
 		public string[] PakRatEavesDrop;
@@ -213,6 +215,7 @@ namespace BotHATTwaffle.Services
 			mainConfig.AddKeyIfMissing("rconRoleName", "RconAccess");
 			mainConfig.AddKeyIfMissing("publicCommandWhiteListCSV", "[CONFIGME]");
 			mainConfig.AddKeyIfMissing("patreonsRole", "Patreons");
+			mainConfig.AddKeyIfMissing("communityTestRole", "Community Tester");
 			#endregion
 
 			#region  Shitpost vars
@@ -323,6 +326,9 @@ namespace BotHATTwaffle.Services
 			if (Config.ContainsKey("patreonsRole"))
 				_patreonsRoleStr = Config["patreonsRole"];
 
+			if (Config.ContainsKey("communityTestRole"))
+				_CommunityTesterRoleStr = Config["communityTestRole"];
+
 			var arg = _client.Guilds.FirstOrDefault();
 
 			Console.ForegroundColor = ConsoleColor.Green;
@@ -380,6 +386,13 @@ namespace BotHATTwaffle.Services
 					PatreonsRole = r;
 					Console.WriteLine($"\nPatreons role found!: {r.Name}\nID: {r.Id}");
 				}
+				if (r.Name == this._CommunityTesterRoleStr)
+				{
+					CommunityTesterRole = r;
+					Console.WriteLine($"\nCommunity Tester Role role found!: {r.Name}\nID: {r.Id}");
+				}
+
+				
 			}
 			Console.WriteLine();
 			Console.ResetColor();

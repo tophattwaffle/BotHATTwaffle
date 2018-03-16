@@ -7,6 +7,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using Discord;
+using Discord.WebSocket;
+
 namespace Summer
 {
 	class WorkshopItem
@@ -120,6 +123,77 @@ namespace Summer
 			AuthorImageUrl = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='creatorsBlock']")?.Descendants("div")?.First()?.Descendants("div")?.FirstOrDefault(x => x.HasClass("playerAvatar"))?.Descendants("img")?.First()?.Attributes["src"].Value;
 
 			IsValid = true;
+		}
+
+		internal async Task<Embed> HandleWorkshopEmbeds(SocketMessage msg, string images = null, string testType = null, string inputID = null)
+		{
+			string id = inputID;
+
+			if (inputID == null)
+			{
+				string content = msg.Content.Trim().ToLower();
+
+				string fileDetails = "://steamcommunity.com/sharedfiles/filedetails/?id=";
+				string workshop = "://steamcommunity.com/workshop/filedetails/?id=";
+
+				int idStartPos = -1;
+				int index;
+
+				if ((index = content.IndexOf(fileDetails)) != -1)
+					idStartPos = index + fileDetails.Length;
+				else if ((index = content.IndexOf(workshop)) != -1)
+					idStartPos = index + workshop.Length;
+
+				if (idStartPos == -1)
+					return null;// false;
+
+				id = content.Substring(idStartPos);
+
+				int spaceIndex = id.IndexOf(" ");
+
+				if (spaceIndex != -1)
+					id = id.Substring(0, spaceIndex);
+			}
+
+			string workshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
+
+			Summer.WorkshopItem item = new Summer.WorkshopItem();
+			await item.Load(workshopUrl);
+
+			if (!item.IsValid)
+				return null;// false;
+
+
+			EmbedBuilder builder = new EmbedBuilder();
+			builder.WithImageUrl(item.Image);
+			builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
+			builder.AddField("Game", item.AppName, true);
+			string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
+			if (type == "Mod")
+				type = "Map/Mod";
+			builder.AddField("Type", type, true);
+
+			if (testType != null)
+			{
+				builder.AddField("Test Type", $"{testType}", false);
+			}
+
+			builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
+			builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
+			builder.WithUrl(item.Url);
+			builder.WithColor(new Color(52, 152, 219));
+			builder.WithTitle(item.Title);
+
+			if (images != null)
+			{
+				builder.AddField("Links", $"[Map Images]({images}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) " +
+				$"| [View Testing Calendar](http://playtesting.tophattwaffle.com) | [View Test Queue](https://docs.google.com/spreadsheets/d/1alpE7wj5aAlWQ08HDRbz5oWdBrG_7ev79525dPjZtC8/edit?usp=sharing)", false);
+			}
+
+			if (msg != null)
+				await msg.Channel.SendMessageAsync("", false, builder.Build());
+
+			return builder.Build();
 		}
 
 		public bool Singleplayer;

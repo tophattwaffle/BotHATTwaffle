@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 namespace BotHATTwaffle.Commands
 {
@@ -10,6 +12,13 @@ namespace BotHATTwaffle.Commands
 	/// </summary>
 	public class ShadersModule : ModuleBase<SocketCommandContext>
 	{
+		private readonly DiscordSocketClient _client;
+
+		public ShadersModule(DiscordSocketClient client)
+		{
+			_client = client;
+		}
+
 		[Command("shaders")]
 		[Summary("Provides links to Source shader development resources.")]
 		[Alias("shader")]
@@ -20,7 +29,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "Shader Resources",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Fields =
 				{

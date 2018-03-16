@@ -7,6 +7,7 @@ using System.Timers;
 using BotHATTwaffle.Models;
 
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 
 namespace BotHATTwaffle.Services
@@ -24,16 +25,26 @@ namespace BotHATTwaffle.Services
 		}
 
 		/// <inheritdoc />
-		public async Task MuteAsync(SocketGuildUser user, double duration, SocketUser mod, string reason = "")
+		public async Task MuteAsync(SocketGuildUser user, int duration, SocketCommandContext context, string reason = "")
 		{
 			DateTime expiration = DateTime.Now.AddMinutes(duration);
 
 			_mutedUsers.Add(new UserData { User = user, MuteExpiration = expiration });
 			await user.AddRoleAsync(_data.MuteRole);
 
-			await user.SendMessageAsync($"You were muted for {duration} minute(s) because:```{reason}```");
+			try
+			{
+				// Tries to send a DM.
+				await user.SendMessageAsync($"You were muted for {duration} minute(s) because:```{reason}```");
+			}
+			catch
+			{
+				// Mentions the author in the the context channel instead.
+				await context.Channel.SendMessageAsync($"Hey {user.Mention}!\nYou were muted for {duration} minute(s) because:```{reason}```");
+			}
+
 			await _data.ChannelLog(
-				$"{user} muted by {mod}",
+				$"{user} muted by {context.User}",
 				$"Muted for {duration} minute(s) (expires {expiration}) because:\n{reason}");
 		}
 

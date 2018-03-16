@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using BotHATTwaffle.Commands.Preconditions;
@@ -12,6 +13,8 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
+using Summer;
+
 namespace BotHATTwaffle.Commands
 {
 	public class PlaytestingModule : ModuleBase<SocketCommandContext>
@@ -19,6 +22,7 @@ namespace BotHATTwaffle.Commands
 		private readonly DiscordSocketClient _client;
 		private readonly PlaytestingService _playtesting;
 		private readonly DataService _dataService;
+		private readonly WorkshopItem _wsItem = new WorkshopItem();
 
 		public PlaytestingModule(DiscordSocketClient client, PlaytestingService playtesting, DataService dataService)
 		{
@@ -185,10 +189,83 @@ namespace BotHATTwaffle.Commands
 			//Display all the commands the user can use.
 			if (command == null)
 			{
-				string reply = _dataService.PublicCommandWhiteList.Aggregate<string, string>(null, (current, s) => current + $"{s}, ");
+				string sv = null;
+				string mp = null;
+				string bot = null;
+				string exec = null;
+				string misc = null;
 
-				await ReplyAsync($"__**Commands that can be used on public test servers**__" +
-								$"```{reply}```");
+				foreach (var s in _dataService.PublicCommandWhiteList)
+				{
+					if (s.StartsWith("sv"))
+					{
+						sv += s + "\n";
+						continue;
+					}
+					if (s.StartsWith("mp"))
+					{
+						mp += s + "\n";
+						continue;
+					}
+					if (s.StartsWith("bot"))
+					{
+						bot += s + "\n";
+						continue;
+					}
+					if (s.StartsWith("exec") || s.StartsWith("game"))
+					{
+						exec += s + "\n";
+						continue;
+					}
+
+					misc += s + "\n";
+				}
+
+				var embed = new EmbedBuilder
+				{
+					Author = new EmbedAuthorBuilder
+					{
+						Name = "Allowed Commands on Test Servers",
+						IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
+					},
+					Fields =
+					{
+						new EmbedFieldBuilder
+						{
+							Name = "SV Commands",
+							Value = sv,
+							IsInline = true
+						},
+						new EmbedFieldBuilder
+						{
+							Name = "MP Commands",
+							Value = mp,
+							IsInline = true
+						},
+						new EmbedFieldBuilder
+						{
+							Name = "Bot Commands",
+							Value = bot,
+							IsInline = true
+						},
+						new EmbedFieldBuilder
+						{
+							Name = "Game Mode Commands",
+							Value = exec,
+							IsInline = true
+						},
+						new EmbedFieldBuilder
+						{
+							Name = "Other Commands",
+							Value = misc,
+							IsInline = true
+						}
+					},
+					Color = new Color(240, 235, 230),
+				};
+
+				await ReplyAsync(string.Empty, false, embed.Build());
+
 				return;
 			}
 
@@ -264,6 +341,73 @@ namespace BotHATTwaffle.Commands
 						$"\nYou can use `>pc` to see all commands that can be sent to the server.");
 				}
 			}
+			//No reservation found
+			else
+			{
+				var authBuilder = new EmbedAuthorBuilder()
+				{
+					Name = $"Hey there {Context.Message.Author}!",
+					IconUrl = Context.Message.Author.GetAvatarUrl(),
+				};
+
+				var builder = new EmbedBuilder()
+				{
+					Author = authBuilder,
+					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
+					Color = new Color(243, 128, 72),
+
+					Description = $"I was unable to find a server reservation for you. You'll need to reserve a server before you can send commands." +
+					$" A server can be reserved by using `>PublicServer [serverPrefix]`. Using just `>PublicServer` will display all the servers you can use."
+				};
+				await ReplyAsync("", false, builder);
+			}
+		}
+
+		[Command("PublicAnnounce")]
+		[Summary("Announces a community run playtest")]
+		[Alias("pa")]
+		[RequireContext(ContextType.Guild)]
+		[RequireRole(Role.ActiveMember)]
+		public async Task PublicTestAnnounceAsync()
+		{
+			Server server = null;
+
+			if (!_playtesting.CanReserve)
+			{
+				await ReplyAsync($"```Servers cannot be reserved at this time." +
+					$"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+				return;
+			}
+
+			//Find the server that the user has reserved
+			UserData user = null;
+			foreach (UserData u in _playtesting.UserData)
+			{
+				if (u.User == Context.Message.Author)
+				{
+					user = u;
+					server = u.ReservedServer;
+				}
+			}
+
+			//Server found, process command
+			if (server != null)
+			{
+				string reply = await _dataService.RconCommand("host_map", server);
+				reply = reply.Substring(14, reply.IndexOf(".bsp", StringComparison.Ordinal) - 14);
+				Embed wsEmbed = null;
+				//If it has a /, it is a workshop map and we can post the map embed.
+				if (reply.Contains("/"))
+				{
+					string wsID = Regex.Match(reply, @"(?<=/\s*)\d*(?=\s*/)", RegexOptions.CultureInvariant).Value;
+
+					wsEmbed = await _wsItem.HandleWorkshopEmbeds(null,null,null,wsID);
+				}
+
+				await _dataService.TestingChannel.SendMessageAsync($"Hey {_dataService.CommunityTesterRole.Mention}!\n\n {Context.User.Mention} " +
+				                                                   $"needs players to help test `{reply}`\n\nYou can join using: `connect {server.Address}`",false, wsEmbed);
+			}
+
 			//No reservation found
 			else
 			{

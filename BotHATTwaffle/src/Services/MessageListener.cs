@@ -11,6 +11,8 @@ using BotHATTwaffle.Models;
 using Discord;
 using Discord.WebSocket;
 
+using Summer;
+
 namespace BotHATTwaffle.Services
 {
 	public class MessageListener
@@ -22,6 +24,7 @@ namespace BotHATTwaffle.Services
 		private readonly DataService _dataService;
 		private readonly Random _random;
 		private DateTime _canShitPost;
+		private readonly WorkshopItem _wsItem = new WorkshopItem();
 
 		public MessageListener(DiscordSocketClient client, DataService dataService, Random random)
 		{
@@ -99,7 +102,7 @@ namespace BotHATTwaffle.Services
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {user.Username}! Welcome to the r/sourceengine discord server!",
-				IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+				IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 			};
 
 			var footBuilder = new EmbedFooterBuilder()
@@ -137,68 +140,7 @@ namespace BotHATTwaffle.Services
 			AddNewUserJoin((SocketGuildUser)user, roleTime, builder.Build());
 		}
 
-		internal async Task<bool> HandleWorkshopEmbeds(SocketMessage msg, string images = null, string testType = null)
-		{
-			string content = msg.Content.Trim().ToLower();
-
-			string fileDetails = "://steamcommunity.com/sharedfiles/filedetails/?id=";
-			string workshop = "://steamcommunity.com/workshop/filedetails/?id=";
-
-			int idStartPos = -1;
-			int index;
-
-			if ((index = content.IndexOf(fileDetails)) != -1)
-				idStartPos = index + fileDetails.Length;
-			else if ((index = content.IndexOf(workshop)) != -1)
-				idStartPos = index + workshop.Length;
-
-			if (idStartPos == -1)
-				return false;
-
-			string id = content.Substring(idStartPos);
-
-			int spaceIndex = id.IndexOf(" ");
-			if (spaceIndex != -1)
-				id = id.Substring(0, spaceIndex);
-
-			string workshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
-
-			Summer.WorkshopItem item = new Summer.WorkshopItem();
-			await item.Load(workshopUrl);
-
-			if (!item.IsValid)
-				return false;
-
-
-			EmbedBuilder builder = new EmbedBuilder();
-			builder.WithImageUrl(item.Image);
-			builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
-			builder.AddField("Game", item.AppName, true);
-			string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
-			if (type == "Mod")
-				type = "Map/Mod";
-			builder.AddField("Type", type, true);
-
-			if (testType != null)
-			{
-				builder.AddField("Test Type", $"{testType}", false);
-			}
-
-			builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
-			builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
-			builder.WithUrl(item.Url);
-			builder.WithColor(new Color(52, 152, 219));
-			builder.WithTitle(item.Title);
-
-			if(images != null)
-			{
-				builder.AddField("Links", $"[Map Images]({images}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) " +
-				$"| [View Testing Calendar](http://playtesting.tophattwaffle.com) | [View Test Queue](https://docs.google.com/spreadsheets/d/1alpE7wj5aAlWQ08HDRbz5oWdBrG_7ev79525dPjZtC8/edit?usp=sharing)", false);
-			}
-
-			await msg.Channel.SendMessageAsync("", false, builder.Build());
-			return true;
-		}
+		
 
 		/// <summary>
 		/// This is used to scan each message for less important things.
@@ -226,7 +168,7 @@ namespace BotHATTwaffle.Services
 					//Can't tag
 					await message.Channel.SendMessageAsync($"New Playtest Request Submitted by {msgSplit[1]}, check it out!");
 				}
-				await HandleWorkshopEmbeds(message, msgSplit[4], msgSplit[2]);
+				await _wsItem.HandleWorkshopEmbeds(message, msgSplit[4], msgSplit[2]);
 
 				return;
 			}
@@ -236,7 +178,19 @@ namespace BotHATTwaffle.Services
 				return;
 
 			//Is a shit post.
-			if(CanShitPost())
+			if (CanShitPost())
+			{
+				if (message.Content.StartsWith("I'm", StringComparison.OrdinalIgnoreCase))
+				{
+					await message.Channel.SendMessageAsync($"Hi {message.Content.Substring(3).Trim()}, I'm BotHATTwaffle.");
+
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
+					return;
+				}
+			}
+
+			//Is a shit post.
+			if (CanShitPost())
 			{
 				if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
 				{
@@ -347,8 +301,7 @@ namespace BotHATTwaffle.Services
 				}
 			}
 
-			if (await HandleWorkshopEmbeds(message))
-				return;
+			await _wsItem.HandleWorkshopEmbeds(message);
 		}
 
 
@@ -361,8 +314,6 @@ namespace BotHATTwaffle.Services
 		/// <returns></returns>
 		private Task PakRat(SocketMessage message)
 		{
-			_dataService.ChannelLog($"{message.Author} was asking about PakRat in #{message.Channel}");
-
 			var authBuilder = new EmbedAuthorBuilder() {
 				Name = $"Hey there {message.Author.Username}!",
 				IconUrl = message.Author.GetAvatarUrl(),
@@ -393,8 +344,6 @@ namespace BotHATTwaffle.Services
 		/// <returns></returns>
 		private Task HowToPack(SocketMessage message)
 		{
-			_dataService.ChannelLog($"{message.Author} was asking how to pack a level in #{message.Channel}");
-
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {message.Author.Username}!",
@@ -426,8 +375,6 @@ namespace BotHATTwaffle.Services
 		/// <returns></returns>
 		private Task Carve(SocketMessage message)
 		{
-			_dataService.ChannelLog($"{message.Author} was asking how to carve in #{message.Channel}. You should probably kill them.");
-
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {message.Author.Username}!",
@@ -458,8 +405,6 @@ namespace BotHATTwaffle.Services
 		/// <returns></returns>
 		private Task Propper(SocketMessage message)
 		{
-			_dataService.ChannelLog($"{message.Author} was asking about Propper in #{message.Channel}. You should go WWMT fanboy.");
-
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {message.Author.Username}!",
@@ -493,7 +438,6 @@ namespace BotHATTwaffle.Services
 		/// <returns></returns>
 		private Task VB(SocketMessage message)
 		{
-			_dataService.ChannelLog($"{message.Author} posted about Velocity Brawl #{message.Channel}. You should go kill them.");
 			message.DeleteAsync(); //Delete their message about shit game
 			var authBuilder = new EmbedAuthorBuilder()
 			{
@@ -524,7 +468,6 @@ namespace BotHATTwaffle.Services
 		/// <returns></returns>
 		private Task DeYork(SocketMessage message)
 		{
-			_dataService.ChannelLog($"{message.Author} posted about de_york #{message.Channel}. You should go meme them.");
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {message.Author.Username}!",
@@ -554,7 +497,6 @@ namespace BotHATTwaffle.Services
 		/// <returns></returns>
 		private Task Tanooki(SocketMessage message)
 		{
-			_dataService.ChannelLog($"{message.Author} posted about Tanooki #{message.Channel}. You should go meme them.");
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {message.Author.Username}!",

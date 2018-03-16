@@ -150,7 +150,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "About BotHATTwaffle",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Url = "https://www.tophattwaffle.com/",
 				ThumbnailUrl = _client.CurrentUser.GetAvatarUrl(),

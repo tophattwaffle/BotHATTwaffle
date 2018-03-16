@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 namespace BotHATTwaffle.Commands
 {
@@ -11,6 +13,13 @@ namespace BotHATTwaffle.Commands
 	/// </summary>
 	public class ToolsModule : ModuleBase<SocketCommandContext>
 	{
+		private readonly DiscordSocketClient _client;
+
+		public ToolsModule(DiscordSocketClient client)
+		{
+			_client = client;
+		}
+
 		[Command("VTFEdit")]
 		[Summary("Provides a download link to VTFEdit.")]
 		[Alias("vtf")]
@@ -21,7 +30,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "Download VTFEdit",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Title = "Click Here",
 				Url = "https://www.tophattwaffle.com/downloads/vtfedit/",
@@ -45,7 +54,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "Download GCFScape",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Title = "Click Here",
 				Url = "https://www.tophattwaffle.com/downloads/gcfscape/",
@@ -68,7 +77,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "Download VMT Editor",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Title = "Click Here",
 				Url = "https://gira-x.github.io/VMT-Editor/",
@@ -91,7 +100,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "Download VIDE",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Title = "Click Here",
 				Url = "https://www.tophattwaffle.com/downloads/vide/",
@@ -115,7 +124,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "Check out Wall Worm",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Title = "Click Here",
 				Url = "https://dev.wallworm.com/",
@@ -138,7 +147,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "Download BSPSource",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Title = "Click Here",
 				Url = "https://www.tophattwaffle.com/downloads/bspsource/",
@@ -162,7 +171,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = "Interlopers Compile Log Checker",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
 				Title = "Click Here",
 				Url = "http://www.interlopers.net/errors",

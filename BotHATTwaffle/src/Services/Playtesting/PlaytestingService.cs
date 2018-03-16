@@ -338,7 +338,7 @@ namespace BotHATTwaffle.Services.Playtesting
 				var authBuilder = new EmbedAuthorBuilder()
 				{
 					Name = $"Setting up {server.Address} for {CurrentEventInfo[2]}",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				};
 
 				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {CurrentEventInfo[10]}`", IsInline = false });
@@ -400,6 +400,10 @@ namespace BotHATTwaffle.Services.Playtesting
 				string timeLeftStr = null;
 				DateTime utcTime = time.ToUniversalTime();
 
+				//Get Creator information
+				string[] splitUser = CurrentEventInfo[3].Split('#');
+				SocketUser author = _client.GetUser(splitUser[0], splitUser[1]);
+
 				//Timezones!
 				string est = TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time")).ToString("ddd HH:mm");
 				string pst = TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time")).ToString("ddd HH:mm");
@@ -451,6 +455,22 @@ namespace BotHATTwaffle.Services.Playtesting
 				int timeCompare = DateTime.Compare(adjusted, time);
 				if (timeCompare > 0 && !_alertedHour)
 				{
+					//Nag Creator
+					try
+					{
+						// Tries to send a DM.
+						await author.SendMessageAsync($"Don't forget, you have a playtest in 1 hour on the Source Engine Discord!" +
+						                              $"If for some reason you cannot make it, let TopHATTwaffle know!");
+						await _dataService.ChannelLog($"Sent message to {author} about their playtest in 1 hour.");
+					}
+					catch
+					{
+						// Mentions the author in the the context channel instead.
+						await _dataService.TestingChannel.SendMessageAsync($"Hey {author.Mention}!\n\nDon't forget, you have a playtest in 1 hour!" +
+						                                                   $"If for some reason you cannot make it, let TopHATTwaffle know!");
+						await _dataService.ChannelLog($"Tagged {author} in #csgo_level_testing about their playtest in 1 hour.");
+					}
+
 					//Disables server reservations with >ps and clears existing ones
 					CanReserve = false;
 					await ClearServerReservations();
@@ -494,21 +514,36 @@ namespace BotHATTwaffle.Services.Playtesting
 				{
 					_alertedFifteen = true;
 					await SetupServerAsync(eventInfo[10], false);
+
+					//Nag Creator
+					try
+					{
+						// Tries to send a DM.
+						await author.SendMessageAsync($"Don't forget, you have a playtest in 15 minutes on the Source Engine Discord!" +
+						                              $"If for some reason you cannot make it, let TopHATTwaffle know!");
+						await _dataService.ChannelLog($"Sent message to {author} about their playtest in 15 minutes.");
+					}
+					catch
+					{
+						// Mentions the author in the the context channel instead.
+						await _dataService.TestingChannel.SendMessageAsync($"Hey {author.Mention}!\n\nDon't forget, you have a playtest in 15 minutes!" +
+						                                                   $"If for some reason you cannot make it, let TopHATTwaffle know!");
+						await _dataService.ChannelLog($"Tagged {author} in #csgo_level_testing about their playtest in 15 minutes.");
+					}
 				}
 
 				//Try to use the user's avatar as the thumbnail
 				string thumbUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png";
-				var splitUser = CurrentEventInfo[3].Split('#');
 				try
 				{
-					thumbUrl = _client.GetUser(splitUser[0], splitUser[1]).GetAvatarUrl();
+					thumbUrl = author.GetAvatarUrl();
 				}
 				catch { }
 
 				authBuilder = new EmbedAuthorBuilder()
 				{
 					Name = eventInfo[2],
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				};
 
 
@@ -575,7 +610,7 @@ namespace BotHATTwaffle.Services.Playtesting
 				authBuilder = new EmbedAuthorBuilder()
 				{
 					Name = "No Playtests Found!",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				};
 
 				footBuilder = new EmbedFooterBuilder()

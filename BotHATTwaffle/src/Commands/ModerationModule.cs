@@ -376,7 +376,7 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = $"Download Playtest Demo for {_testInfo[2]}",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png",
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl,
 				},
 				Url = "http://demos.tophattwaffle.com",
 				Title = "Download Here",
@@ -480,7 +480,7 @@ namespace BotHATTwaffle.Commands
 			[Summary("The reason for the mute.")] [Remainder]
 			string reason = "No reason provided.")
 		{
-			await _mute.MuteAsync(user, duration, Context.User, reason);
+			await _mute.MuteAsync(user, duration, Context, reason);
 		}
 
 		[Command("ClearReservations")]
@@ -499,6 +499,17 @@ namespace BotHATTwaffle.Commands
 				await _playtesting.ClearServerReservations(serverCode);
 
 			await ReplyAsync(string.Empty, false, _playtesting.DisplayServerReservations());
+		}
+
+		[Command("Active")]
+		[Summary("Grants a user the Active Memeber role")]
+		[RequireContext(ContextType.Guild)]
+		[RequireRole(Role.Moderators)]
+		public async Task ActiveAsync([Summary("User to give role to")]SocketGuildUser user)
+		{
+			await _data.ChannelLog($"{user.Mention} has been given {_data.ActiveRole.Mention} by {Context.User}");
+			await ReplyAsync($"{user} has been given {_data.ActiveRole.Mention}!\n\nThanks for being an active member in our community!");
+			await ((IGuildUser)user).AddRoleAsync(_data.ActiveRole);
 		}
 	}
 }

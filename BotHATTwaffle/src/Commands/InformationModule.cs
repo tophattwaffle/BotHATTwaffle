@@ -64,14 +64,9 @@ namespace BotHATTwaffle.Commands
 				Author = new EmbedAuthorBuilder
 				{
 					Name = $"This is what I was able to find for {term}",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				},
-				Footer = new EmbedFooterBuilder
-				{
-					Text = "Thanks for using the VDC search!",
-					IconUrl = _client.CurrentUser.GetAvatarUrl()
-				},
-				Title = "**Search Results**",
+				Title = "Search Results",
 				Url = builtUrl,
 				ImageUrl = "https://developer.valvesoftware.com/w/skins/valve/images-valve/logo.png",
 				Color = new Color(71, 126, 159),
@@ -182,7 +177,7 @@ namespace BotHATTwaffle.Commands
 					Author = new EmbedAuthorBuilder
 					{
 						Name = r[0],
-						IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
+						IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 					},
 					Title = "Click Here",
 					Url = r[1],
@@ -315,7 +310,7 @@ namespace BotHATTwaffle.Commands
 				Description = bodyDescription
 			};
 
-			embed.WithAuthor(authTitle, "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png");
+			embed.WithAuthor(authTitle, _client.Guilds.FirstOrDefault()?.IconUrl);
 			embed.WithFooter(null, _client.CurrentUser.GetAvatarUrl());
 
 			await ReplyAsync(string.Empty, false, embed.Build());
