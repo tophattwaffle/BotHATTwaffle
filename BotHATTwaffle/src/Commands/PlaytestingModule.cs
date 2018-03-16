@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -189,36 +190,36 @@ namespace BotHATTwaffle.Commands
 			//Display all the commands the user can use.
 			if (command == null)
 			{
-				string sv = null;
-				string mp = null;
-				string bot = null;
-				string exec = null;
-				string misc = null;
+				StringBuilder sv = new StringBuilder();
+				StringBuilder mp = new StringBuilder();
+				StringBuilder bot = new StringBuilder();
+				StringBuilder exec = new StringBuilder();
+				StringBuilder misc = new StringBuilder();
 
 				foreach (var s in _dataService.PublicCommandWhiteList)
 				{
 					if (s.StartsWith("sv"))
 					{
-						sv += s + "\n";
+						sv.AppendLine(s);
 						continue;
 					}
 					if (s.StartsWith("mp"))
 					{
-						mp += s + "\n";
+						mp.AppendLine(s);
 						continue;
 					}
 					if (s.StartsWith("bot"))
 					{
-						bot += s + "\n";
+						bot.AppendLine(s);
 						continue;
 					}
 					if (s.StartsWith("exec") || s.StartsWith("game"))
 					{
-						exec += s + "\n";
+						exec.AppendLine(s);
 						continue;
 					}
 
-					misc += s + "\n";
+					misc.AppendLine(s);
 				}
 
 				var embed = new EmbedBuilder
@@ -233,31 +234,31 @@ namespace BotHATTwaffle.Commands
 						new EmbedFieldBuilder
 						{
 							Name = "SV Commands",
-							Value = sv,
+							Value = sv.ToString(),
 							IsInline = true
 						},
 						new EmbedFieldBuilder
 						{
 							Name = "MP Commands",
-							Value = mp,
+							Value = mp.ToString(),
 							IsInline = true
 						},
 						new EmbedFieldBuilder
 						{
 							Name = "Bot Commands",
-							Value = bot,
+							Value = bot.ToString(),
 							IsInline = true
 						},
 						new EmbedFieldBuilder
 						{
 							Name = "Game Mode Commands",
-							Value = exec,
+							Value = exec.ToString(),
 							IsInline = true
 						},
 						new EmbedFieldBuilder
 						{
 							Name = "Other Commands",
-							Value = misc,
+							Value = misc.ToString(),
 							IsInline = true
 						}
 					},
@@ -396,12 +397,14 @@ namespace BotHATTwaffle.Commands
 				string reply = await _dataService.RconCommand("host_map", server);
 				reply = reply.Substring(14, reply.IndexOf(".bsp", StringComparison.Ordinal) - 14);
 				Embed wsEmbed = null;
-				//If it has a /, it is a workshop map and we can post the map embed.
-				if (reply.Contains("/"))
-				{
-					string wsID = Regex.Match(reply, @"(?<=/\s*)\d*(?=\s*/)", RegexOptions.CultureInvariant).Value;
 
-					wsEmbed = await _wsItem.HandleWorkshopEmbeds(null,null,null,wsID);
+				string[] result = reply.Split('/');
+
+				//If larger than 1, we are a workshop map.
+				if (result.Length == 3)
+				{
+					reply = result[2];
+					wsEmbed = await _wsItem.HandleWorkshopEmbeds(null,null,null,result[1]);
 				}
 
 				await _dataService.TestingChannel.SendMessageAsync($"Hey {_dataService.CommunityTesterRole.Mention}!\n\n {Context.User.Mention} " +

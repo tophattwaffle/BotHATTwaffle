@@ -14,7 +14,6 @@ namespace BotHATTwaffle.Services
 		/// </summary>
 		/// <param name="user">The user to mute.</param>
 		/// <param name="duration">The duration, in minutes, of the mute.</param>
-		/// <param name="mod">The user which issued the mute.</param>
 		/// <param name="context">Command Context - used for channel and invoking user</param>
 		/// <param name="reason">The reason for the mute.</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
