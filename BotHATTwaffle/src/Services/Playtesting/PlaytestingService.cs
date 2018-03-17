@@ -39,7 +39,7 @@ namespace BotHATTwaffle.Services.Playtesting
 		private bool _canRandomImage = false;
 		private string _preEmbedImg;
 		private int _failedToFetch = 0;
-		private int _failedRetryCount = 10;
+		private int _failedRetryCount = 60;
 
 		public PlaytestingService(
 			DiscordSocketClient client,

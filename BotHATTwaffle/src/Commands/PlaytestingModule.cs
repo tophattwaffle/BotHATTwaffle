@@ -369,26 +369,36 @@ namespace BotHATTwaffle.Commands
 		[Alias("pa")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.ActiveMember)]
-		public async Task PublicTestAnnounceAsync()
+		public async Task PublicTestAnnounceAsync(string serverCode = null)
 		{
 			Server server = null;
 
-			if (!_playtesting.CanReserve)
+			if (serverCode == null)
 			{
-				await ReplyAsync($"```Servers cannot be reserved at this time." +
-					$"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
-				return;
-			}
-
-			//Find the server that the user has reserved
-			UserData user = null;
-			foreach (UserData u in _playtesting.UserData)
-			{
-				if (u.User == Context.Message.Author)
+				if (!_playtesting.CanReserve)
 				{
-					user = u;
-					server = u.ReservedServer;
+					await ReplyAsync(
+						$"```Servers cannot be reserved at this time." +
+						$"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+
+					return;
 				}
+
+				//Find the server that the user has reserved
+				UserData user = null;
+
+				foreach (UserData u in _playtesting.UserData)
+				{
+					if (u.User == Context.Message.Author)
+					{
+						user = u;
+						server = u.ReservedServer;
+					}
+				}
+			}
+			else
+			{
+				server = _dataService.GetServer(serverCode);
 			}
 
 			//Server found, process command
