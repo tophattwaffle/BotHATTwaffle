@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 using Google.Apis.Auth.OAuth2;
@@ -65,18 +66,18 @@ namespace BotHATTwaffle.Services.Playtesting
 		/// <remarks>
 		/// <list type="number">
 		///	<item><description>
-		///	Header; possible values: <c>BEGIN_EVENT</c>, <c>NO_EVENT_FOUND</c>, <c>BAD_DESCRIPTION</c>
+		/// 0	Header; possible values: <c>BEGIN_EVENT</c>, <c>NO_EVENT_FOUND</c>, <c>BAD_DESCRIPTION</c> 
 		///	</description></item>
-		/// <item><description>Starting time</description></item>
-		/// <item><description>Title</description></item>
-		/// <item><description>Creator</description></item>
-		/// <item><description>Featured image link</description></item>
-		/// <item><description>Map images link</description></item>
-		/// <item><description>Workshop link</description></item>
-		/// <item><description>Game mode</description></item>
-		/// <item><description>Moderator</description></item>
-		/// <item><description>Description</description></item>
-		/// <item><description>Server</description></item>
+		/// <item><description>1 Starting time</description></item>
+		/// <item><description>2 Title</description></item>
+		/// <item><description>3 Creator</description></item>
+		/// <item><description>4 Featured image link</description></item>
+		/// <item><description>5 Map images link</description></item>
+		/// <item><description>6 Workshop link</description></item>
+		/// <item><description>7 Game mode</description></item>
+		/// <item><description>8 Moderator</description></item>
+		/// <item><description>9 Description</description></item>
+		/// <item><description>10 Server</description></item>
 		/// </list>
 		/// </remarks>
 		/// <returns>An array of the details of the retrieved event.</returns>
@@ -108,25 +109,29 @@ namespace BotHATTwaffle.Services.Playtesting
 			// Handles the event.
 			try
 			{
+				//Replace <br>s with \n for new line, replace &nbsp as well
+				string strippedHTML = eventItem.Description.Replace("<br>","\n").Replace("&nbsp;","");
+
+				//Strip out HTML tags
+				strippedHTML = Regex.Replace(strippedHTML, "<.*?>", String.Empty);
+
 				// Splits description into lines and keeps only the part after the colon, if one exists.
-				ImmutableArray<string> description = eventItem.Description.Trim().Split('\n')
+				ImmutableArray<string> description = strippedHTML.Trim().Split('\n')
 					.Select(line => line.Substring(line.IndexOf(':') + 1).Trim())
 					.ToImmutableArray();
 
-				//TODO: Do we need to set strings to empty? In what event would they get set this way?
-				//If they do end up getting set to empty, maybe we should set them to "default" safe values.
-
 				finalEvent[0] = "BEGIN_EVENT";
-				finalEvent[1] = eventItem.Start.DateTime?.ToString() ?? eventItem.Start.Date; // Accounts for all-day events.
-				finalEvent[2] = eventItem.Summary;
-				finalEvent[3] = description.ElementAtOrDefault(0) ?? string.Empty;
-				finalEvent[4] = description.ElementAtOrDefault(1) ?? string.Empty;
-				finalEvent[5] = description.ElementAtOrDefault(2) ?? string.Empty;
-				finalEvent[6] = description.ElementAtOrDefault(3) ?? string.Empty;
-				finalEvent[7] = description.ElementAtOrDefault(4) ?? string.Empty;
-				finalEvent[8] = description.ElementAtOrDefault(5) ?? string.Empty;
-				finalEvent[9] = description.ElementAtOrDefault(6) ?? string.Empty;
+				finalEvent[1] = eventItem.Start.DateTime?.ToString() ?? "2/17/1993 9:34:00";
+				finalEvent[2] = eventItem.Summary; // No way to handle this - title has to exist to even find the event.
+				finalEvent[3] = string.IsNullOrEmpty(description.ElementAtOrDefault(0)) ? "ERROR_CHECK_EVENT#1337" : description.ElementAtOrDefault(0);
+				finalEvent[4] = string.IsNullOrEmpty(description.ElementAtOrDefault(1)) ? "https://www.tophattwaffle.com/wp-content/uploads/2017/11/header.png" : description.ElementAtOrDefault(1);
+				finalEvent[5] = string.IsNullOrEmpty(description.ElementAtOrDefault(2)) ? string.Empty : description.ElementAtOrDefault(2); //This being empty or bad is handled in the playtest announcement.
+				finalEvent[6] = string.IsNullOrEmpty(description.ElementAtOrDefault(3)) ? "https://steamcommunity.com/sharedfiles/filedetails/?id=267340686" : description.ElementAtOrDefault(3);
+				finalEvent[7] = string.IsNullOrEmpty(description.ElementAtOrDefault(4)) ? "Casual" : description.ElementAtOrDefault(4);
+				finalEvent[8] = string.IsNullOrEmpty(description.ElementAtOrDefault(5)) ? "ErrorHATTwaffle" : description.ElementAtOrDefault(5);
+				finalEvent[9] = string.IsNullOrEmpty(description.ElementAtOrDefault(6)) ? "Description error in event!" : description.ElementAtOrDefault(6);
 				finalEvent[10] = eventItem.Location ?? "No Server Set";
+
 			}
 			catch (Exception e)
 			{
@@ -141,7 +146,6 @@ namespace BotHATTwaffle.Services.Playtesting
 				finalEvent = Enumerable.Repeat<string>(null, 11).ToArray();
 				finalEvent[0] = "BAD_DESCRIPTION";
 			}
-
 			return finalEvent;
 		}
 	}

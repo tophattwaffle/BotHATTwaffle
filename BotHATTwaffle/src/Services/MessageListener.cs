@@ -218,6 +218,17 @@ namespace BotHATTwaffle.Services
 			//Is a shit post.
 			if (CanShitPost())
 			{
+				if (message.Content.ToLower().Contains("sudo make me a sandwich"))
+				{
+					await message.Channel.SendMessageAsync("ok.");
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
+					return;
+				}
+			}
+
+			//Is a shit post.
+			if (CanShitPost())
+			{
 				if (message.Content.ToLower().Contains("execute order 66"))
 				{
 					await message.Channel.SendMessageAsync("Yes my lord.");
