@@ -180,7 +180,7 @@ namespace BotHATTwaffle.Services
 			//Is a shit post.
 			if (CanShitPost())
 			{
-				if (message.Content.StartsWith("I'm", StringComparison.OrdinalIgnoreCase))
+				if (message.Content.StartsWith("I'm", StringComparison.OrdinalIgnoreCase) && message.Content.Length > 5)
 				{
 					await message.Channel.SendMessageAsync($"Hi {message.Content.Substring(3).Trim()}, I'm BotHATTwaffle.");
 
