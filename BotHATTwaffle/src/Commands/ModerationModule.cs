@@ -604,8 +604,8 @@ namespace BotHATTwaffle.Commands
 		[RequireRole(Role.Moderators)]
 		public async Task ActiveAsync([Summary("User to give role to")]SocketGuildUser user)
 		{
-			await _data.ChannelLog($"{user.Mention} has been given {_data.ActiveRole.Mention} by {Context.User}");
-			await ReplyAsync($"{user} has been given {_data.ActiveRole.Mention}!\n\nThanks for being an active member in our community!");
+			await _data.ChannelLog($"{user} has been given {_data.ActiveRole.Mention} by {Context.User}");
+			await ReplyAsync($"{user.Mention} has been given {_data.ActiveRole.Mention}!\n\nThanks for being an active member in our community!");
 			await ((IGuildUser)user).AddRoleAsync(_data.ActiveRole);
 
 			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Active",
