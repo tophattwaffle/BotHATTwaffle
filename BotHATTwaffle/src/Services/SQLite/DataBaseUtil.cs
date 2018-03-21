@@ -168,6 +168,14 @@ namespace BotHATTwaffle
 				dbContext.SaveChanges();
 			}
 		}
+
+		public static List<Mute> GetMutes(SocketGuildUser user)
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				return dbContext.Mutes.Where(m => m.snowflake.Equals($"{user.Id}")).ToList();
+			}
+		}
 	}
 }
 

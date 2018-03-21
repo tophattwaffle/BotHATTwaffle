@@ -506,6 +506,77 @@ namespace BotHATTwaffle.Commands
 				Context.Message.Content, DateTime.Now);
 		}
 
+		[Command("MuteStatus")]
+		[Summary("Gets mute information on a user")]
+		[Remarks("Gets mute information on a specific user. Will return the last 10 mutes the user has.")]
+		[RequireContext(ContextType.Guild)]
+		[RequireRole(Role.Moderators)]
+		public async Task MuteStatusAsync(
+			[Summary("The user to get mute info on.")] SocketGuildUser user)
+		{
+			var mutes = DataBaseUtil.GetMutes(user);
+			
+			if (mutes.Count > 0)
+			{
+				var authBuilder = new EmbedAuthorBuilder() {Name = $"{mutes.Count} Most Recent mutes for {user}",};
+
+				List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
+
+				int count = 0;
+
+				for (int m = mutes.Count - 1; m >= 0; m--)
+				{
+					//limit to 10
+					if (count < 11)
+					{
+						fieldBuilder.Add(
+							new EmbedFieldBuilder
+							{
+								Name = mutes[m].date,
+								Value =
+									$"Muted By:`{mutes[m].muted_by}`\nMuted Because: `{mutes[m].mute_reason}`\nMuted for: `{mutes[m].mute_duration}` minutes.",
+								IsInline = false
+							});
+
+						count++;
+					}
+					else
+						break;
+				}
+
+				var footBuilder = new EmbedFooterBuilder()
+				{
+					Text = $"All times in CT Timezone. Current CT Time:{DataBaseUtil.FormatDate(DateTime.Now)}",
+				};
+
+				var builder = new EmbedBuilder()
+				{
+					ThumbnailUrl = user.GetAvatarUrl(),
+					Fields = fieldBuilder,
+					Author = authBuilder,
+					Footer = footBuilder,
+					Color = new Color(243, 128, 72)
+				};
+
+				await ReplyAsync("", false, builder.Build());
+			}
+			else
+			{
+				var authBuilder = new EmbedAuthorBuilder() { Name = $"No mutes for {user}!", };
+				var builder = new EmbedBuilder()
+				{
+					Author = authBuilder,
+					ThumbnailUrl = user.GetAvatarUrl(),
+					Description = "Who knew we have users that could behave!",
+					Color = new Color(243, 128, 72)
+				};
+				await ReplyAsync("", false, builder.Build());
+			}
+			
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "MuteStatus",
+				Context.Message.Content, DateTime.Now);
+		}
+
 		[Command("ClearReservations")]
 		[Summary("Clears server reservations.")]
 		[Remarks("If no server is specified, _all_ server reservations are cleared.")]
