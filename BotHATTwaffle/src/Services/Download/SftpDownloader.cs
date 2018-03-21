@@ -15,7 +15,7 @@ namespace BotHATTwaffle.Services.Download
 		public SftpDownloader(IReadOnlyList<string> testInfo, Server server, DataService dataSvc) : base(testInfo, server,
 			dataSvc)
 		{
-			Client = new SftpClient(testInfo[10], server.FtpUser, server.FtpPass);
+			Client = new SftpClient(testInfo[10], server.ftp_username, server.ftp_password);
 		}
 
 		public override void Download()

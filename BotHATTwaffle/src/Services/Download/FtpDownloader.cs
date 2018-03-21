@@ -17,9 +17,9 @@ namespace BotHATTwaffle.Services.Download
 		public FtpDownloader(IReadOnlyList<string> testInfo, Server server, DataService dataSvc) : base(testInfo, server, dataSvc)
 		{
 			gamemode = testInfo[7];
-			Client = new FtpClient(server.Address, server.FtpUser, server.FtpPass);
+			Client = new FtpClient(server.address, server.ftp_username, server.ftp_password);
 
-			if (server.FtpType == "ftps")
+			if (server.ftp_type == "ftps")
 			{
 				Client.EncryptionMode = FtpEncryptionMode.Explicit;
 				Client.SslProtocols = SslProtocols.Tls;

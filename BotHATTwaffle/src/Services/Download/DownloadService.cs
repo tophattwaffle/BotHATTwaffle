@@ -34,7 +34,7 @@ namespace BotHATTwaffle.Services.Download
 			Console.ForegroundColor = ConsoleColor.Cyan;
 			var (testInfo, server) = (ValueTuple<IReadOnlyList<string>, Server>) e.Argument;
 
-			switch (server.FtpType.ToLower())
+			switch (server.ftp_type.ToLower())
 			{
 				case "ftps":
 				case "ftp":

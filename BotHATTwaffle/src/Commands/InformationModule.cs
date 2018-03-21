@@ -27,7 +27,7 @@ namespace BotHATTwaffle.Commands
 			_random = random;
 		}
 
-		[Command("vdc")]
+		[Command("VDC")]
 		[Summary("Searches the VDC and replies with the results.")]
 		[Remarks(
 			"Searches the Valve Developer Community and returns a link to the results. Use of proper, full terms returns " +
@@ -74,13 +74,16 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, builder.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "VDC",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("search", RunMode = RunMode.Async)]
+		[Command("Search", RunMode = RunMode.Async)]
 		[Summary("Searches in a series for a tutorial or lists all tutorials in a series.")]
 		[Remarks(
 			"`>search [series] [SearchTerm]` searches our tutorial database for a result.\n" +
-			"There are several series which can be searched. `>tutorial all [SearchTerm]` can be used to search them all; " +
+			"There are several series which can be searched. `>search all [SearchTerm]` can be used to search them all; " +
 			"`all` does not search the FAQ.\n" +
 			"Example:\n" +
 			"`>search v2 displacements` or `>search f leak`\n" +
@@ -90,10 +93,7 @@ namespace BotHATTwaffle.Commands
 			"`4` `WrittenTutorials` `written`\n" +
 			"`5` `LegacySeries` `v1` `lg`\n" +
 			"`6` `HammerTroubleshooting` `ht` `misc`\n" +
-			"`7` `FAQ` `f`\n\n" +
-			"`>s [series] [dump/all]` Example: `>s v2 all` Will display ALL tutorials in that series. It can be slow to " +
-			"respond, so please wait!\n" +
-			"Really big thanks to Mark for helping make the JSON searching work!")]
+			"`7` `FAQ` `f`\n\n")]
 		[Alias("s")]
 		public async Task SearchAsync(
 			[Summary("The series in which to search.")]
@@ -108,54 +108,6 @@ namespace BotHATTwaffle.Commands
 			List<List<string>> results = _dataService.Search(series, term, isPrivate); // Peforms a search.
 
 			await _dataService.ChannelLog($"{Context.User} ran a search", $"Series: {series}\nSearch Term: {term}");
-
-			// A dump was requested.
-			if (term.Equals("dump", StringComparison.InvariantCultureIgnoreCase) ||
-			    term.Equals("all", StringComparison.InvariantCultureIgnoreCase))
-			{
-				// [0]title
-				// [1]url
-				// [2]tags
-				var reply = new List<string>();
-				string text = null;
-
-				foreach (List<string> r in results)
-				{
-					text += $"[{r[0]}]({r[1]})\nTags: {r[2]}\n\n";
-
-					if (text.Length <= 1800) continue;
-
-					reply.Add(text);
-					text = null;
-				}
-
-				if (!string.IsNullOrEmpty(text))
-					reply.Add(text);
-
-				try
-				{
-					foreach (string s in reply)
-					{
-						var embed = new EmbedBuilder {Color = new Color(243, 128, 72), Description = s};
-						await Context.User.SendMessageAsync(string.Empty, false, embed.Build());
-					}
-				}
-				catch
-				{
-					// Notifies a user of a failure to send them a DM.
-					await ReplyAsync(
-						"```\"dump\" and \"all\" search terms can ONLY send replies in a DM. This is to prevent flooding chat." +
-						" You got this message because you do not accept DMs from non-friends.```");
-				}
-
-				if (!isPrivate)
-				{
-					await wait.DeleteAsync();
-					await Context.Message.DeleteAsync(); // Delete the invoking message.
-				}
-
-				return;
-			}
 
 			// Notifies the user of a lack of search results.
 			if (!results.Any())
@@ -191,9 +143,12 @@ namespace BotHATTwaffle.Commands
 
 			if (!isPrivate)
 				await wait.DeleteAsync();
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Search",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("tutorials")]
+		[Command("Tutorials")]
 		[Summary("Displays links to tutorial series.")]
 		[Remarks(
 			"`>tutorials [Optional series]` Example: `>tutorials` `>tutorials v2`\n" +
@@ -314,6 +269,9 @@ namespace BotHATTwaffle.Commands
 			embed.WithFooter(null, _client.CurrentUser.GetAvatarUrl());
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Tutorials",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("CatFact", RunMode = RunMode.Async)]
@@ -350,12 +308,20 @@ namespace BotHATTwaffle.Commands
 
 			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A CAT FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "CatFact",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("unsubscribe")]
+		[Command("Unsubscribe")]
 		[Summary("Unsubscribes the invoking user from cat facts.")]
 		[Remarks("Takes the invoking user off the cat fact list.")]
-		public async Task CatFactUnsubAsync() => await ReplyAsync("You cannot unsubscribe from cat facts...");
+		public async Task CatFactUnsubAsync()
+		{
+			await ReplyAsync("You cannot unsubscribe from cat facts...");
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Unsubscribe",
+				Context.Message.Content, DateTime.Now);
+		}
 
 		[Command("PenguinFact", RunMode = RunMode.Async)]
 		[Summary("Provides a penguin fact!")]
@@ -386,6 +352,9 @@ namespace BotHATTwaffle.Commands
 
 			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "PenguineFact",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("TanookiFact", RunMode = RunMode.Async)]
@@ -417,6 +386,9 @@ namespace BotHATTwaffle.Commands
 
 			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A TANOOKI FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "TanookiFact",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("TanookiIRL", RunMode = RunMode.Async)]
@@ -431,6 +403,9 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "TanookiIRL",
+				Context.Message.Content, DateTime.Now);
 		}
 	}
 }

@@ -32,7 +32,6 @@ namespace BotHATTwaffle.Services.Playtesting
 		private bool _alertedFifteen = false;
 		public bool CanReserve = true;
 		private int _caltick = 0;
-		private const string _ANNOUNCE_PATH = "announcement_id.txt";
 		private bool _firstRun = true;
 		private readonly Random _random;
 		private IAlbum _featureAlbum;
@@ -64,16 +63,14 @@ namespace BotHATTwaffle.Services.Playtesting
 		/// Handles if the message is different from current playtest.
 		/// If message was manually removed.
 		/// </summary>
-		private async void GetPreviousAnnounceAsync()
+		private async void GetPreviousAnnounceAsync(Key_Value id, Key_Value name)
 		{
-			string[] announceData = File.ReadAllLines(_ANNOUNCE_PATH);
-
 			Console.ForegroundColor = ConsoleColor.Cyan;
-			Console.WriteLine($"Announcement Message File Found!\n{announceData[0]}\n{announceData[1]}");
+			Console.WriteLine($"Announcement Message Information Found!\n{id.value}\n{name.value}");
 
-			var announceId = Convert.ToUInt64(announceData[1]);
+			var announceId = Convert.ToUInt64(id.value);
 
-			if (announceData[0] == CurrentEventInfo[2]) //If saved title == current title
+			if (name.value == CurrentEventInfo[2]) //If saved title == current title
 			{
 				Console.WriteLine("Titles match! Attempting to reattach!");
 				try
@@ -110,12 +107,16 @@ namespace BotHATTwaffle.Services.Playtesting
 
 		public async Task Announce()
 		{
-			//First program run and an announce file exists.
-			if (_firstRun && File.Exists(_ANNOUNCE_PATH))
+			//Attempt to get Keys from DB
+			var announceNameKeyValue = DataBaseUtil.GetKeyValue("AnnounceName");
+			var announceIDKeyValue = DataBaseUtil.GetKeyValue("AnnounceID");
+
+			//First program run and a previous announce exists.
+			if (_firstRun && announceIDKeyValue != null)
 			{
 				_firstRun = false;
 				await LaunchSuppress();
-				GetPreviousAnnounceAsync();
+				GetPreviousAnnounceAsync(announceIDKeyValue, announceNameKeyValue);
 			}
 			_caltick++;
 			if (_dataService.CalUpdateTicks < _caltick)
@@ -199,7 +200,7 @@ namespace BotHATTwaffle.Services.Playtesting
 			try
 			{
 				string albumUrl = CurrentEventInfo[5];
-				string albumId = albumUrl.Substring(albumUrl.IndexOf("/a/") + 3);
+				string albumId = albumUrl.Replace("/gallery/","/a/").Substring(albumUrl.IndexOf("/a/") + 3);
 				var client = new ImgurClient(_dataService.ImgurApi);
 				var endpoint = new AlbumEndpoint(client);
 
@@ -231,22 +232,24 @@ namespace BotHATTwaffle.Services.Playtesting
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private async Task PostAnnounce(Discord.Embed embed)
 		{
+			var announceIDKeyValue = DataBaseUtil.GetKeyValue("AnnounceID");
+			var announceNameKeyValue = DataBaseUtil.GetKeyValue("AnnounceName");
 			AnnounceMessage = await _dataService.AnnouncementChannel.SendMessageAsync("", false, embed) as IUserMessage;
 			await GetAlbum();
-			//If the file exists, just delete it so it can be remade with the new test info.
-			if (File.Exists(_ANNOUNCE_PATH))
+			//If data exists, just delete it so it can be remade with the new test info.
+			if (announceIDKeyValue != null)
 			{
-				File.Delete(_ANNOUNCE_PATH);
+				DataBaseUtil.DeleteKeyValue(announceIDKeyValue);
+				DataBaseUtil.DeleteKeyValue(announceNameKeyValue);
+				announceNameKeyValue = null;
+				announceIDKeyValue = null;
 			}
 
 			//Create the text file containing the announce message
-			if (!File.Exists(_ANNOUNCE_PATH))
+			if (announceIDKeyValue == null)
 			{
-				using (StreamWriter sw = File.CreateText(_ANNOUNCE_PATH))
-				{
-					sw.WriteLine(CurrentEventInfo[2]);
-					sw.WriteLine(AnnounceMessage.Id);
-				}
+				DataBaseUtil.AddKeyValue("AnnounceID", $"{AnnounceMessage.Id}");
+				DataBaseUtil.AddKeyValue("AnnounceName", CurrentEventInfo[2]);
 			}
 			await _dataService.ChannelLog("Posting Playtest Announcement", $"Posting Playtest for {CurrentEventInfo[2]}");
 			LastEventInfo = CurrentEventInfo;
@@ -330,14 +333,14 @@ namespace BotHATTwaffle.Services.Playtesting
 			{
 				var result = Regex.Match(CurrentEventInfo[6], @"\d+$").Value;
 				await _dataService.RconCommand($"host_workshop_map {result}", server);
-				await _dataService.ChannelLog("Changing Map on Test Server", $"'host_workshop_map {result}' on {server.Address}");
+				await _dataService.ChannelLog("Changing Map on Test Server", $"'host_workshop_map {result}' on {server.address}");
 			}
 			else //Set config and post about it
 			{
 				List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
 				var authBuilder = new EmbedAuthorBuilder()
 				{
-					Name = $"Setting up {server.Address} for {CurrentEventInfo[2]}",
+					Name = $"Setting up {server.address} for {CurrentEventInfo[2]}",
 					IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
 				};
 
@@ -352,10 +355,10 @@ namespace BotHATTwaffle.Services.Playtesting
 					ThumbnailUrl = CurrentEventInfo[4],
 					Color = new Color(71, 126, 159),
 
-					Description = $"**{server.Description}**\n\n{CurrentEventInfo[9]}"
+					Description = $"**{server.description}**\n\n{CurrentEventInfo[9]}"
 				};
 				await _dataService.TestingChannel.SendMessageAsync("", false, builder);
-				await _dataService.ChannelLog("Setting postgame config", $"'exec postgame' on {server.Address}");
+				await _dataService.ChannelLog("Setting postgame config", $"'exec postgame' on {server.address}");
 				await _dataService.RconCommand($"exec postgame", server);
 			}
 		}
@@ -666,7 +669,7 @@ namespace BotHATTwaffle.Services.Playtesting
 						ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 						Color = new Color(243, 128, 72),
 
-						Description = $"Your reservation on {u.ReservedServer.Description} has ended! You can stay on the server but you cannot send any more commands to it."
+						Description = $"Your reservation on {u.ReservedServer.description} has ended! You can stay on the server but you cannot send any more commands to it."
 					};
 
 					try //If we cannot send a DM to the user, just dump it into the testing channel and tag them.
@@ -678,7 +681,7 @@ namespace BotHATTwaffle.Services.Playtesting
 						await _dataService.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 					}
 
-					await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+					await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.address} has ended.");
 					await _dataService.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.ReservedServer);
 					UserData.Remove(u);
 					await Task.Delay(1000);
@@ -695,7 +698,7 @@ namespace BotHATTwaffle.Services.Playtesting
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		public async Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, Server server)
 		{
-			await _dataService.ChannelLog($"{inUser} reservation on {server.Address} has started.", $"Reservation expires at {inServerReleaseTime}");
+			await _dataService.ChannelLog($"{inUser} reservation on {server.address} has started.", $"Reservation expires at {inServerReleaseTime}");
 			await _dataService.RconCommand($"say Hey everyone! {inUser.Username} has reserved this server!", server);
 			UserData.Add(new UserData()
 			{
@@ -731,7 +734,7 @@ namespace BotHATTwaffle.Services.Playtesting
 					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 					Color = new Color(243, 128, 72),
 
-					Description = $"Your reservation on server {u.ReservedServer.Description} has expired because all reservations were cleared." +
+					Description = $"Your reservation on server {u.ReservedServer.description} has expired because all reservations were cleared." +
 					$"This is likely due to a playtest starting soon, or a moderator cleared all reservations."
 				};
 
@@ -744,7 +747,7 @@ namespace BotHATTwaffle.Services.Playtesting
 					await _dataService.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 				}
 
-				await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+				await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.address} has ended.");
 				await _dataService.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
 				UserData.Remove(u);
 				await Task.Delay(1000);
@@ -785,7 +788,7 @@ namespace BotHATTwaffle.Services.Playtesting
 						ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 						Color = new Color(243, 128, 72),
 
-						Description = $"Your reservation on server {u.ReservedServer.Description} has expired because the reservation was cleared." +
+						Description = $"Your reservation on server {u.ReservedServer.description} has expired because the reservation was cleared." +
 						$"This is likely due to a playtest starting soon, a moderator cleared the reservation, or you released the reservation."
 					};
 
@@ -798,7 +801,7 @@ namespace BotHATTwaffle.Services.Playtesting
 						await _dataService.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
 					}
 
-					await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
+					await _dataService.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.address} has ended.");
 					await _dataService.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
 					UserData.Remove(u);
 					await Task.Delay(1000);
@@ -827,7 +830,7 @@ namespace BotHATTwaffle.Services.Playtesting
 				TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
 				fieldBuilder.Add(new EmbedFieldBuilder
 				{
-					Name = $"{u.ReservedServer.Address}",
+					Name = $"{u.ReservedServer.address}",
 					Value = $"User: `{u.User}`" +
 				$"\nTime Left: {timeLeft:h\'H \'m\'M\'}",
 					IsInline = false

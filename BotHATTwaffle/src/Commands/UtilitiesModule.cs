@@ -5,9 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using BotHATTwaffle.Services;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -42,6 +40,9 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, builder.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Ping",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		/// <summary>
@@ -53,7 +54,7 @@ namespace BotHATTwaffle.Commands
 		/// </remarks>
 		/// <param name="roles">A case-insensitive space-delimited list of roles to toggle.</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
-		[Command("roleme")]
+		[Command("RoleMe")]
 		[Summary("Toggles the invoking user's roles.")]
 		[Remarks(
 			"Toggleable roles typically display possession of a skill, such as 3D modelling or level design. To send multiple " +
@@ -148,6 +149,9 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 			await _dataService.ChannelLog($"Toggled Roles for {Context.User}", logMessage.ToString());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "RoleMe",
+				Context.Message.Content, DateTime.Now);
 		}
 	}
 }

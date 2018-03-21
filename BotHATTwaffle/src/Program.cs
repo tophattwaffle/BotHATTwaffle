@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using BotHATTwaffle.Commands;
+using BotHATTwaffle.Models;
 using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Download;
 using BotHATTwaffle.Services.Playtesting;
@@ -90,7 +92,7 @@ namespace BotHATTwaffle
 			_services.GetRequiredService<PlaytestingService>();
 
 			// Retrieves the bot's token from the config file; effectively exits the program if botToken can't be retrieved.
-			// This is the only setting that has to be retreived this way so it can start up properly.
+			// This is the only setting that has to be retrieved this way so it can start up properly.
 			// Once the guild becomes ready the rest of the settings are fully loaded.
 			if (!_data.Config.TryGetValue("botToken", out string botToken)) return;
 
@@ -140,11 +142,11 @@ namespace BotHATTwaffle
 		private async Task ProcessCommandAsync(SocketUserMessage message, int argPos)
 		{
 			var context = new SocketCommandContext(_client, message);
-
+			
 			// Executes the command; this is not the return value of the command.
 			// Rather, it is an object that contains information about the outcome of the execution.
 			IResult result = await _commands.ExecuteAsync(context, argPos, _services);
-
+			
 			await CommandExecutedEventHandler(context, result);
 		}
 
@@ -253,6 +255,8 @@ namespace BotHATTwaffle
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private async Task CommandExecutedEventHandler(ICommandContext context, IResult result)
 		{
+			
+
 			if (result.Error is null) return; // Ignores successful executions.
 
 			Console.ForegroundColor = ConsoleColor.Red;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using BotHATTwaffle.Commands.Preconditions;
 using BotHATTwaffle.Extensions;
 using BotHATTwaffle.Models;
@@ -11,7 +10,6 @@ using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Download;
 using BotHATTwaffle.Services.Embed;
 using BotHATTwaffle.Services.Playtesting;
-
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -46,7 +44,7 @@ namespace BotHATTwaffle.Commands
 			_timer = timer;
 		}
 
-		[Command("suppress")]
+		[Command("Suppress")]
 		[Summary("Toggles the bot's announce flags for firing timed alerts for playtests.")]
 		[Remarks("Different inputs will suppress different flags.\n1 = Hour\n2 = Twenty\n3 = Fifteen\n4 = Start\n5 = All")]
 		[RequireContext(ContextType.Guild)]
@@ -66,9 +64,12 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync($"```True means this alert will not be fired until the announcement " +
 			                 $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
 			await _data.ChannelLog($"{Context.User} changed playtest alert flag suppression", _playtesting.GetAnnounceFlags());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Suppress",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("announce", RunMode = RunMode.Async)]
+		[Command("Announce", RunMode = RunMode.Async)]
 		[Summary("Interactively create an embed message to be sent to any channel.")]
 		[Remarks(
 			"The entire embed can also be built at once using the following template:```{Author Name}{Thumbnail}{Title}{URL}" +
@@ -127,9 +128,12 @@ namespace BotHATTwaffle.Commands
 					$"Embed created by {Context.User} was sent to {string.Join(", ", channels.Select(c => c.Name))}.");
 				await _data.LogChannel.SendMessageAsync(string.Empty, false, embed);
 			}
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Announce",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("rcon")]
+		[Command("Rcon")]
 		[Summary("Invokes an RCON command on a server.")]
 		[Remarks("The command's output, if any, will be displayed by the bot.")]
 		[Alias("r")]
@@ -171,7 +175,7 @@ namespace BotHATTwaffle.Commands
 				// Remove log messages from the log.
 				string[] replyArray = reply.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None);
 				reply = string.Join("\n", replyArray.Where(x => !x.Trim().StartsWith("L ")));
-				reply = reply.Replace("discord.gg", "discord,gg").Replace(server.Password, "[PASSWORD HIDDEN]");
+				reply = reply.Replace("discord.gg", "discord,gg").Replace(server.rcon_password, "[PASSWORD HIDDEN]");
 
 				if (reply.Length > 1880)
 					reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED...]";
@@ -195,22 +199,25 @@ namespace BotHATTwaffle.Commands
 				{
 					await Context.Message.DeleteAsync();
 
-					await ReplyAsync($"```Command sent to {server.Name}\nA password was set on the server.```");
+					await ReplyAsync($"```Command sent to {server.name}\nA password was set on the server.```");
 					await _data.ChannelLog(
 						$"{Context.User} Sent RCON command",
-						$"A password command was sent to: {server.Address}");
+						$"A password command was sent to: {server.address}");
 				}
 				else
 				{
-					await ReplyAsync($"```{command} sent to {server.Name}\n{reply}```");
+					await ReplyAsync($"```{command} sent to {server.name}\n{reply}```");
 					await _data.ChannelLog(
 						$"{Context.User} Sent RCON command",
-						$"{command} was sent to: {server.Address}\n{reply}");
+						$"{command} was sent to: {server.address}\n{reply}");
 				}
 			}
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Rcon",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("playtest")]
+		[Command("Playtest")]
 		[Summary("Preforms an action on a server.")]
 		[Remarks(
 			"Actions:\n" +
@@ -255,7 +262,7 @@ namespace BotHATTwaffle.Commands
 				_testInfo = _playtesting.CurrentEventInfo; // Stores the test info for later use in retrieving the demo.
 				string workshopId = Regex.Match(_playtesting.CurrentEventInfo[6], @"\d+$").Value;
 
-				await _data.ChannelLog($"Playtest Prestart on {server.Name}", $"exec {config}" +
+				await _data.ChannelLog($"Playtest Prestart on {server.name}", $"exec {config}" +
 					$"\nhost_workshop_map {workshopId}");
 
 				await _data.RconCommand($"exec {config}", server);
@@ -263,7 +270,7 @@ namespace BotHATTwaffle.Commands
 
 				await _data.RconCommand($"host_workshop_map {workshopId}", server);
 
-				await ReplyAsync($"```Playtest Prestart on {server.Name}\nexec {config}\nhost_workshop_map {workshopId}```");
+				await ReplyAsync($"```Playtest Prestart on {server.name}\nexec {config}\nhost_workshop_map {workshopId}```");
 			}
 			else if (action.Equals("start", StringComparison.OrdinalIgnoreCase ))
 			{
@@ -273,9 +280,9 @@ namespace BotHATTwaffle.Commands
 				string title = _playtesting.CurrentEventInfo[2].Split(new[] { ' ' }, 2).FirstOrDefault() ?? string.Empty;
 				string demoName = $"{time:MM_dd_yyyy}_{title}_{gameMode}";
 
-				await ReplyAsync($"```Playtest Start on {server.Name}\nexec {config}\ntv_record {demoName}```");
+				await ReplyAsync($"```Playtest Start on {server.name}\nexec {config}\ntv_record {demoName}```");
 				await _data.ChannelLog(
-					$"Playtest Start on {server.Name}",
+					$"Playtest Start on {server.name}",
 					$"exec {config}\ntv_record {demoName}\nsay Playtest of {title} is now live! Be respectiful and GLHF!");
 
 				await _data.RconCommand($"exec {config}", server);
@@ -301,7 +308,7 @@ namespace BotHATTwaffle.Commands
 
 				await ReplyAsync("```Playtest post started. Begin feedback!```");
 				await _data.ChannelLog(
-					$"Playtest Post on {server.Name}",
+					$"Playtest Post on {server.name}",
 					$"exec {_data.PostConfig}\nsv_voiceenable 0\nGetting Demo and BSP file and moving into DropBox");
 			}
 			else if (action.Equals("scramble", StringComparison.OrdinalIgnoreCase ) ||
@@ -309,30 +316,33 @@ namespace BotHATTwaffle.Commands
 			{
 				await _data.RconCommand("mp_scrambleteams 1", server);
 
-				await ReplyAsync($"```Playtest Scramble on {server.Name}\nmp_scrambleteams 1```");
-				await _data.ChannelLog($"Playtest Scramble on {server.Name}", "mp_scrambleteams 1");
+				await ReplyAsync($"```Playtest Scramble on {server.name}\nmp_scrambleteams 1```");
+				await _data.ChannelLog($"Playtest Scramble on {server.name}", "mp_scrambleteams 1");
 			}
 			else if (action.Equals("pause", StringComparison.OrdinalIgnoreCase ) ||
 			         action.Equals("p", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _data.RconCommand(@"mp_pause_match; say Pausing Match", server);
 
-				await ReplyAsync($"```Playtest Scramble on {server.Name}\nmp_pause_match```");
-				await _data.ChannelLog($"Playtest Pause on {server.Name}", "mp_pause_match");
+				await ReplyAsync($"```Playtest Scramble on {server.name}\nmp_pause_match```");
+				await _data.ChannelLog($"Playtest Pause on {server.name}", "mp_pause_match");
 			}
 			else if (action.Equals("unpause", StringComparison.OrdinalIgnoreCase ) ||
 			         action.Equals("u", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _data.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
 
-				await ReplyAsync($"```Playtest Unpause on {server.Name}\nmp_unpause_match```");
-				await _data.ChannelLog($"Playtest Unpause on {server.Name}", "mp_unpause_match");
+				await ReplyAsync($"```Playtest Unpause on {server.name}\nmp_unpause_match```");
+				await _data.ChannelLog($"Playtest Unpause on {server.name}", "mp_unpause_match");
 			}
 			else
 			{
 				await ReplyAsync(
 					"Invalid action, please try:\n`pre`\n`start`\n`post`\n`scramble` or `s`\n`pause` or `p`\n`unpause` or `u`");
 			}
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Playtest",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		/// <summary>
@@ -415,12 +425,15 @@ namespace BotHATTwaffle.Commands
 			await _data.TestingChannel.SendMessageAsync(string.Empty, false, embed.Build());
 		}
 
-		[Command("shutdown", RunMode = RunMode.Async)]
+		[Command("Shutdown", RunMode = RunMode.Async)]
 		[Summary("Shuts down the bot.")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.Moderators)]
 		public async Task ShutdownAsync()
 		{
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Shutdown",
+				Context.Message.Content, DateTime.Now);
+
 			await Context.Message.DeleteAsync();
 			await _data.ChannelLog($"{Context.Message.Author} is shutting down the bot.");
 
@@ -430,7 +443,7 @@ namespace BotHATTwaffle.Commands
 			Environment.Exit(0);
 		}
 
-		[Command("reload")]
+		[Command("Reload")]
 		[Summary("Reloads data from settings files.")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.Moderators)]
@@ -442,6 +455,9 @@ namespace BotHATTwaffle.Commands
 			_data.ReloadSettings();
 			_timer.Stop();
 			_timer.Start();
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Reload",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("DumpSettings")]
@@ -465,9 +481,12 @@ namespace BotHATTwaffle.Commands
 			}
 
 			await _data.ChannelLog($"{Context.User} dumped the settings.");
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "DumpSettings",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("mute")]
+		[Command("Mute")]
 		[Summary("Mutes a user.")]
 		[Remarks("Only supports integer durations because expired mutes are checked at an interval of one minute.")]
 		[Alias("m")]
@@ -481,6 +500,10 @@ namespace BotHATTwaffle.Commands
 			string reason = "No reason provided.")
 		{
 			await _mute.MuteAsync(user, duration, Context, reason);
+			DataBaseUtil.AddMute(user, duration, Context, reason);
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Mute",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("ClearReservations")]
@@ -499,6 +522,9 @@ namespace BotHATTwaffle.Commands
 				await _playtesting.ClearServerReservations(serverCode);
 
 			await ReplyAsync(string.Empty, false, _playtesting.DisplayServerReservations());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "ClearReservations",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("Active")]
@@ -510,6 +536,9 @@ namespace BotHATTwaffle.Commands
 			await _data.ChannelLog($"{user.Mention} has been given {_data.ActiveRole.Mention} by {Context.User}");
 			await ReplyAsync($"{user} has been given {_data.ActiveRole.Mention}!\n\nThanks for being an active member in our community!");
 			await ((IGuildUser)user).AddRoleAsync(_data.ActiveRole);
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Active",
+				Context.Message.Content, DateTime.Now);
 		}
 	}
 }

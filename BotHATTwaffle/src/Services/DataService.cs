@@ -25,8 +25,6 @@ namespace BotHATTwaffle.Services
 	{
 		public Dictionary<string, string> Config;
 
-		private List<TutorialSeries> _series;
-		private List<Server> _servers;
 		private readonly DiscordSocketClient _client;
 		private readonly Random _random;
 		public string DemoPath;
@@ -69,6 +67,7 @@ namespace BotHATTwaffle.Services
 		public string TanookiFactPath;
 		public string AlertUser;
 		public int ShitPostDelay = 5;
+		public static string dbPath;
 
 		//TimerService Vars
 		public int StartDelay = 10;
@@ -106,12 +105,6 @@ namespace BotHATTwaffle.Services
 
 			//Assign the rest of the variables
 			VariableAssignment();
-
-			//Read in the search JSON data
-			_series = DeserialiseToken<List<TutorialSeries>>(@"searchData.json", "Series");
-
-			//Read in the server JSON data
-			_servers = DeserialiseToken<List<Server>>(@"servers.json", "servers");
 
 			Console.ForegroundColor = ConsoleColor.Magenta;
 			Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
@@ -177,6 +170,7 @@ namespace BotHATTwaffle.Services
 			#region General or global
 			mainConfig.AddKeyIfMissing("botToken", "NEEDS_TO_BE_REPLACED");
 			mainConfig.AddKeyIfMissing("imgurAPI", "NEEDS_TO_BE_REPLACED");
+			mainConfig.AddKeyIfMissing("dbPath", "Master.sqlite");
 			mainConfig.AddKeyIfMissing("startDelay", "10");
 			mainConfig.AddKeyIfMissing("updateInterval", "60");
 			mainConfig.AddKeyIfMissing("calUpdateTicks", "1");
@@ -239,6 +233,8 @@ namespace BotHATTwaffle.Services
 		{
 			if (Config.ContainsKey("DemoPath"))
 				DemoPath = Config["DemoPath"];
+			if (Config.ContainsKey("dbPath"))
+				dbPath = Config["dbPath"];
 			if (Config.ContainsKey("pakRatEavesDropCSV"))
 				PakRatEavesDrop = Config["pakRatEavesDropCSV"].Split(',');
 			if (Config.ContainsKey("howToPackEavesDropCSV"))
@@ -443,8 +439,14 @@ namespace BotHATTwaffle.Services
 		/// Takes a 3 letter server prefix to find the correct server
 		/// </summary>
 		/// <param name="serverStr">3 letter server code</param>
-		/// <returns>Server object that was located in JSON file</returns>
-		public Server GetServer(string serverStr) => _servers.Find(x => x.Name == serverStr.ToLower());
+		/// <returns>Server object that was located in Database</returns>
+		public Server GetServer(string serverStr)
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				return dbContext.Servers.Single(s => s.name.Equals(serverStr));
+			} 
+		}
 
 		/// <summary>
 		/// Gets all the servers that exist in the servers JSON file
@@ -458,11 +460,15 @@ namespace BotHATTwaffle.Services
 				Name = $"Server List",
 				IconUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 			};
-
-			List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-			foreach (var s in _servers)
+			List<Server> servers;
+			using (var dbContext = new DataBaseContext())
 			{
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{s.Address}", Value = $"Prefix: `{s.Name}`\n{s.Description}", IsInline = false });
+				servers = dbContext.Servers.ToList();
+			}
+			List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
+			foreach (var s in servers)
+			{
+				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{s.address}", Value = $"Prefix: `{s.name}`\n{s.description}", IsInline = false });
 			}
 
 			var builder = new EmbedBuilder()
@@ -492,7 +498,7 @@ namespace BotHATTwaffle.Services
 			IPHostEntry iPHostEntry = null;
 			try
 			{
-				iPHostEntry = Dns.GetHostEntry(server.Address);
+				iPHostEntry = Dns.GetHostEntry(server.address);
 			}
 			catch
 			{
@@ -500,13 +506,13 @@ namespace BotHATTwaffle.Services
 			}
 
 			//Setup new RCON object
-			using (var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.Password))
+			using (var rcon = new RCON(IPAddress.Parse($"{iPHostEntry.AddressList[0]}"), 27015, server.rcon_password))
 			{
 				//Send the RCON command to the server
 				reply = await rcon.SendCommandAsync(command);
 
 				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine($"{DateTime.Now}\nRCON COMMAND: {server.Address}\nCommand: {command}\n");
+				Console.WriteLine($"{DateTime.Now}\nRCON COMMAND: {server.address}\nCommand: {command}\n");
 				Console.ResetColor();
 			}
 
@@ -525,7 +531,7 @@ namespace BotHATTwaffle.Services
 		/// <returns>Returns a 2D list of strings</returns>
 		public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
 		{
-			List<Tutorial> foundTutorials = new List<Tutorial>();
+			List<SearchDataResult> foundData = new List<SearchDataResult>();
 			List<List<string>> listResults = new List<List<string>>();
 
 			//Let's us search on multiple terms at a time
@@ -535,64 +541,50 @@ namespace BotHATTwaffle.Services
 			if (searchSeries.ToLower() == "faq" || searchSeries.ToLower() == "f" || searchSeries.ToLower() == "7")
 				return SearchFaq(searchTerm, isPrivate);
 
-			//Did we ask for a link dump?
-			if (searchTerm.ToLower() == "dump" || searchTerm.ToLower() == "all")
-				return DumpSearch(searchSeries);
-
-			//V2 0
-			if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
+			switch (searchSeries)
 			{
-				foreach (string s in searchTermArray)
-				{
-					foundTutorials.AddRange(_series[0].Tutorials.FindAll(x => x.Tags.Contains(s)));
-				}
+				case "v2series":
+				case "v2":
+				case "1":
+					foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "v2");
+					break;
+				case "csgobootcamp":
+				case "bc":
+				case "2":
+					foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "bc");
+					break;
+				case "3dsmax":
+				case "3ds":
+				case "3":
+					foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "3ds");
+					break;
+				case "writtentutorials":
+				case "written":
+				case "4":
+					foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "written");
+					break;
+				case "legacyseries":
+				case "v1":
+				case "lg":
+				case "5":
+					foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "lg");
+					break;
+				case "hammertroubleshooting":
+				case "ht":
+				case "6":
+				case "misc":
+					foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "ht");
+					break;
+				case "all":
+					foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "all");
+					break;
+				default:
+					//do nothing
+					break;
 			}
-			//Bootcamp 1
-			if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2" || searchSeries.ToLower() == "all")
-			{
-				foreach (string s in searchTermArray)
-				{
-					foundTutorials.AddRange(_series[1].Tutorials.FindAll(x => x.Tags.Contains(s)));
-				}
-			}
-			//3dsmax 2
-			if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3" || searchSeries.ToLower() == "all")
-			{
-				foreach (string s in searchTermArray)
-				{
-					foundTutorials.AddRange(_series[2].Tutorials.FindAll(x => x.Tags.Contains(s)));
-				}
-			}
-			//Writtentutorials 3
-			if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4" || searchSeries.ToLower() == "all")
-			{
-				foreach (string s in searchTermArray)
-				{
-					foundTutorials.AddRange(_series[3].Tutorials.FindAll(x => x.Tags.Contains(s)));
-				}
-			}
-			//legacy 5
-			if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5" || searchSeries.ToLower() == "all")
-			{
-				foreach (string s in searchTermArray)
-				{
-					foundTutorials.AddRange(_series[5].Tutorials.FindAll(x => x.Tags.Contains(s)));
-				}
-			}
-			//troubleshooting 4
-			if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "misc" || searchSeries.ToLower() == "all")
-			{
-				foreach (string s in searchTermArray)
-				{
-					foundTutorials.AddRange(_series[4].Tutorials.FindAll(x => x.Tags.Contains(s)));
-				}
-			}
-
-			//Remove duplicates from list.
-			List<Tutorial> noDoups = foundTutorials.Distinct().ToList();
-
+			
 			//Process each result that was located
-			foreach (var result in noDoups)
+			foreach (var result in foundData)
 			{
 				List<string> singleResult = new List<string>();
 
@@ -611,11 +603,11 @@ namespace BotHATTwaffle.Services
 
 				//Create a HTML client so we can get info about the link
 				HtmlWeb htmlWeb = new HtmlWeb();
-				HtmlDocument htmlDocument = htmlWeb.Load(result.Url);
+				HtmlDocument htmlDocument = htmlWeb.Load(result.url);
 				string title = null;
 
 				//Processing for non-YouTube URLs
-				if (!result.Url.Contains("youtube"))
+				if (!result.url.Contains("youtube"))
 				{
 					//Get the page title
 					title = (from x in htmlDocument.DocumentNode.Descendants()
@@ -623,15 +615,15 @@ namespace BotHATTwaffle.Services
 							 select x.InnerText).FirstOrDefault();
 				}
 				//Processing for YouTube URLs
-				else if (result.Url.ToLower().Contains("youtube"))
-					title = GetYouTubeTitle(result.Url);
+				else if (result.url.ToLower().Contains("youtube"))
+					title = GetYouTubeTitle(result.url);
 
 				string description = null;
 				//Get article content, this is by ID. Only works for my site.
-				if (result.Url.ToLower().Contains("tophattwaffle"))
+				if (result.url.ToLower().Contains("tophattwaffle"))
 					description = htmlDocument.GetElementbyId("content-area").InnerText;
-				else if(result.Url.ToLower().Contains("youtube"))
-					description = result.Url;
+				else if(result.url.ToLower().Contains("youtube"))
+					description = result.url;
 
 				//Only if not Null - Fix the bad characters that get pulled from the web page.
 				description = description?.Replace(@"&#8211;", "-").Replace("\n", "").Replace(@"&#8220;", "\"").Replace(@"&#8221;", "\"").Replace(@"&#8217;", "'");
@@ -644,7 +636,7 @@ namespace BotHATTwaffle.Services
 				//Get images on the page
 				List<string> imgs = null;
 
-				if (!result.Url.ToLower().Contains("youtube"))
+				if (!result.url.ToLower().Contains("youtube"))
 				{
 				imgs = (from x in htmlDocument.DocumentNode.Descendants()
 									 where x.Name.ToLower() == "img"
@@ -656,14 +648,14 @@ namespace BotHATTwaffle.Services
 				if (imgs != null && imgs.Count > 1)
 					finalImg = imgs[_random.Next(0, imgs.Count)];
 
-				if (result.Url.Contains("youtube"))
+				if (result.url.Contains("youtube"))
 				{
-					finalImg = GetYouTubeImage(result.Url);
+					finalImg = GetYouTubeImage(result.url);
 				}
 
 				//Add results to list
 				singleResult.Add(title);
-				singleResult.Add(result.Url);
+				singleResult.Add(result.url);
 				singleResult.Add(description);
 				singleResult.Add(finalImg);
 				listResults.Add(singleResult);
@@ -706,63 +698,6 @@ namespace BotHATTwaffle.Services
 			}
 			else
 				return "";
-		}
-
-		/// <summary>
-		/// Dumps all links for the requested series.
-		/// </summary>
-		/// <param name="searchSeries">Series to dump</param>
-		/// <returns>2D list of tutorial dump</returns>
-		public List<List<string>> DumpSearch(string searchSeries)
-		{
-			List<List<string>> listResults = new List<List<string>>();
-			List<Tutorial> foundTutorials = new List<Tutorial>();
-
-			//V2 0
-			if (searchSeries.ToLower() == "v2series" || searchSeries.ToLower() == "v2" || searchSeries.ToLower() == "1" || searchSeries.ToLower() == "all")
-			{
-				foundTutorials.AddRange(_series[0].Tutorials);
-			}
-			//Bootcamp 1
-			if (searchSeries.ToLower() == "csgobootcamp" || searchSeries.ToLower() == "bc" || searchSeries.ToLower() == "2" || searchSeries.ToLower() == "all")
-			{
-				foundTutorials.AddRange(_series[1].Tutorials);
-			}
-			//3dsmax 2
-			if (searchSeries.ToLower() == "3dsmax" || searchSeries.ToLower() == "3ds" || searchSeries.ToLower() == "3" || searchSeries.ToLower() == "all")
-			{
-				foundTutorials.AddRange(_series[2].Tutorials);
-			}
-			//Writtentutorials 3
-			if (searchSeries.ToLower() == "writtentutorials" || searchSeries.ToLower() == "written" || searchSeries.ToLower() == "4" || searchSeries.ToLower() == "all")
-			{
-				foundTutorials.AddRange(_series[3].Tutorials);
-			}
-			//legacy 5
-			if (searchSeries.ToLower() == "legacyseries" || searchSeries.ToLower() == "v1" || searchSeries.ToLower() == "lg" || searchSeries.ToLower() == "5" || searchSeries.ToLower() == "all")
-			{
-			   foundTutorials.AddRange(_series[5].Tutorials);
-
-			}
-			//troubleshooting 4
-			if (searchSeries.ToLower() == "hammertroubleshooting" || searchSeries.ToLower() == "ht" || searchSeries.ToLower() == "6" || searchSeries.ToLower() == "misc" || searchSeries.ToLower() == "all")
-			{
-				foundTutorials.AddRange(_series[4].Tutorials);
-			}
-
-			foreach (var result in foundTutorials)
-			{
-				//Add items to list
-				List<string> singleResult = new List<string>
-				{
-					result.Url.Replace("https://www.tophattwaffle.com/", "").Replace("/", ""),
-					result.Url,
-					string.Join(", ", result.Tags)
-				};
-				listResults.Add(singleResult);
-			}
-
-			return listResults;
 		}
 
 		/// <summary>

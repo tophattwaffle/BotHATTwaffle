@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Discord;
@@ -19,7 +20,7 @@ namespace BotHATTwaffle.Commands
 			_client = client;
 		}
 
-		[Command("shaders")]
+		[Command("Shaders")]
 		[Summary("Provides links to Source shader development resources.")]
 		[Alias("shader")]
 		public async Task ShadersAsync()
@@ -62,6 +63,9 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Shaders",
+				Context.Message.Content, DateTime.Now);
 		}
 	}
 }

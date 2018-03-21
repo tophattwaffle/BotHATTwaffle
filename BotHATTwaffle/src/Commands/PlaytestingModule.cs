@@ -2,18 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using BotHATTwaffle.Commands.Preconditions;
 using BotHATTwaffle.Models;
 using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Playtesting;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-
 using Summer;
 
 namespace BotHATTwaffle.Commands
@@ -57,7 +53,7 @@ namespace BotHATTwaffle.Commands
 				if (u.User == Context.Message.Author)
 				{
 					TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
-					await ReplyAsync($"```You have a reservation on {u.ReservedServer.Name}. You have {timeLeft:h\'H \'m\'M\'} left.```");
+					await ReplyAsync($"```You have a reservation on {u.ReservedServer.name}. You have {timeLeft:h\'H \'m\'M\'} left.```");
 					return;
 				}
 			}
@@ -96,7 +92,7 @@ namespace BotHATTwaffle.Commands
 
 				var authBuilder = new EmbedAuthorBuilder()
 				{
-					Name = $"Hey there {Context.Message.Author} you have {server.Address} for 2 hours!",
+					Name = $"Hey there {Context.Message.Author} you have {server.address} for 2 hours!",
 					IconUrl = Context.Message.Author.GetAvatarUrl(),
 				};
 				var footBuilder = new EmbedFooterBuilder()
@@ -105,7 +101,7 @@ namespace BotHATTwaffle.Commands
 					IconUrl = _client.CurrentUser.GetAvatarUrl()
 				};
 				List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {server.Address}`", IsInline = false });
+				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {server.address}`", IsInline = false });
 				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Links", Value = $"[Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)", IsInline = false });
 				var builder = new EmbedBuilder()
 				{
@@ -154,19 +150,27 @@ namespace BotHATTwaffle.Commands
 					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 					Color = new Color(243, 128, 72),
 
-					Description = $"You cannot reserve the server {server.Name} because someone else is using it. Their reservation ends in {timeLeft:h\'H \'m\'M\'}" +
+					Description = $"You cannot reserve the server {server.name} because someone else is using it. Their reservation ends in {timeLeft:h\'H \'m\'M\'}" +
 					$"\nYou can use `>sr` to see all current server reservations."
 				};
 				await ReplyAsync("", false, builder);
 			}
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "PublicServer",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("servers")]
+		[Command("Servers")]
 		[Summary("Lists all available servers.")]
 		[Alias("list", "ListServers", "ls")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.ActiveMember, Role.Moderators, Role.RconAccess)]
-		public async Task ListServersAsync() => await ReplyAsync(string.Empty, false, _dataService.GetAllServers());
+		public async Task ListServersAsync()
+		{
+			await ReplyAsync(string.Empty, false, _dataService.GetAllServers());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Servers",
+				Context.Message.Content, DateTime.Now);
+		}
 
 		[Command("PublicCommand")]
 		[Summary("Invokes a command on the invoking user's reserved test server.")]
@@ -317,7 +321,7 @@ namespace BotHATTwaffle.Commands
 					//Remove log messages from log
 					string[] replyArray = reply.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 					reply = string.Join("\n", replyArray.Where(x => !x.Trim().StartsWith("L ")));
-					reply = reply.Replace("discord.gg", "discord,gg").Replace(server.Password, "[PASSWORD HIDDEN]");
+					reply = reply.Replace("discord.gg", "discord,gg").Replace(server.rcon_password, "[PASSWORD HIDDEN]");
 
 					//Limit command output
 					if (reply.Length > 1880)
@@ -327,18 +331,18 @@ namespace BotHATTwaffle.Commands
 					if (command.Contains("sv_password"))
 					{
 						await Context.Message.DeleteAsync(); //Message was setting password, delete it.
-						await ReplyAsync($"```Command Sent to {server.Name}\nA password was set on the server.```");
+						await ReplyAsync($"```Command Sent to {server.name}\nA password was set on the server.```");
 					}
 					//Normal command
 					else
-						await ReplyAsync($"```{command} sent to {server.Name}\n{reply}```");
+						await ReplyAsync($"```{command} sent to {server.name}\n{reply}```");
 
-					await _dataService.ChannelLog($"{Context.User} Sent RCON command using public command", $"{command} was sent to: {server.Address}\n{reply}");
+					await _dataService.ChannelLog($"{Context.User} Sent RCON command using public command", $"{command} was sent to: {server.address}\n{reply}");
 				}
 				//Command isn't valid
 				if (!valid)
 				{
-					await ReplyAsync($"```{command} cannot be sent to {server.Name} because the command is not allowed.```" +
+					await ReplyAsync($"```{command} cannot be sent to {server.name} because the command is not allowed.```" +
 						$"\nYou can use `>pc` to see all commands that can be sent to the server.");
 				}
 			}
@@ -362,6 +366,9 @@ namespace BotHATTwaffle.Commands
 				};
 				await ReplyAsync("", false, builder);
 			}
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "PublicCommand",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("PublicAnnounce")]
@@ -418,7 +425,7 @@ namespace BotHATTwaffle.Commands
 				}
 
 				await _dataService.TestingChannel.SendMessageAsync($"Hey {_dataService.CommunityTesterRole.Mention}!\n\n {Context.User.Mention} " +
-				                                                   $"needs players to help test `{reply}`\n\nYou can join using: `connect {server.Address}`",false, wsEmbed);
+				                                                   $"needs players to help test `{reply}`\n\nYou can join using: `connect {server.address}`",false, wsEmbed);
 			}
 
 			//No reservation found
@@ -441,6 +448,9 @@ namespace BotHATTwaffle.Commands
 				};
 				await ReplyAsync("", false, builder);
 			}
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "PublicAnnounce",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("ReleaseServer")]
@@ -470,21 +480,30 @@ namespace BotHATTwaffle.Commands
 			if (hasServer)
 			{
 				await ReplyAsync("```Releasing Server reservation.```");
-				await _playtesting.ClearServerReservations(server.Name);
+				await _playtesting.ClearServerReservations(server.name);
 			}
 			else
 			{
 				await ReplyAsync("```I could not locate a server reservation for your account.```");
 			}
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "ReleaseServer",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("ShowReservations")]
 		[Summary("Displays all currently reserved servers.")]
 		[Alias("sr")]
 		[RequireContext(ContextType.Guild)]
-		public async Task ShowReservationsAsync() => await ReplyAsync("", false, _playtesting.DisplayServerReservations());
+		public async Task ShowReservationsAsync()
+		{
+			await ReplyAsync("", false, _playtesting.DisplayServerReservations());
 
-		[Command("playtester")]
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "ShowReservations",
+				Context.Message.Content, DateTime.Now);
+		}
+
+		[Command("Playtester")]
 		[Summary("Toggles the Playtester role for the invoking user.")]
 		[Remarks("Effectively toggles one's subscription to playtesting notifications.")]
 		[Alias("pt")]
@@ -505,9 +524,12 @@ namespace BotHATTwaffle.Commands
 				await ReplyAsync($"Thanks for subscribing to playtest notifications {Context.User.Mention}!");
 				await ((IGuildUser)user).AddRoleAsync(_dataService.PlayTesterRole);
 			}
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Playtester",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("upcoming")]
+		[Command("Upcoming")]
 		[Summary("Displays the upcoming playtest event.")]
 		[Remarks("Automatically looks up the next playtest event. It can also always be found in #announcements.")]
 		[Alias("up")]
@@ -519,6 +541,9 @@ namespace BotHATTwaffle.Commands
 			_playtesting.LastEventInfo = _playtesting.CurrentEventInfo;
 
 			await ReplyAsync("", false, await _playtesting.FormatPlaytestInformationAsync(_playtesting.CurrentEventInfo, true));
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Upcoming",
+				Context.Message.Content, DateTime.Now);
 		}
 	}
 }

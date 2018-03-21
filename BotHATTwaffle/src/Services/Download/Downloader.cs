@@ -22,7 +22,7 @@ namespace BotHATTwaffle.Services.Download
 			string title = testInfo[2].Substring(0, testInfo[2].IndexOf(" "));
 
 			DemoName = $"{time:MM_dd_yyyy}_{title}";
-			FtpPath = server.FtpPath;
+			FtpPath = server.ftp_path;
 			LocalPath = $"{DataSvc.DemoPath}\\{time:yyyy}\\{time:MM} - " + $"{time:MMMM}\\{DemoName}";
 			WorkshopId = Regex.Match(testInfo[6], @"\d+$").Value;
 		}

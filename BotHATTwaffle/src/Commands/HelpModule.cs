@@ -28,7 +28,7 @@ namespace BotHATTwaffle.Commands
 			_help = help;
 		}
 
-		[Command("help")]
+		[Command("Help")]
 		[Summary("Displays this message.")]
 		[Alias("h")]
 		public async Task HelpAsync()
@@ -59,9 +59,12 @@ namespace BotHATTwaffle.Commands
 			{
 				await ReplyAsync(string.Empty, false, embed.Build());
 			}
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Help",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("help")]
+		[Command("Help")]
 		[Summary("Provides help for a specific command.")]
 		[Alias("h")]
 		public async Task HelpAsync([Summary("The command for which to get help.")] string command)
@@ -137,9 +140,11 @@ namespace BotHATTwaffle.Commands
 					await ReplyAsync(string.Empty, false, embed.Build());
 				}
 			}
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Help",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("about")]
+		[Command("About")]
 		[Summary("Displays information about the bot.")]
 		public async Task AboutAsync()
 		{
@@ -182,6 +187,9 @@ namespace BotHATTwaffle.Commands
 			embed.WithTimestamp(buildDate);
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "About",
+				Context.Message.Content, DateTime.Now);
 		}
 	}
 }

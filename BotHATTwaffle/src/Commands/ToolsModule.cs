@@ -1,6 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -42,6 +42,9 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "VTFEdit",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("GCFScape")]
@@ -89,6 +92,9 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+			
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "VMTEditor",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("VIDE")]
@@ -112,6 +118,9 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "VIDE",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("WallWorm")]
@@ -135,6 +144,9 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "WallWorm",
+				Context.Message.Content, DateTime.Now);
 		}
 
 		[Command("BSPSource")]
@@ -159,9 +171,12 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "BSPSource",
+				Context.Message.Content, DateTime.Now);
 		}
 
-		[Command("log")]
+		[Command("Log")]
 		[Summary("Provides a link to the compile log checker on Interlopers.")]
 		[Alias("l")]
 		public async Task LogCheckerAsync()
@@ -183,6 +198,9 @@ namespace BotHATTwaffle.Commands
 			};
 
 			await ReplyAsync(string.Empty, false, embed.Build());
+
+			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Log",
+				Context.Message.Content, DateTime.Now);
 		}
 	}
 }
