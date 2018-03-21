@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BotHATTwaffle.Models
 {
@@ -8,7 +9,7 @@ namespace BotHATTwaffle.Models
 		[Key]
 		public int seq_id { get; set; }
 
-		public string snowflake { get; set; }
+		public long snowflake { get; set; }
 		public string username { get; set; }
 		public string shitpost { get; set; }
 		public string fullmessage { get; set; }
@@ -16,12 +17,3 @@ namespace BotHATTwaffle.Models
 
 	}
 }
-/*
-CREATE TABLE `shitposts` (
-	`seq_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-	`snowflake`	TEXT,
-	`username`	TEXT,
-	`shitpost`	TEXT,
-	`full_text`	TEXT,
-	`date`	TEXT
-);*/

@@ -14,10 +14,3 @@ namespace BotHATTwaffle.Models
 		public virtual ICollection<SearchDataTag> tags { get; set; }
 	}
 }
-/*
- * CREATE TABLE `SearchData_Results` (
-	`name`	TEXT,
-	`url`	TEXT,
-	PRIMARY KEY(`name`)
-);
-*/

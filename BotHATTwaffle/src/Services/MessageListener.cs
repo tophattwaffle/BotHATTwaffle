@@ -185,7 +185,7 @@ namespace BotHATTwaffle.Services
 					await message.Channel.SendMessageAsync($"Hi {message.Content.Substring(3).Trim()}, I'm BotHATTwaffle.");
 
 					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-					DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "Dad Joke",
+					DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Dad Joke",
 						message.Content, DateTime.Now);
 					return;
 				}
@@ -202,7 +202,7 @@ namespace BotHATTwaffle.Services
 					};
 					await message.Channel.SendMessageAsync("",false, builder);
 					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-					DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "KMS",
+					DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "KMS",
 						message.Content, DateTime.Now);
 					return;
 				}
@@ -215,7 +215,7 @@ namespace BotHATTwaffle.Services
 				{
 					await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
 					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-					DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "Daddy",
+					DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Daddy",
 						message.Content, DateTime.Now);
 					return;
 				}
@@ -228,7 +228,7 @@ namespace BotHATTwaffle.Services
 				{
 					await message.Channel.SendMessageAsync("ok.");
 					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-					DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "Sandwich",
+					DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Sandwich",
 						message.Content, DateTime.Now);
 					return;
 				}
@@ -243,7 +243,7 @@ namespace BotHATTwaffle.Services
 					await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
 					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 
-					DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "Order 66",
+					DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Order 66",
 						message.Content, DateTime.Now);
 					return;
 				}
@@ -257,7 +257,7 @@ namespace BotHATTwaffle.Services
 				await message.Channel.SendMessageAsync(
 					this._dataService.AgreeStrings[this._random.Next(0, this._dataService.AgreeStrings.Length)]);
 
-				DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "^",
+				DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "^",
 					message.Content, DateTime.Now);
 
 				return;
@@ -358,7 +358,7 @@ namespace BotHATTwaffle.Services
 			};
 
 			message.Channel.SendMessageAsync("",false,builder);
-			DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "PakRat",
+			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "PakRat",
 				message.Content, DateTime.Now);
 			return Task.CompletedTask;
 		}
@@ -390,7 +390,7 @@ namespace BotHATTwaffle.Services
 			};
 
 			message.Channel.SendMessageAsync("", false, builder);
-			DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "HowToPack",
+			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "HowToPack",
 				message.Content, DateTime.Now);
 			return Task.CompletedTask;
 		}
@@ -421,7 +421,7 @@ namespace BotHATTwaffle.Services
 			};
 
 			message.Channel.SendMessageAsync("", false, builder);
-			DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "Carve",
+			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Carve",
 				message.Content, DateTime.Now);
 			return Task.CompletedTask;
 		}
@@ -455,7 +455,7 @@ namespace BotHATTwaffle.Services
 			};
 
 			message.Channel.SendMessageAsync("", false, builder);
-			DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "Propper",
+			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Propper",
 				message.Content, DateTime.Now);
 			return Task.CompletedTask;
 		}
@@ -486,7 +486,7 @@ namespace BotHATTwaffle.Services
 			};
 
 			message.Channel.SendMessageAsync("", false, builder);
-			DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "VB",
+			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "VB",
 				message.Content, DateTime.Now);
 			return Task.CompletedTask;
 		}
@@ -516,7 +516,7 @@ namespace BotHATTwaffle.Services
 			};
 
 			message.Channel.SendMessageAsync("", false, builder);
-			DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "DeYork",
+			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "DeYork",
 				message.Content, DateTime.Now);
 			return Task.CompletedTask;
 		}
@@ -547,7 +547,7 @@ namespace BotHATTwaffle.Services
 
 			message.Channel.SendMessageAsync("", false, builder);
 
-			DataBaseUtil.AddShitpost(message.Author.Id.ToString(), message.Author.ToString(), "Tanooki",
+			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Tanooki",
 				message.Content, DateTime.Now);
 
 			return Task.CompletedTask;

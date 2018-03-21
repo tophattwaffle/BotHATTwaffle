@@ -60,7 +60,7 @@ namespace BotHATTwaffle.Commands
 				await ReplyAsync(string.Empty, false, embed.Build());
 			}
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Help",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Help",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -140,7 +140,7 @@ namespace BotHATTwaffle.Commands
 					await ReplyAsync(string.Empty, false, embed.Build());
 				}
 			}
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Help",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Help",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -188,7 +188,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "About",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "About",
 				Context.Message.Content, DateTime.Now);
 		}
 	}

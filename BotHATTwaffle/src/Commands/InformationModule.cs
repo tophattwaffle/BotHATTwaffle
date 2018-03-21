@@ -75,7 +75,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, builder.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "VDC",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VDC",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -144,7 +144,7 @@ namespace BotHATTwaffle.Commands
 			if (!isPrivate)
 				await wait.DeleteAsync();
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Search",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Search",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -270,7 +270,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Tutorials",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Tutorials",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -309,7 +309,7 @@ namespace BotHATTwaffle.Commands
 			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A CAT FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "CatFact",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "CatFact",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -319,7 +319,7 @@ namespace BotHATTwaffle.Commands
 		public async Task CatFactUnsubAsync()
 		{
 			await ReplyAsync("You cannot unsubscribe from cat facts...");
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Unsubscribe",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Unsubscribe",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -353,7 +353,7 @@ namespace BotHATTwaffle.Commands
 			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "PenguineFact",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PenguineFact",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -387,7 +387,7 @@ namespace BotHATTwaffle.Commands
 			await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A TANOOKI FACT");
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "TanookiFact",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "TanookiFact",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -404,7 +404,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "TanookiIRL",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "TanookiIRL",
 				Context.Message.Content, DateTime.Now);
 		}
 	}

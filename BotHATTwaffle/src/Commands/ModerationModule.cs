@@ -65,7 +65,7 @@ namespace BotHATTwaffle.Commands
 			                 $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
 			await _data.ChannelLog($"{Context.User} changed playtest alert flag suppression", _playtesting.GetAnnounceFlags());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Suppress",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Suppress",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -129,7 +129,7 @@ namespace BotHATTwaffle.Commands
 				await _data.LogChannel.SendMessageAsync(string.Empty, false, embed);
 			}
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Announce",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Announce",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -213,7 +213,7 @@ namespace BotHATTwaffle.Commands
 				}
 			}
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Rcon",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Rcon",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -341,7 +341,7 @@ namespace BotHATTwaffle.Commands
 					"Invalid action, please try:\n`pre`\n`start`\n`post`\n`scramble` or `s`\n`pause` or `p`\n`unpause` or `u`");
 			}
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Playtest",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Playtest",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -431,7 +431,7 @@ namespace BotHATTwaffle.Commands
 		[RequireRole(Role.Moderators)]
 		public async Task ShutdownAsync()
 		{
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Shutdown",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Shutdown",
 				Context.Message.Content, DateTime.Now);
 
 			await Context.Message.DeleteAsync();
@@ -456,7 +456,7 @@ namespace BotHATTwaffle.Commands
 			_timer.Stop();
 			_timer.Start();
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Reload",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Reload",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -482,7 +482,7 @@ namespace BotHATTwaffle.Commands
 
 			await _data.ChannelLog($"{Context.User} dumped the settings.");
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "DumpSettings",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "DumpSettings",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -502,7 +502,7 @@ namespace BotHATTwaffle.Commands
 			await _mute.MuteAsync(user, duration, Context, reason);
 			DataBaseUtil.AddMute(user, duration, Context, reason);
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Mute",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Mute",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -573,7 +573,7 @@ namespace BotHATTwaffle.Commands
 				await ReplyAsync("", false, builder.Build());
 			}
 			
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "MuteStatus",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "MuteStatus",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -594,7 +594,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, _playtesting.DisplayServerReservations());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "ClearReservations",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "ClearReservations",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -608,7 +608,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync($"{user.Mention} has been given {_data.ActiveRole.Mention}!\n\nThanks for being an active member in our community!");
 			await ((IGuildUser)user).AddRoleAsync(_data.ActiveRole);
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Active",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Active",
 				Context.Message.Content, DateTime.Now);
 		}
 	}

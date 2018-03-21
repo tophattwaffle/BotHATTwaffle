@@ -11,10 +11,3 @@ namespace BotHATTwaffle.Models
 		public string value { get; set; }
 	}
 }
-/*
- * CREATE TABLE `key_values` (
-	`key`	TEXT,
-	`value`	TEXT,
-	PRIMARY KEY(`key`)
-);
-*/

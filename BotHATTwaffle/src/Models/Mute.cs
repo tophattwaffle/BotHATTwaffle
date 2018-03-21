@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BotHATTwaffle.Models
 {
@@ -8,7 +9,7 @@ namespace BotHATTwaffle.Models
 		[Key]
 		public int seq_id { get; set; }
 
-		public string snowflake { get; set; }
+		public long snowflake { get; set; }
 		public string username { get; set; }
 		public string mute_reason { get; set; }
 		public int mute_duration { get; set; }
@@ -16,13 +17,3 @@ namespace BotHATTwaffle.Models
 		public string date { get; set; }
 	}
 }
-/*CREATE TABLE `Mutes` (
-	`seq__id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-	`snowflake`	TEXT,
-	`username`	TEXT,
-	`mute_reason`	TEXT,
-	`mute_duration`	INTEGER,
-	`muted_by`	TEXT,
-	`date`	TEXT
-);
-*/

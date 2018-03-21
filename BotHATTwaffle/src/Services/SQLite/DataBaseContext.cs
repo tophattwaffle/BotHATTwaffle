@@ -26,7 +26,6 @@ namespace BotHATTwaffle
 		public DbSet<Key_Value> KeyVaules { get; set; }
 		public DbSet<Shitpost> Shitposts { get; set; }
 
-		//Set composite key
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<SearchDataTag>()

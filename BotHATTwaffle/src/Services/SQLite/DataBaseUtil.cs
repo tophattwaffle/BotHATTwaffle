@@ -1,10 +1,6 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
-
 using BotHATTwaffle.Models;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -17,13 +13,13 @@ namespace BotHATTwaffle
 	{
 		public static string FormatDate(DateTime date) => date.ToString("MM-dd-yyyy HH:mm:ss");
 
-		public static void AddCommand(string snowflake, string username, string command, string fullmessage, DateTime dateTime)
+		public static void AddCommand(ulong snowflake, string username, string command, string fullmessage, DateTime dateTime)
 		{
 			using (var dbContext = new DataBaseContext())
 			{
 				dbContext.CommandUsage.Add(new CommandUse()
 				{
-					snowflake = snowflake,
+					snowflake = unchecked((long)snowflake),
 					username = username,
 					command = command,
 					fullmessage = fullmessage,
@@ -34,13 +30,13 @@ namespace BotHATTwaffle
 			}
 		}
 
-		public static void AddShitpost(string snowflake, string username, string shitpost, string fullmessage, DateTime dateTime)
+		public static void AddShitpost(ulong snowflake, string username, string shitpost, string fullmessage, DateTime dateTime)
 		{
 			using (var dbContext = new DataBaseContext())
 			{
 				dbContext.Shitposts.Add(new Shitpost()
 				{
-					snowflake = snowflake,
+					snowflake = unchecked((long)snowflake),
 					username = username,
 					shitpost = shitpost,
 					fullmessage = fullmessage,
@@ -157,7 +153,7 @@ namespace BotHATTwaffle
 			{
 				dbContext.Mutes.Add(new Mute()
 				{
-					snowflake = $"{user.Id}",
+					snowflake = unchecked((long)user.Id),
 					username = $"{user}",
 					mute_reason = reason,
 					mute_duration = duration,
@@ -173,7 +169,7 @@ namespace BotHATTwaffle
 		{
 			using (var dbContext = new DataBaseContext())
 			{
-				return dbContext.Mutes.Where(m => m.snowflake.Equals($"{user.Id}")).ToList();
+				return dbContext.Mutes.Where(m => m.snowflake.Equals(unchecked((long)user.Id))).ToList();
 			}
 		}
 	}

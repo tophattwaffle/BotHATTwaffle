@@ -281,8 +281,6 @@
     <Compile Include="src\Models\SearchDataResult.cs" />
     <Compile Include="src\Models\SearchDataTag.cs" />
     <Compile Include="src\Models\Shitpost.cs" />
-    <Compile Include="src\Models\Tutorial.cs" />
-    <Compile Include="src\Models\TutorialSeries.cs" />
     <Compile Include="src\Models\Role.cs" />
     <Compile Include="src\Models\Server.cs" />
     <Compile Include="src\Models\UserData.cs" />

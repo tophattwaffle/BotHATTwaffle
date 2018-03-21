@@ -12,11 +12,3 @@ namespace BotHATTwaffle.Models
 		public virtual SearchDataResult VirtualSearchDataResult { get; set; }
 	}
 }
-/*
-CREATE TABLE `SearchData_Tags` (
-	`name`	TEXT,
-	`tag`	TEXT,
-	`series`	TEXT,
-	PRIMARY KEY(`name`,`tag`,`series`)
-);
-*/

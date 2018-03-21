@@ -43,7 +43,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "VTFEdit",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VTFEdit",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -93,7 +93,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 			
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "VMTEditor",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VMTEditor",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -119,7 +119,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "VIDE",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VIDE",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -145,7 +145,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "WallWorm",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "WallWorm",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -172,7 +172,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "BSPSource",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "BSPSource",
 				Context.Message.Content, DateTime.Now);
 		}
 
@@ -199,7 +199,7 @@ namespace BotHATTwaffle.Commands
 
 			await ReplyAsync(string.Empty, false, embed.Build());
 
-			DataBaseUtil.AddCommand(Context.User.Id.ToString(), Context.User.ToString(), "Log",
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Log",
 				Context.Message.Content, DateTime.Now);
 		}
 	}
