@@ -67,7 +67,8 @@ namespace BotHATTwaffle.Commands
 		{
 			if (string.IsNullOrWhiteSpace(roles))
 			{
-				await ReplyAsync($"Toggleable roles are:```\n{string.Join("\n", _dataService.RoleMeWhiteList)}```");
+				await ReplyAsync($"Toggleable roles are:```\n{string.Join("\n", _dataService.RoleMeWhiteList)}```" +
+				                 $"\n`Example: >roleme Level Designer Programmer` will give you both `Level Designer` and `Programmer` roles.");
 				return;
 			}
 
