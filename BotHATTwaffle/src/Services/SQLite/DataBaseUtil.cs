@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+
 using BotHATTwaffle.Models;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -54,14 +56,14 @@ namespace BotHATTwaffle
 					key = key,
 					value = value
 				});
-				
+
 				dbContext.SaveChanges();
 			}
 		}
 
 		public static Key_Value GetKeyValue(string requestedKey)
 		{
-			
+
 			using (var dbContext = new DataBaseContext())
 			{
 				try
@@ -73,7 +75,7 @@ namespace BotHATTwaffle
 					//If we got more than one, or none - return null.
 					return null;
 				}
-				
+
 			}
 		}
 
@@ -163,11 +165,34 @@ namespace BotHATTwaffle
 			}
 		}
 
-		public static List<Mute> GetMutes(SocketGuildUser user)
+		/// <summary>
+		/// Retrieves all mute records for a user.
+		/// </summary>
+		/// <param name="userId">The ID of the user for which to retrieve mutes.</param>
+		/// <returns>A collection of the retrieved mute records.</returns>
+		public static async Task<Mute[]> GetMutesAsync(ulong userId)
 		{
 			using (var dbContext = new DataBaseContext())
 			{
-				return dbContext.Mutes.Where(m => m.snowflake.Equals(unchecked((long)user.Id))).ToList();
+				return await dbContext.Mutes.Where(m => m.snowflake.Equals(unchecked((long)userId))).ToArrayAsync();
+			}
+		}
+
+		/// <summary>
+		/// Retrieves a given quantity of the most recent mute records for a user.
+		/// </summary>
+		/// <param name="userId">The ID of the user for which to retrieve mutes.</param>
+		/// <param name="quantity">The amount of recent records to retrieve.</param>
+		/// <returns>A collection of the retrieved mute records in descending chronological order.</returns>
+		public static async Task<Mute[]> GetMutesAsync(ulong userId, int quantity)
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				return await dbContext.Mutes.Where(m => m.snowflake.Equals(unchecked((long)userId)))
+					.OrderByDescending(m => m.date)
+					.Take(quantity)
+					// .OrderBy(m => m.date)
+					.ToArrayAsync();
 			}
 		}
 	}

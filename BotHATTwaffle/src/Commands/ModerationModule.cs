@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 using BotHATTwaffle.Commands.Preconditions;
 using BotHATTwaffle.Extensions;
 using BotHATTwaffle.Models;
@@ -10,10 +11,13 @@ using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Download;
 using BotHATTwaffle.Services.Embed;
 using BotHATTwaffle.Services.Playtesting;
+
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+
+using Google.Apis.Util;
 
 namespace BotHATTwaffle.Commands
 {
@@ -54,7 +58,7 @@ namespace BotHATTwaffle.Commands
 			if (input == 0)
 			{
 				await ReplyAsync($"```True means this alert will not be fired until the announcement " +
-				                 $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
+								 $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
 
 				return;
 			}
@@ -62,7 +66,7 @@ namespace BotHATTwaffle.Commands
 			_playtesting.SuppressAnnounce(input);
 
 			await ReplyAsync($"```True means this alert will not be fired until the announcement " +
-			                 $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
+							 $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
 			await _data.ChannelLog($"{Context.User} changed playtest alert flag suppression", _playtesting.GetAnnounceFlags());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Suppress",
@@ -148,7 +152,7 @@ namespace BotHATTwaffle.Commands
 			// Command blacklist.
 			// TODO: Move to a config file.
 			if (command.Contains("rcon_password", StringComparison.OrdinalIgnoreCase ) ||
-			    command.Contains("exit", StringComparison.OrdinalIgnoreCase ))
+				command.Contains("exit", StringComparison.OrdinalIgnoreCase ))
 			{
 				await ReplyAsync("```This command cannot be run from here. Ask TopHATTwaffle to do it.```");
 				await _data.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverCode}");
@@ -221,7 +225,7 @@ namespace BotHATTwaffle.Commands
 		[Summary("Preforms an action on a server.")]
 		[Remarks(
 			"Actions:\n" +
-		    "`pre` - Sets the testing config and reloads the map to clear cheats.\n" +
+			"`pre` - Sets the testing config and reloads the map to clear cheats.\n" +
 			"`start` - Starts the playtest, starts recording a demo, and then tells the server it is live.\n" +
 			"`post` - Starts the postgame config. Gets the playtest's demo and BSP files and stores them in the public " +
 			"DropBox folder.\n" +
@@ -250,7 +254,7 @@ namespace BotHATTwaffle.Commands
 			Server server = _data.GetServer(serverCode ?? _playtesting.CurrentEventInfo[10].Substring(0, 3));
 
 			if (gameMode.Equals("competitive", StringComparison.OrdinalIgnoreCase ) ||
-			    gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
+				gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
 			{
 				config = _data.CompConfig;
 			}
@@ -312,7 +316,7 @@ namespace BotHATTwaffle.Commands
 					$"exec {_data.PostConfig}\nsv_voiceenable 0\nGetting Demo and BSP file and moving into DropBox");
 			}
 			else if (action.Equals("scramble", StringComparison.OrdinalIgnoreCase ) ||
-			         action.Equals("s", StringComparison.OrdinalIgnoreCase ))
+					 action.Equals("s", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _data.RconCommand("mp_scrambleteams 1", server);
 
@@ -320,7 +324,7 @@ namespace BotHATTwaffle.Commands
 				await _data.ChannelLog($"Playtest Scramble on {server.name}", "mp_scrambleteams 1");
 			}
 			else if (action.Equals("pause", StringComparison.OrdinalIgnoreCase ) ||
-			         action.Equals("p", StringComparison.OrdinalIgnoreCase ))
+					 action.Equals("p", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _data.RconCommand(@"mp_pause_match; say Pausing Match", server);
 
@@ -328,7 +332,7 @@ namespace BotHATTwaffle.Commands
 				await _data.ChannelLog($"Playtest Pause on {server.name}", "mp_pause_match");
 			}
 			else if (action.Equals("unpause", StringComparison.OrdinalIgnoreCase ) ||
-			         action.Equals("u", StringComparison.OrdinalIgnoreCase ))
+					 action.Equals("u", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _data.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
 
@@ -393,9 +397,9 @@ namespace BotHATTwaffle.Commands
 				ThumbnailUrl = _testInfo[4],
 				Color = new Color(243, 128, 72),
 				Description = "You can get the demo for this playtest by clicking above!\n\n*Thanks for testing with us!*\n\n" +
-				              $"[Map Images]({_testInfo[5]}) | [Schedule a Playtest]" +
-				              "(https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar]" +
-				              "(http://playtesting.tophattwaffle.com)"
+							  $"[Map Images]({_testInfo[5]}) | [Schedule a Playtest]" +
+							  "(https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar]" +
+							  "(http://playtesting.tophattwaffle.com)"
 			};
 
 			string[] splitUser = _testInfo[3].Split('#');
@@ -500,80 +504,98 @@ namespace BotHATTwaffle.Commands
 			string reason = "No reason provided.")
 		{
 			await _mute.MuteAsync(user, duration, Context, reason);
-			
+
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Mute",
 				Context.Message.Content, DateTimeOffset.Now);
 		}
 
-		[Command("MuteStatus")]
-		[Summary("Gets mute information on a user")]
-		[Remarks("Gets mute information on a specific user. Will return the last 10 mutes the user has.")]
+		[Command("MuteHistory")]
+		[Summary("Retrieves the mute history of a user.")]
+		[Remarks("Returns up to 25 of the most recent mutes (including an ongoing mute, if applicable).")]
+		[Alias("MuteStatus", "mh")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.Moderators)]
-		public async Task MuteStatusAsync(
-			[Summary("The user to get mute info on.")] SocketGuildUser user)
+		public async Task MuteHistoryAsync(
+			[Summary("The user for which to retrieve mute history.")] SocketGuildUser user,
+			[RequireBoundaries(1, 25)] int quantity = 10)
 		{
-			var mutes = DataBaseUtil.GetMutes(user);
-			
-			if (mutes.Count > 0)
-			{
-				var authBuilder = new EmbedAuthorBuilder() {Name = $"{mutes.Count} Most Recent mutes for {user}",};
+			Mute[] mutes = await DataBaseUtil.GetMutesAsync(user.Id, quantity);
+			int total = mutes.Length;
+			var pages = new List<EmbedBuilder>();
 
-				List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-
-				int count = 0;
-
-				for (int m = mutes.Count - 1; m >= 0; m--)
-				{
-					//limit to 10
-					if (count < 11)
-					{
-						fieldBuilder.Add(
-							new EmbedFieldBuilder
-							{
-								Name = $"{mutes[m].commandTime.ToUniversalTime()}",
-								Value =
-									$"Muted By:`{mutes[m].muted_by}`\nMuted Because: `{mutes[m].mute_reason}`\nMuted for: `{mutes[m].mute_duration}` minutes.",
-								IsInline = false
-							});
-
-						count++;
-					}
-					else
-						break;
-				}
-
-				var footBuilder = new EmbedFooterBuilder()
-				{
-					Text = $"All times in UTC Timezone. Current: {DateTimeOffset.UtcNow}",
-				};
-
-				var builder = new EmbedBuilder()
-				{
-					ThumbnailUrl = user.GetAvatarUrl(),
-					Fields = fieldBuilder,
-					Author = authBuilder,
-					Footer = footBuilder,
-					Color = new Color(243, 128, 72)
-				};
-
-				await ReplyAsync("", false, builder.Build());
-			}
+			if (mutes.Any())
+				await BuildPage();
 			else
 			{
-				var authBuilder = new EmbedAuthorBuilder() { Name = $"No mutes for {user}!", };
-				var builder = new EmbedBuilder()
+				var embed = new EmbedBuilder
 				{
-					Author = authBuilder,
 					ThumbnailUrl = user.GetAvatarUrl(),
-					Description = "Who knew we have users that could behave!",
 					Color = new Color(243, 128, 72)
 				};
-				await ReplyAsync("", false, builder.Build());
+
+				embed.WithAuthor($"No mutes for {user}!");
+				embed.Description = "Who knew we have users that could behave!";
+
+				await ReplyAsync(string.Empty, embed: embed.Build());
+
+				return;
 			}
-			
-			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "MuteStatus",
-				Context.Message.Content, DateTimeOffset.Now);
+
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "MuteStatus", Context.Message.Content, DateTimeOffset.Now);
+
+			async Task BuildPage(EmbedFieldBuilder firstField = null)
+			{
+				var embed = new EmbedBuilder
+				{
+					ThumbnailUrl = user.GetAvatarUrl(),
+					Color = new Color(243, 128, 72)
+				};
+
+				embed.WithAuthor($"{user}'s Most Recent Mutes");
+
+				if (firstField != null)
+					embed.AddField(firstField);
+
+				foreach (Mute mute in mutes)
+				{
+					string timestamp = mute.commandTime.ToString("yyyy-MM-ddTHH:mm:ssZ");
+					string durationUnit = mute.mute_duration > 1 ? "minutes" : "minute";
+					string reason = mute.mute_reason.Truncate(
+						1024 - 39 - 26 - mute.muted_by.Length - mute.mute_duration.ToString().Length - durationUnit.Length,
+						true); // Limit - other text's length - max footer length
+
+					embed.AddField(
+						timestamp,
+						$"Muted by: `{mute.muted_by}`\nReason: `{reason}`\nDuration: `{mute.mute_duration}` {durationUnit}");
+
+					if (embed.Length() > 6000)
+					{
+						EmbedFieldBuilder field = embed.Fields.Pop(); // Re-use the field in the next embed.
+						pages.Add(embed);
+
+						mutes = mutes.Skip(embed.Fields.Count + 1).ToArray(); // Skips already processed records.
+						await BuildPage(field); // Process the remaining records.
+
+						return;
+					}
+				}
+
+				pages.Add(embed);
+			}
+
+			// Sets the footer text and sends each embed.
+			if (pages.Count > 1)
+			{
+				for (var i = 0; i < pages.Count;)
+				{
+					EmbedBuilder embed = pages[i];
+					embed.WithFooter($"{total} Results | Page {++i} of {pages.Count}");
+
+					await ReplyAsync(string.Empty, embed: embed.Build());
+				}
+			}
+			else
+				await ReplyAsync(string.Empty, embed: pages.Single().Build());
 		}
 
 		[Command("ClearReservations")]
