@@ -6,8 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using BotHATTwaffle.Commands;
-using BotHATTwaffle.Models;
 using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Download;
 using BotHATTwaffle.Services.Playtesting;
@@ -142,11 +140,11 @@ namespace BotHATTwaffle
 		private async Task ProcessCommandAsync(SocketUserMessage message, int argPos)
 		{
 			var context = new SocketCommandContext(_client, message);
-			
+
 			// Executes the command; this is not the return value of the command.
 			// Rather, it is an object that contains information about the outcome of the execution.
 			IResult result = await _commands.ExecuteAsync(context, argPos, _services);
-			
+
 			await CommandExecutedEventHandler(context, result);
 		}
 
@@ -255,8 +253,6 @@ namespace BotHATTwaffle
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		private async Task CommandExecutedEventHandler(ICommandContext context, IResult result)
 		{
-			
-
 			if (result.Error is null) return; // Ignores successful executions.
 
 			Console.ForegroundColor = ConsoleColor.Red;
@@ -280,9 +276,9 @@ namespace BotHATTwaffle
 						$"You provided too {determiner} parameters! Please consult `{COMMAND_PREFIX}help {commandName}`");
 
 					break;
+				case CommandError.ParseFailed:
 				case CommandError.UnmetPrecondition:
-					var res = (PreconditionResult)result;
-					await context.Channel.SendMessageAsync(res.ErrorReason);
+					await context.Channel.SendMessageAsync(result.ErrorReason);
 
 					break;
 				case CommandError.Exception:

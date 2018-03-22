@@ -25,8 +25,12 @@ namespace BotHATTwaffle.Extensions
 		/// <remarks>If the string's length is less than the maximum length, the original string is returned.</remarks>
 		/// <param name="input">The string to truncate.</param>
 		/// <param name="maxLength">The maximum length the resulting string should be.</param>
+		/// <param name="addElipses"><c>true</c> to append elipses to the string when truncated; <c>false</c> otheriwse.</param>
 		/// <returns>The resulting string.</returns>
-		public static string Truncate(this string input, int maxLength) =>
-			input.Length < maxLength ? input : input.Substring(0, maxLength);
+		public static string Truncate(this string input, int maxLength, bool addElipses = false)
+		{
+			return input.Length < maxLength ? input :
+				addElipses ? input.Substring(0, maxLength - 3) + "..." : input.Substring(0, maxLength);
+		}
 	}
 }
