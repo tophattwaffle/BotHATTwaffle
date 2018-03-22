@@ -545,7 +545,7 @@ namespace BotHATTwaffle.Commands
 
 				var footBuilder = new EmbedFooterBuilder()
 				{
-					Text = $"All times in UTC Timezone. Current: {DateTimeOffset.Now}",
+					Text = $"All times in UTC Timezone. Current: {DateTimeOffset.UtcNow}",
 				};
 
 				var builder = new EmbedBuilder()
