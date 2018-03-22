@@ -182,6 +182,10 @@ namespace BotHATTwaffle.Services
 			{
 				if (message.Content.StartsWith("I'm", StringComparison.OrdinalIgnoreCase) && message.Content.Length > 5)
 				{
+					//20% chance to shitpost.
+					if (_random.Next(5) != 1)
+						return;
+
 					await message.Channel.SendMessageAsync($"Hi {message.Content.Substring(3).Trim()}, I'm BotHATTwaffle.");
 
 					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
