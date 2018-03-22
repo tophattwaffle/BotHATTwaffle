@@ -156,7 +156,7 @@ namespace BotHATTwaffle.Commands
 				await ReplyAsync("", false, builder);
 			}
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PublicServer",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Servers")]
@@ -169,7 +169,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, _dataService.GetAllServers());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Servers",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("PublicCommand")]
@@ -368,7 +368,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PublicCommand",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("PublicAnnounce")]
@@ -451,7 +451,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PublicAnnounce",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("ReleaseServer")]
@@ -489,7 +489,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "ReleaseServer",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("ShowReservations")]
@@ -501,7 +501,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync("", false, _playtesting.DisplayServerReservations());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "ShowReservations",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Playtester")]
@@ -527,7 +527,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Playtester",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Upcoming")]
@@ -544,7 +544,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync("", false, await _playtesting.FormatPlaytestInformationAsync(_playtesting.CurrentEventInfo, true));
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Upcoming",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 	}
 }

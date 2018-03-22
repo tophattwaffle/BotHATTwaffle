@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BotHATTwaffle.Models
@@ -13,6 +14,13 @@ namespace BotHATTwaffle.Models
 		public string username { get; set; }
 		public string command { get; set; }
 		public string fullmessage { get; set; }
-		public string date { get; set; }
+		public long date { get; set; }
+
+		[NotMapped]
+		public DateTimeOffset commandTime
+		{
+			get => DateTimeOffset.FromUnixTimeSeconds(date);
+			set => date = value.ToUnixTimeSeconds();
+		}
 	}
 }

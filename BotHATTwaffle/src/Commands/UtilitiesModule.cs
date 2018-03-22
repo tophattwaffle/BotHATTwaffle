@@ -42,7 +42,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, builder.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Ping",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		/// <summary>
@@ -151,7 +151,7 @@ namespace BotHATTwaffle.Commands
 			await _dataService.ChannelLog($"Toggled Roles for {Context.User}", logMessage.ToString());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "RoleMe",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 	}
 }

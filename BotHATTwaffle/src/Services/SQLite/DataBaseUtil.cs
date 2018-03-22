@@ -11,9 +11,7 @@ namespace BotHATTwaffle
 {
 	class DataBaseUtil
 	{
-		public static string FormatDate(DateTime date) => date.ToString("MM-dd-yyyy HH:mm:ss");
-
-		public static void AddCommand(ulong snowflake, string username, string command, string fullmessage, DateTime dateTime)
+		public static void AddCommand(ulong snowflake, string username, string command, string fullmessage, DateTimeOffset dateTimeOffset)
 		{
 			using (var dbContext = new DataBaseContext())
 			{
@@ -23,14 +21,14 @@ namespace BotHATTwaffle
 					username = username,
 					command = command,
 					fullmessage = fullmessage,
-					date = FormatDate(dateTime)
+					commandTime = dateTimeOffset
 				});
 
 				dbContext.SaveChanges();
 			}
 		}
 
-		public static void AddShitpost(ulong snowflake, string username, string shitpost, string fullmessage, DateTime dateTime)
+		public static void AddShitpost(ulong snowflake, string username, string shitpost, string fullmessage, DateTimeOffset dateTimeOffset)
 		{
 			using (var dbContext = new DataBaseContext())
 			{
@@ -40,7 +38,7 @@ namespace BotHATTwaffle
 					username = username,
 					shitpost = shitpost,
 					fullmessage = fullmessage,
-					date = FormatDate(dateTime)
+					commandTime = dateTimeOffset
 				});
 
 				dbContext.SaveChanges();
@@ -147,7 +145,7 @@ namespace BotHATTwaffle
 			}
 		}
 
-		public static void AddMute(SocketGuildUser user, int duration, SocketCommandContext context, string reason)
+		public static void AddMute(SocketGuildUser user, int duration, SocketCommandContext context, string reason, DateTimeOffset dateTimeOffset)
 		{
 			using (var dbContext = new DataBaseContext())
 			{
@@ -158,7 +156,7 @@ namespace BotHATTwaffle
 					mute_reason = reason,
 					mute_duration = duration,
 					muted_by = $"{context.User}",
-					date = FormatDate(DateTime.Now)
+					commandTime = dateTimeOffset
 				});
 
 				dbContext.SaveChanges();

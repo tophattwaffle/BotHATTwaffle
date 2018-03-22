@@ -76,7 +76,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, builder.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VDC",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Search", RunMode = RunMode.Async)]
@@ -145,7 +145,7 @@ namespace BotHATTwaffle.Commands
 				await wait.DeleteAsync();
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Search",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Tutorials")]
@@ -271,7 +271,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Tutorials",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("CatFact", RunMode = RunMode.Async)]
@@ -310,7 +310,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "CatFact",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Unsubscribe")]
@@ -320,7 +320,7 @@ namespace BotHATTwaffle.Commands
 		{
 			await ReplyAsync("You cannot unsubscribe from cat facts...");
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Unsubscribe",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("PenguinFact", RunMode = RunMode.Async)]
@@ -354,7 +354,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PenguineFact",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("TanookiFact", RunMode = RunMode.Async)]
@@ -388,7 +388,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "TanookiFact",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("TanookiIRL", RunMode = RunMode.Async)]
@@ -405,7 +405,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "TanookiIRL",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 	}
 }

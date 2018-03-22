@@ -44,7 +44,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VTFEdit",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("GCFScape")]
@@ -94,7 +94,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 			
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VMTEditor",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("VIDE")]
@@ -120,7 +120,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VIDE",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("WallWorm")]
@@ -146,7 +146,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "WallWorm",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("BSPSource")]
@@ -173,7 +173,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "BSPSource",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Log")]
@@ -200,7 +200,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, embed.Build());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Log",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 	}
 }

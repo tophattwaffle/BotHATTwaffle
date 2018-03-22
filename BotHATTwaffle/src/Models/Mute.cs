@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BotHATTwaffle.Models
@@ -14,6 +15,13 @@ namespace BotHATTwaffle.Models
 		public string mute_reason { get; set; }
 		public int mute_duration { get; set; }
 		public string muted_by { get; set; }
-		public string date { get; set; }
+		public long date { get; set; }
+
+		[NotMapped]
+		public DateTimeOffset commandTime
+		{
+			get => DateTimeOffset.FromUnixTimeSeconds(date);
+			set => date = value.ToUnixTimeSeconds();
+		}
 	}
 }

@@ -66,7 +66,7 @@ namespace BotHATTwaffle.Commands
 			await _data.ChannelLog($"{Context.User} changed playtest alert flag suppression", _playtesting.GetAnnounceFlags());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Suppress",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Announce", RunMode = RunMode.Async)]
@@ -130,7 +130,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Announce",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Rcon")]
@@ -214,7 +214,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Rcon",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Playtest")]
@@ -342,7 +342,7 @@ namespace BotHATTwaffle.Commands
 			}
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Playtest",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		/// <summary>
@@ -432,7 +432,7 @@ namespace BotHATTwaffle.Commands
 		public async Task ShutdownAsync()
 		{
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Shutdown",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 
 			await Context.Message.DeleteAsync();
 			await _data.ChannelLog($"{Context.Message.Author} is shutting down the bot.");
@@ -457,7 +457,7 @@ namespace BotHATTwaffle.Commands
 			_timer.Start();
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Reload",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("DumpSettings")]
@@ -483,7 +483,7 @@ namespace BotHATTwaffle.Commands
 			await _data.ChannelLog($"{Context.User} dumped the settings.");
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "DumpSettings",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Mute")]
@@ -500,10 +500,9 @@ namespace BotHATTwaffle.Commands
 			string reason = "No reason provided.")
 		{
 			await _mute.MuteAsync(user, duration, Context, reason);
-			DataBaseUtil.AddMute(user, duration, Context, reason);
-
+			
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Mute",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("MuteStatus")]
@@ -532,7 +531,7 @@ namespace BotHATTwaffle.Commands
 						fieldBuilder.Add(
 							new EmbedFieldBuilder
 							{
-								Name = mutes[m].date,
+								Name = $"{mutes[m].commandTime.ToUniversalTime()}",
 								Value =
 									$"Muted By:`{mutes[m].muted_by}`\nMuted Because: `{mutes[m].mute_reason}`\nMuted for: `{mutes[m].mute_duration}` minutes.",
 								IsInline = false
@@ -546,7 +545,7 @@ namespace BotHATTwaffle.Commands
 
 				var footBuilder = new EmbedFooterBuilder()
 				{
-					Text = $"All times in CT Timezone. Current CT Time:{DataBaseUtil.FormatDate(DateTime.Now)}",
+					Text = $"All times in UTC Timezone. Current: {DateTimeOffset.Now}",
 				};
 
 				var builder = new EmbedBuilder()
@@ -574,7 +573,7 @@ namespace BotHATTwaffle.Commands
 			}
 			
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "MuteStatus",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("ClearReservations")]
@@ -595,7 +594,7 @@ namespace BotHATTwaffle.Commands
 			await ReplyAsync(string.Empty, false, _playtesting.DisplayServerReservations());
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "ClearReservations",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 
 		[Command("Active")]
@@ -609,7 +608,7 @@ namespace BotHATTwaffle.Commands
 			await ((IGuildUser)user).AddRoleAsync(_data.ActiveRole);
 
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Active",
-				Context.Message.Content, DateTime.Now);
+				Context.Message.Content, DateTimeOffset.Now);
 		}
 	}
 }

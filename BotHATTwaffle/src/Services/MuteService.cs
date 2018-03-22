@@ -27,6 +27,15 @@ namespace BotHATTwaffle.Services
 		/// <inheritdoc />
 		public async Task MuteAsync(SocketGuildUser user, int duration, SocketCommandContext context, string reason = "")
 		{
+			if (user.Roles.Contains(_data.ModRole))
+			{
+				await context.Channel.SendMessageAsync("",false,
+					new EmbedBuilder().WithAuthor("Mods don't mute other Mods...")
+						.WithDescription("Now you 2 need to learn to play nice and get along."));
+
+				return;
+			}
+
 			DateTime expiration = DateTime.Now.AddMinutes(duration);
 
 			_mutedUsers.Add(new UserData { User = user, MuteExpiration = expiration });
@@ -43,6 +52,7 @@ namespace BotHATTwaffle.Services
 				await context.Channel.SendMessageAsync($"Hey {user.Mention}!\nYou were muted for {duration} minute(s) because:```{reason}```");
 			}
 
+			DataBaseUtil.AddMute(user, duration, context, reason, DateTimeOffset.Now);
 			await _data.ChannelLog(
 				$"{user} muted by {context.User}",
 				$"Muted for {duration} minute(s) (expires {expiration}) because:\n{reason}");
