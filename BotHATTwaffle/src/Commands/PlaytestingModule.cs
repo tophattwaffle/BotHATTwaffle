@@ -380,16 +380,17 @@ namespace BotHATTwaffle.Commands
 		{
 			Server server = null;
 
+			if (!_playtesting.CanReserve)
+			{
+				await ReplyAsync(
+					$"```Servers cannot be reserved at this time." +
+					$"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+
+				return;
+			}
+
 			if (serverCode == null)
 			{
-				if (!_playtesting.CanReserve)
-				{
-					await ReplyAsync(
-						$"```Servers cannot be reserved at this time." +
-						$"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
-
-					return;
-				}
 
 				//Find the server that the user has reserved
 				UserData user = null;
