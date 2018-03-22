@@ -561,14 +561,14 @@ namespace BotHATTwaffle.Commands
 					string timestamp = mute.commandTime.ToString("yyyy-MM-ddTHH:mm:ssZ");
 					string durationUnit = mute.mute_duration > 1 ? "minutes" : "minute";
 					string reason = mute.mute_reason.Truncate(
-						1024 - 39 - 26 - mute.muted_by.Length - mute.mute_duration.ToString().Length - durationUnit.Length,
-						true); // Limit - other text's length - max footer length
+						1024 - 39 - mute.muted_by.Length - mute.mute_duration.ToString().Length - durationUnit.Length,
+						true); // Limit (1024) - other text's length (39)
 
 					embed.AddField(
 						timestamp,
 						$"Muted by: `{mute.muted_by}`\nReason: `{reason}`\nDuration: `{mute.mute_duration}` {durationUnit}");
 
-					if (embed.Length() > 6000)
+					if (embed.Length() > 6000 - 26) // Total char limit - maximum possible footer length
 					{
 						EmbedFieldBuilder field = embed.Fields.Pop(); // Re-use the field in the next embed.
 						pages.Add(embed);
