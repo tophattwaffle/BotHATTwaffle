@@ -127,24 +127,62 @@ namespace BotHATTwaffle
 			}
 		}
 
-		public static void AddServer(string name, string description, string rconPassword,
-		string ftpPath, string ftpUsername, string ftpPassword, string ftpType)
+		public static void AddServer(Server server)
 		{
 			using (var dbContext = new DataBaseContext())
 			{
-				dbContext.Servers.Add(new Server()
-				{
-					name = name,
-					description = description,
-					rcon_password = rconPassword,
-					ftp_path = ftpPath,
-					ftp_username = ftpUsername,
-					ftp_password = ftpPassword,
-					ftp_type = ftpType
-				});
+				dbContext.Servers.Add(server);
 
 				dbContext.SaveChanges();
+
+				//TODO: Handle exception for if unique key exists already
 			}
+		}
+
+		public static bool RemoveServer(Server server)
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				try
+				{
+					dbContext.Servers.Remove(server);
+
+					dbContext.SaveChanges();
+
+					//Success
+					return true;
+				}
+				catch (InvalidOperationException)
+				{
+					//Could not find server
+					return false;
+				}
+			}
+		}
+
+		public static Server GetServer(string serverStr)
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				try
+				{
+					return dbContext.Servers.Single(s => s.name.Equals(serverStr));
+				}
+				catch (InvalidOperationException)
+				{
+					//If we got more than one, or none - return null.
+					return null;
+				}
+			}
+		}
+
+		public static List<Server> GetAllServer()
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				return dbContext.Servers.ToList();
+			}
+
 		}
 
 		public static void AddMute(SocketGuildUser user, int duration, SocketCommandContext context, string reason, DateTimeOffset dateTimeOffset)

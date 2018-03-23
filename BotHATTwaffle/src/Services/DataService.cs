@@ -442,10 +442,7 @@ namespace BotHATTwaffle.Services
 		/// <returns>Server object that was located in Database</returns>
 		public Server GetServer(string serverStr)
 		{
-			using (var dbContext = new DataBaseContext())
-			{
-				return dbContext.Servers.Single(s => s.name.Equals(serverStr));
-			} 
+			return DataBaseUtil.GetServer(serverStr);
 		}
 
 		/// <summary>
@@ -460,11 +457,9 @@ namespace BotHATTwaffle.Services
 				Name = $"Server List",
 				IconUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
 			};
-			List<Server> servers;
-			using (var dbContext = new DataBaseContext())
-			{
-				servers = dbContext.Servers.ToList();
-			}
+
+			List<Server> servers = DataBaseUtil.GetAllServer();
+			
 			List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
 			foreach (var s in servers)
 			{

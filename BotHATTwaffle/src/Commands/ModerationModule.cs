@@ -632,5 +632,107 @@ namespace BotHATTwaffle.Commands
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Active",
 				Context.Message.Content, DateTimeOffset.Now);
 		}
+
+		//TODO: Quick and dirty command to allow us to manage servers without requiring manual DB editing. Improve later.
+		[Command("EditServers")]
+		[Summary("Allows editing of servers inside the database.")]
+		[Remarks("Commands:\n`Add`\n`Get`\n`Remove`\nUse the following template to add a server:" +
+		         "```>EditServers Add name|description|address|rcon_password|ftp_path|ftp_username|ftp_password|(ftp,ftps,sftp)```" +
+		         "To remove a server: `>EditServers Remove [ServerCode]\n" +
+		         "To Get a servers: `>EditServers Get [ServerCode]")]
+		[RequireContext(ContextType.Guild)]
+		[RequireRole(Role.Moderators)]
+		public async Task EditServers(string action = null, [Remainder]string values = null)
+		{
+			if (!_playtesting.CanReserve)
+			{
+				//Can't reserve, meaning we are close to a test. Don't want to edit fields.
+				await ReplyAsync("You cannot edit servers this close to a playtest. Try again later.");
+				return;
+			}
+
+			if(action.StartsWith("a", StringComparison.OrdinalIgnoreCase))
+			{
+				string[] vars = values.Split('|');
+
+				if (vars.Length != 8)
+				{
+					await ReplyAsync("You didn't provide all 8 parameters. Please provide all 8 and try again." +
+					                 "\nYour message was deleted as it may have contained a password.");
+					await Context.Message.DeleteAsync();
+					return;
+				}
+
+				if (vars[0].Length != 3)
+				{
+					//Enforce length during the add because SQLite does not support min/max lengths on TEXT fields.
+					await ReplyAsync("Server name must be 3 characters long. Please provide 3 characters as the name and try again." +
+					                 "\nYour message was deleted as it may have contained a password.");
+					await Context.Message.DeleteAsync();
+					return;
+				}
+
+				//Validate FTP type before entry
+				switch(vars[7])
+				{
+					case "ftp":
+						break;
+					case "sftp":
+						break;
+					case "ftps":
+						break;
+					default:
+					await ReplyAsync("Invalid FTP type. Please provide `ftp`, `ftps`, or `sftp` and try again." +
+					                 "\nYour message was deleted as it may have contained a password.");
+					await Context.Message.DeleteAsync();
+					return;
+				}
+
+				DataBaseUtil.AddServer(new Server()
+				{
+					name = vars[0],
+					description = vars[1],
+					address = vars[2],
+					rcon_password = vars[3],
+					ftp_path = vars[4],
+					ftp_username = vars[5],
+					ftp_password = vars[6],
+					ftp_type = vars[7]
+				});
+
+				await ReplyAsync("Server added! Your message was removed as it contained passwords.");
+				await Context.Message.DeleteAsync();
+			}
+			else if (action.StartsWith("g", StringComparison.OrdinalIgnoreCase))
+			{
+				var server = DataBaseUtil.GetServer(values.Substring(0, 3));
+
+				if(server != null)
+					await ReplyAsync($"`{server.ToString()}`");
+				else
+					await ReplyAsync($"I could not find a server with that name.");
+			}
+			else if (action.StartsWith("r", StringComparison.OrdinalIgnoreCase))
+			{
+				Server removedServer = DataBaseUtil.GetServer(values.Substring(0, 3));
+
+				if (removedServer != null)
+				{
+					await ReplyAsync($"Removing server\n`{removedServer.ToString()}`");
+					DataBaseUtil.RemoveServer(removedServer);
+				}
+				else
+				{
+					await ReplyAsync($"I could not find a server with that name.");
+					return;
+				}
+			
+			}
+			else
+				await ReplyAsync("Invalid command. Please see the help text.");
+
+			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "EditServers",
+				Context.Message.Content, DateTimeOffset.Now);
+		}
 	}
 }

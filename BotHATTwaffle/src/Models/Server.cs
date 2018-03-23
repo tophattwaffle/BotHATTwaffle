@@ -16,6 +16,6 @@ namespace BotHATTwaffle.Models
 		public string ftp_password { get; set; }
 		public string ftp_type { get; set; }
 
-		public override string ToString() => $"{nameof(name)}: {name}, {nameof(description)}: {description}, {nameof(address)}: {address}, {nameof(rcon_password)}: {rcon_password}, {nameof(ftp_path)}: {ftp_path}, {nameof(ftp_username)}: {ftp_username}, {nameof(ftp_password)}: {ftp_password}, {nameof(ftp_type)}: {ftp_type}";
+		public override string ToString() => $"{name}|{description}|{address}|RCON_PASSWORD_HIDDEN|{ftp_path}|{ftp_username}|FTP_PASSWORD_HIDDEN|{ftp_type}";
 	}
 }
