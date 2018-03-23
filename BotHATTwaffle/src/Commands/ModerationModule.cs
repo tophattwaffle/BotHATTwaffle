@@ -638,8 +638,8 @@ namespace BotHATTwaffle.Commands
 		[Summary("Allows editing of servers inside the database.")]
 		[Remarks("Commands:\n`Add`\n`Get`\n`Remove`\nUse the following template to add a server:" +
 		         "```>EditServers Add name|description|address|rcon_password|ftp_path|ftp_username|ftp_password|(ftp,ftps,sftp)```" +
-		         "To remove a server: `>EditServers Remove [ServerCode]\n" +
-		         "To Get a servers: `>EditServers Get [ServerCode]")]
+		         "To remove a server: `>EditServers Remove [ServerCode]`\n" +
+		         "To Get a servers: `>EditServers Get [ServerCode]`")]
 		[RequireContext(ContextType.Guild)]
 		[RequireRole(Role.Moderators)]
 		public async Task EditServers(string action = null, [Remainder]string values = null)
