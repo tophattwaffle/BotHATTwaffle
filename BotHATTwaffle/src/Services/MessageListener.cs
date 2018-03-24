@@ -99,6 +99,13 @@ namespace BotHATTwaffle.Services
 		/// <returns></returns>
 		internal async Task UserJoin(SocketUser user)
 		{
+			await WelcomeMessageDm(user);
+			await _dataService.GeneralChannel.SendMessageAsync($"Welcome {user.Mention} to the Source Engine Discord!" +
+			$"Over the next 10 minutes while we verify your account, please check out <#195009920414908416> for the rules.");
+		}
+
+		internal async Task WelcomeMessageDm(SocketUser user)
+		{
 			var authBuilder = new EmbedAuthorBuilder()
 			{
 				Name = $"Hey there {user.Username}! Welcome to the r/sourceengine discord server!",
@@ -123,13 +130,13 @@ namespace BotHATTwaffle.Services
 				Color = new Color(243, 128, 72),
 
 				Description = $"Hi there! Thanks for joining the SourceEngine Discord server!\n" +
-							  $"Now that the {_JOIN_DELAY_ROLE_TIME} minute verification has ended, there are a few things I wanted to tell you! Feel free to ask a question in " +
-							  $"any of the relevant channels you see. Just try to keep things on topic. \n\nAdditionally, you've been given a role called" +
-							  $" `Playtester`. This role is used to notify you when we have a playtest starting. You can remove yourself from the " +
-							  $"notifications by typing: `>playtester`.\n\nIf you want to see any of my commands, type: `>help`. Thanks for reading," +
-							  $" and we hope you enjoy your stay here!" +
-							  $"\n\nThere are roles you can use to show what skills you have. To see what roles you can give yourself, type: `>roleme display`" +
-							  $"\n\nGLHF"
+				              $"Now that the {_JOIN_DELAY_ROLE_TIME} minute verification has ended, there are a few things I wanted to tell you! Feel free to ask a question in " +
+				              $"any of the relevant channels you see. Just try to keep things on topic. \n\nAdditionally, you've been given a role called" +
+				              $" `Playtester`. This role is used to notify you when we have a playtest starting. You can remove yourself from the " +
+				              $"notifications by typing: `>playtester`.\n\nIf you want to see any of my commands, type: `>help`. Thanks for reading," +
+				              $" and we hope you enjoy your stay here!" +
+				              $"\n\nThere are roles you can use to show what skills you have. To see what roles you can give yourself, type: `>roleme display`" +
+				              $"\n\nGLHF"
 			};
 
 			//Get the time they can be processed
@@ -139,8 +146,6 @@ namespace BotHATTwaffle.Services
 			//Send them off to be added
 			AddNewUserJoin((SocketGuildUser)user, roleTime, builder.Build());
 		}
-
-		
 
 		/// <summary>
 		/// This is used to scan each message for less important things.
@@ -173,7 +178,7 @@ namespace BotHATTwaffle.Services
 				return;
 			}
 
-			//If the message is from a bot, just return.
+			//If the message is from a bot, dont process shitposts
 			if (message.Author.IsBot)
 				return;
 
@@ -193,11 +198,7 @@ namespace BotHATTwaffle.Services
 						message.Content, DateTime.Now);
 					return;
 				}
-			}
 
-			//Is a shit post.
-			if (CanShitPost())
-			{
 				if (message.Content.Contains(":KMS:") || message.Content.Contains(":ShootMyself:") || message.Content.Contains(":HangMe:"))
 				{
 					var builder = new EmbedBuilder()
@@ -210,11 +211,7 @@ namespace BotHATTwaffle.Services
 						message.Content, DateTime.Now);
 					return;
 				}
-			}
 
-			//Is a shit post.
-			if (CanShitPost())
-			{
 				if (message.Content.ToLower().Contains("who is daddy") || message.Content.ToLower().Contains("who is tophattwaffle"))
 				{
 					await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
@@ -223,11 +220,7 @@ namespace BotHATTwaffle.Services
 						message.Content, DateTime.Now);
 					return;
 				}
-			}
 
-			//Is a shit post.
-			if (CanShitPost())
-			{
 				if (message.Content.ToLower().Contains("sudo make me a sandwich"))
 				{
 					await message.Channel.SendMessageAsync("ok.");
@@ -236,11 +229,7 @@ namespace BotHATTwaffle.Services
 						message.Content, DateTime.Now);
 					return;
 				}
-			}
 
-			//Is a shit post.
-			if (CanShitPost())
-			{
 				if (message.Content.ToLower().Contains("execute order 66"))
 				{
 					await message.Channel.SendMessageAsync("Yes my lord.");
@@ -251,10 +240,16 @@ namespace BotHATTwaffle.Services
 						message.Content, DateTime.Now);
 					return;
 				}
+
+				if (_dataService.VbEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
+				{
+					await VB(message);
+					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
+					return;
+				}
 			}
 
 			//Is a shit post.
-
 			if (this._dataService.AgreeEavesDrop.Any( s => message.Content.Equals("^") && message.Author.Username.Equals(s) ||
 					 ((SocketGuildUser)message.Author).Roles.Contains(this._dataService.PatreonsRole) && message.Content.Equals("^")))
 			{
@@ -296,38 +291,6 @@ namespace BotHATTwaffle.Services
 				await Propper(message);
 
 				return;
-			}
-
-			if (CanShitPost())
-			{
-				if (_dataService.VbEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
-				{
-					await VB(message);
-					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-					return;
-				}
-			}
-
-			if (CanShitPost())
-			{
-				if (_dataService.YorkEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
-				{
-					await DeYork(message);
-					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-
-					return;
-				}
-			}
-
-			//Is a shit post.
-			if (CanShitPost())
-			{
-				if (message.Content.ToLower().Contains(_dataService.TanookiEavesDrop))
-				{
-					await Tanooki(message);
-					_canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-					return;
-				}
 			}
 
 			await _wsItem.HandleWorkshopEmbeds(message);
@@ -492,68 +455,6 @@ namespace BotHATTwaffle.Services
 			message.Channel.SendMessageAsync("", false, builder);
 			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "VB",
 				message.Content, DateTime.Now);
-			return Task.CompletedTask;
-		}
-
-		/// <summary>
-		/// de_york really is the best level
-		/// </summary>
-		/// <param name="message"></param>
-		/// <returns></returns>
-		private Task DeYork(SocketMessage message)
-		{
-			var authBuilder = new EmbedAuthorBuilder()
-			{
-				Name = $"Hey there {message.Author.Username}!",
-				IconUrl = message.Author.GetAvatarUrl(),
-			};
-
-			var builder = new EmbedBuilder()
-			{
-				Author = authBuilder,
-				Title = $"You talking about the best level ever?",
-
-				ImageUrl = _dataService.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/york/"),
-				Color = new Color(243, 128, 72),
-
-				Description = $"I see that we both share the same love for amazing levels."
-			};
-
-			message.Channel.SendMessageAsync("", false, builder);
-			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "DeYork",
-				message.Content, DateTime.Now);
-			return Task.CompletedTask;
-		}
-
-		/// <summary>
-		/// Big AND true.
-		/// </summary>
-		/// <param name="message"></param>
-		/// <returns></returns>
-		private Task Tanooki(SocketMessage message)
-		{
-			var authBuilder = new EmbedAuthorBuilder()
-			{
-				Name = $"Hey there {message.Author.Username}!",
-				IconUrl = message.Author.GetAvatarUrl(),
-			};
-
-			var builder = new EmbedBuilder()
-			{
-				Author = authBuilder,
-				Title = $"You talking about the worst csgo player ever?",
-
-				ThumbnailUrl = _dataService.GetRandomImgFromUrl("https://content.tophattwaffle.com/BotHATTwaffle/tanookifacts/"),
-				Color = new Color(243, 128, 72),
-
-				Description = $"I see that we both share the same love for terrible admins."
-			};
-
-			message.Channel.SendMessageAsync("", false, builder);
-
-			DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Tanooki",
-				message.Content, DateTime.Now);
-
 			return Task.CompletedTask;
 		}
 	}

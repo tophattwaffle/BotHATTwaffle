@@ -504,7 +504,41 @@ namespace BotHATTwaffle.Commands
 			string reason = "No reason provided.")
 		{
 			await _mute.MuteAsync(user, duration, Context, reason);
+		}
 
+		[Command("Unmute")]
+		[Summary("Unmutes a user.")]
+		[Remarks("Unmutes the provided user")]
+		[RequireContext(ContextType.Guild)]
+		[RequireRole(Role.Moderators)]
+		public async Task UnMuteAsync(
+			[Summary("The user to unmute.")] SocketGuildUser user = null)
+		{
+			if (user != null)
+			{
+				var result = await _mute.CallUnMuteAsync(user);
+
+				if (result)
+					await ReplyAsync($"Mute found and removed for {user}");
+				else
+					await ReplyAsync($"No changes made. Could not locate a mute for {user}");
+			}
+			else
+			{
+				var allMutes = DataBaseUtil.GetActiveMutes();
+				string reply = null;
+				foreach (ActiveMute activeMute in allMutes)
+				{
+					//TODO: Make this a pretty reply. Just did something quick and janky here.
+					reply += $"Name: {activeMute.username}\nMuted at: {DateTimeOffset.FromUnixTimeSeconds(activeMute.muted_time)}\n" +
+					         $"Muted for: {activeMute.mute_duration}";
+				}
+
+				if (reply == null)
+					reply = "No mutes found!";
+
+				await ReplyAsync($"Current Mutes: {reply}");
+			}
 			DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Mute",
 				Context.Message.Content, DateTimeOffset.Now);
 		}

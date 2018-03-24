@@ -3,9 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
 using BotHATTwaffle.Services;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -181,7 +179,8 @@ namespace BotHATTwaffle.Commands
 				"[Html Agility Pack](http://html-agility-pack.net/)\n" +
 				"[Newtonsoft Json.NET](https://www.newtonsoft.com/json)\n" +
 				"[SSH.NET](https://github.com/sshnet/SSH.NET/)\n" +
-				"[FluentFTP](https://github.com/robinrodricks/FluentFTP)");
+				"[FluentFTP](https://github.com/robinrodricks/FluentFTP)\n" +
+				"[EF Core](https://docs.microsoft.com/en-us/ef/core/)");
 
 			embed.WithFooter("Build date");
 			embed.WithTimestamp(buildDate);

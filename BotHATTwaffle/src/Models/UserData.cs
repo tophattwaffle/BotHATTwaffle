@@ -11,7 +11,7 @@ namespace BotHATTwaffle.Models
 	public class UserData
 	{
 		public SocketGuildUser User { get; set; }
-		public DateTime MuteExpiration { get; set; }
+		public DateTimeOffset MuteExpiration { get; set; }
 		public DateTime ReservationExpiration { get; set; }
 		public DateTime HandleJoinTime { get; set; }
 		public Embed JoinMessage { get; set; }
@@ -21,7 +21,7 @@ namespace BotHATTwaffle.Models
 		/// Determines if a user's mute has expired.
 		/// </summary>
 		/// <returns><c>true</c> if expired; <c>false</c> othwerise.</returns>
-		public bool MuteExpired() => MuteExpiration < DateTime.Now;
+		public bool MuteExpired() => MuteExpiration < DateTimeOffset.UtcNow;
 
 		/// <summary>
 		/// Determines if a user's server reservation has expired.

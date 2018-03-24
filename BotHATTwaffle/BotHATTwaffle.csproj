@@ -280,6 +280,7 @@
     <Compile Include="src\Extensions\StringExtensions.cs" />
     <Compile Include="src\Models\CommandUse.cs" />
     <Compile Include="src\Models\Key_Value.cs" />
+    <Compile Include="src\Models\ActiveMute.cs" />
     <Compile Include="src\Models\Mute.cs" />
     <Compile Include="src\Models\SearchDataResult.cs" />
     <Compile Include="src\Models\SearchDataTag.cs" />
@@ -333,6 +334,7 @@
   <ItemGroup>
     <Content Include="res\icon.ico" />
     <Content Include="res\icon.png" />
+    <Content Include="src\Master.sqlite.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreRCON\src\CoreRCON\CoreRCON.csproj">

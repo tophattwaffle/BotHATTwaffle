@@ -182,7 +182,6 @@ namespace BotHATTwaffle
 			{
 				return dbContext.Servers.ToList();
 			}
-
 		}
 
 		public static void AddMute(SocketGuildUser user, int duration, SocketCommandContext context, string reason, DateTimeOffset dateTimeOffset)
@@ -200,6 +199,63 @@ namespace BotHATTwaffle
 				});
 
 				dbContext.SaveChanges();
+			}
+		}
+
+		public static bool AddActiveMute(SocketGuildUser user, int duration, SocketCommandContext context, string reason, DateTimeOffset dateTimeOffset)
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				try {
+					dbContext.ActiveMutes.Add(new ActiveMute
+					{
+						snowflake = unchecked((long)user.Id),
+						username = $"{user}",
+						mute_reason = reason,
+						mute_duration = duration,
+						muted_by = $"{context.User}",
+						inMuteTimeOffset = dateTimeOffset
+					});
+
+					dbContext.SaveChanges();
+					return true;
+				}
+				catch (DbUpdateException)
+				{
+					//Can't add cause an entry already exists
+					return false;
+				}				
+			}
+		}
+
+		public static bool RemoveActiveMute(SocketGuildUser user)
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				try
+				{
+					var mute = dbContext.ActiveMutes.Single(m => m.snowflake == (long)user.Id);
+
+					dbContext.ActiveMutes.Remove(mute);
+
+					dbContext.SaveChanges();
+
+					//Success
+					return true;
+				}
+				catch (InvalidOperationException)
+				{
+					//Could not find server
+					return false;
+				}
+			}
+		}
+
+		public static List<ActiveMute> GetActiveMutes()
+		{
+			using (var dbContext = new DataBaseContext())
+			{
+				return dbContext.ActiveMutes.ToList();
 			}
 		}
 

@@ -29,7 +29,8 @@ namespace BotHATTwaffle.Services
 		private readonly Random _random;
 		public string DemoPath;
 
-		//Channels and Role vars
+		//Channels and Role vars 
+		private string _generalChannelStr;
 		private string _logChannelStr;
 		private string _playTesterRoleStr;
 		private string _announcementChannelStr;
@@ -40,6 +41,7 @@ namespace BotHATTwaffle.Services
 		private string _activeRoleStr;
 		private string _patreonsRoleStr;
 		private string _CommunityTesterRoleStr;
+		public SocketTextChannel GeneralChannel { get; set; }
 		public SocketTextChannel LogChannel { get; set; }
 		public SocketTextChannel AnnouncementChannel  { get; set; }
 		public SocketTextChannel TestingChannel  { get; set; }
@@ -57,8 +59,6 @@ namespace BotHATTwaffle.Services
 		public string[] CarveEavesDrop;
 		public string[] PropperEavesDrop;
 		public string[] VbEavesDrop;
-		public string[] YorkEavesDrop;
-		public string TanookiEavesDrop;
 		public string[] AgreeEavesDrop;
 		public string[] AgreeStrings;
 		public string[] RoleMeWhiteList;
@@ -179,6 +179,7 @@ namespace BotHATTwaffle.Services
 			mainConfig.AddKeyIfMissing("playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
 			mainConfig.AddKeyIfMissing("agreeUserCSV", "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
 			mainConfig.AddKeyIfMissing("alertUser", "[DISCORD NAME OF USER WITH #]");
+			mainConfig.AddKeyIfMissing("generalChannel", "general");
 			#endregion
 
 			#region Playtesting vars
@@ -198,8 +199,6 @@ namespace BotHATTwaffle.Services
 			mainConfig.AddKeyIfMissing("carveEavesDropCSV", "carve");
 			mainConfig.AddKeyIfMissing("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
 			mainConfig.AddKeyIfMissing("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
-			mainConfig.AddKeyIfMissing("yorkCSV", "de_york,de york");
-			mainConfig.AddKeyIfMissing("tanookiID", "<@147497265592795136>");
 			#endregion
 
 			#region Command Dependent
@@ -245,10 +244,6 @@ namespace BotHATTwaffle.Services
 				PropperEavesDrop = Config["propperEavesDropCSV"].Split(',');
 			if (Config.ContainsKey("vbEavesDropCSV"))
 				VbEavesDrop = Config["vbEavesDropCSV"].Split(',');
-			if (Config.ContainsKey("yorkCSV"))
-				YorkEavesDrop = Config["yorkCSV"].Split(',');
-			if (Config.ContainsKey("tanookiID"))
-				TanookiEavesDrop = Config["tanookiID"];
 			if (Config.ContainsKey("agreeUserCSV"))
 				AgreeEavesDrop = Config["agreeUserCSV"].Split(',');
 			if (Config.ContainsKey("roleMeWhiteListCSV"))
@@ -295,6 +290,9 @@ namespace BotHATTwaffle.Services
 		/// </summary>
 		private void RoleChannelAssignments()
 		{
+			if (Config.ContainsKey("generalChannel"))
+				_generalChannelStr = Config["generalChannel"];
+
 			if (Config.ContainsKey("announcementChannel"))
 				_announcementChannelStr = Config["announcementChannel"];
 
@@ -345,7 +343,11 @@ namespace BotHATTwaffle.Services
 				{
 					TestingChannel = s;
 					Console.WriteLine($"\nTesting Channel Found! Sending playtest alerts to: {s.Name}\nID: {s.Id}");
-
+				}
+				if (s.Name == _generalChannelStr)
+				{
+					GeneralChannel = s;
+					Console.WriteLine($"\nGeneral Channel Found! Using this channel for general use: {s.Name}\nID: {s.Id}");
 				}
 			}
 
@@ -358,7 +360,6 @@ namespace BotHATTwaffle.Services
 				}
 				if (r.Name == _modRoleStr)
 				{
-
 					ModRole = r;
 					Console.WriteLine($"\nModerator role found!: {r.Name}\nID: {r.Id}");
 				}
@@ -387,8 +388,7 @@ namespace BotHATTwaffle.Services
 					CommunityTesterRole = r;
 					Console.WriteLine($"\nCommunity Tester Role role found!: {r.Name}\nID: {r.Id}");
 				}
-
-				
+	
 			}
 			Console.WriteLine();
 			Console.ResetColor();

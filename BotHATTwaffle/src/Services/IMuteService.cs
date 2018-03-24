@@ -18,5 +18,12 @@ namespace BotHATTwaffle.Services
 		/// <param name="reason">The reason for the mute.</param>
 		/// <returns>No object or value is returned by this method when it completes.</returns>
 		Task MuteAsync(SocketGuildUser user, int duration, SocketCommandContext context, string reason = "");
+
+		/// <summary>
+		/// Unmutes a <paramref name="user"/>
+		/// </summary>
+		/// <param name="user">The user to unmute</param>
+		/// <returns></returns>
+		Task<bool> CallUnMuteAsync(SocketGuildUser user);
 	}
 }

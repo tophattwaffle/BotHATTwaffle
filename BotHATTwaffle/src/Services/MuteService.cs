@@ -17,11 +17,30 @@ namespace BotHATTwaffle.Services
 	{
 		private readonly DataService _data;
 		private readonly List<UserData> _mutedUsers = new List<UserData>();
+		private readonly DiscordSocketClient _client;
+		private bool firstRun = true;
 
-		public MuteService(DataService data, ITimerService timer)
+		public MuteService(DataService data, ITimerService timer, DiscordSocketClient client)
 		{
 			_data = data;
 			timer.AddCallback(CheckMutesAsync);
+			_client = client;
+
+			if(firstRun)
+				LoadMutes();
+		}
+
+		private void LoadMutes()
+		{
+			firstRun = false;
+			Console.WriteLine("Reading in mutes from database...");
+			foreach (var mute in DataBaseUtil.GetActiveMutes())
+			{
+				var user = _client.Guilds.FirstOrDefault().GetUser((ulong)mute.snowflake);
+				DateTimeOffset muteExp = DateTimeOffset.FromUnixTimeSeconds(mute.muted_time).AddMinutes(mute.mute_duration);
+				_mutedUsers.Add(new UserData { User = user, MuteExpiration = muteExp});
+				Console.WriteLine($"Mute added from database: {mute.username}\n");
+			}
 		}
 
 		/// <inheritdoc />
@@ -36,26 +55,41 @@ namespace BotHATTwaffle.Services
 				return;
 			}
 
-			DateTime expiration = DateTime.Now.AddMinutes(duration);
-
-			_mutedUsers.Add(new UserData { User = user, MuteExpiration = expiration });
-			await user.AddRoleAsync(_data.MuteRole);
-
-			try
+			//Check if the mute can be added to the DB.
+			//If false means we cannot add due to them already having a mute.
+			//If true added to active mute.
+			if (DataBaseUtil.AddActiveMute(user, duration, context, reason, DateTimeOffset.UtcNow))
 			{
-				// Tries to send a DM.
-				await user.SendMessageAsync($"You were muted for {duration} minute(s) because:```{reason}```");
-			}
-			catch
-			{
-				// Mentions the author in the the context channel instead.
-				await context.Channel.SendMessageAsync($"Hey {user.Mention}!\nYou were muted for {duration} minute(s) because:```{reason}```");
-			}
+				DateTimeOffset expiration = DateTime.UtcNow.AddMinutes(duration);
 
-			DataBaseUtil.AddMute(user, duration, context, reason, DateTimeOffset.Now);
-			await _data.ChannelLog(
-				$"{user} muted by {context.User}",
-				$"Muted for {duration} minute(s) (expires {expiration}) because:\n{reason}");
+				_mutedUsers.Add(new UserData {User = user, MuteExpiration = expiration});
+				await user.AddRoleAsync(_data.MuteRole);
+
+				try
+				{
+					// Tries to send a DM.
+					await user.SendMessageAsync($"You were muted for {duration} minute(s) because:```{reason}```");
+				}
+				catch
+				{
+					// Mentions the author in the the context channel instead.
+					await context.Channel.SendMessageAsync(
+						$"Hey {user.Mention}!\nYou were muted for {duration} minute(s) because:```{reason}```");
+				}
+
+				DataBaseUtil.AddMute(user, duration, context, reason, DateTimeOffset.Now);
+
+				await _data.ChannelLog(
+					$"{user} muted by {context.User}",
+					$"Muted for {duration} minute(s) (expires {expiration}) because:\n{reason}");
+
+				DataBaseUtil.AddCommand(context.User.Id, context.User.ToString(), "Mute",
+					context.Message.Content, DateTimeOffset.Now);
+			}
+			else
+			{
+				await context.Channel.SendMessageAsync($"Cannot mute {user} as they already have an active mute.");
+			}
 		}
 
 		/// <summary>
@@ -81,6 +115,34 @@ namespace BotHATTwaffle.Services
 		}
 
 		/// <summary>
+		/// Forces through an unmute - does not care about unmute time
+		/// </summary>
+		/// <param name="user">User to unmute</param>
+		/// <returns></returns>
+		public async Task<bool> CallUnMuteAsync(SocketGuildUser user)
+		{
+			UserData found = null;
+
+			foreach (var m in _mutedUsers)
+			{
+				if (user.Id == m.User.Id)
+				{
+					found = m;
+
+					break;
+				}
+			}
+
+			if (found != null)
+			{
+				await UnmuteAsync(found);
+				return true;
+			}
+			else
+				return false;
+		}
+
+		/// <summary>
 		/// Unmutes a user with a <paramref name="reason"/> (for logging).
 		/// </summary>
 		/// <param name="user">The user to unmute.</param>
@@ -92,6 +154,8 @@ namespace BotHATTwaffle.Services
 				return; // Attempts to remove the user. Returns if not muted.
 
 			await user.User.RemoveRoleAsync(_data.MuteRole); // No need to check if the user has the role.
+
+			DataBaseUtil.RemoveActiveMute(user.User);
 
 			await user.User.SendMessageAsync("You have been unmuted!");
 			await _data.ChannelLog($"{user.User} unmuted", reason);

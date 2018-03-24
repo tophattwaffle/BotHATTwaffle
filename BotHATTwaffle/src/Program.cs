@@ -5,11 +5,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-
 using BotHATTwaffle.Services;
 using BotHATTwaffle.Services.Download;
 using BotHATTwaffle.Services.Playtesting;
-
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -196,7 +194,7 @@ namespace BotHATTwaffle
 		private Task GuildAvailableEventHandler(SocketGuild guild)
 		{
 			_data.ReloadSettings();
-
+			_services.GetServices<IMuteService>();
 			return Task.CompletedTask;
 		}
 

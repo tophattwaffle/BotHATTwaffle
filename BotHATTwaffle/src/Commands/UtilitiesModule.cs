@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
+using BotHATTwaffle.Models;
 using BotHATTwaffle.Services;
 using Discord;
 using Discord.Commands;

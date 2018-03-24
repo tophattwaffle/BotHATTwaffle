@@ -20,6 +20,7 @@ namespace BotHATTwaffle
 
 		public DbSet<CommandUse> CommandUsage { get; set; }
 		public DbSet<Mute> Mutes { get; set; }
+		public DbSet<ActiveMute> ActiveMutes { get; set; }
 		public DbSet<SearchDataResult> SearchDataResults { get; set; }
 		public DbSet<SearchDataTag> SearchDataTags { get; set; }
 		public DbSet<Server> Servers { get; set; }
