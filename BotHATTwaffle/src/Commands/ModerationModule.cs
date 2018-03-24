@@ -529,7 +529,7 @@ namespace BotHATTwaffle.Commands
 				string reply = null;
 				foreach (ActiveMute activeMute in allMutes)
 				{
-					//TODO: Make this a pretty reply. Just did something quick and janky here.
+					//TODO: Move this to >MuteHistory. It is only here because I'm too lazy and this was easier...
 					reply += $"Name: {activeMute.username}\nMuted at: {DateTimeOffset.FromUnixTimeSeconds(activeMute.muted_time)}\n" +
 					         $"Muted for: {activeMute.mute_duration}";
 				}
