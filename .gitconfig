@@ -1,10 +1,10 @@
-[filter "spacestotabs"]
-    clean = unexpand --tabs=4 --first-only
-    smudge = unexpand --tabs=4 --first-only
+[filter "tabstospaces"]
+    clean = expand --tabs=4 --initial
+    smudge = expand --tabs=4 --initial
 [core]
     autocrlf = input
     safecrlf = false
     ignoreCase = false
     eol = lf
-    whitespace=trailing-spacespace-before-tab,indent-with-non-tab,-tab-in-indent,cr-at-eol,tabwidth=4
+    whitespace=trailing-space,space-before-tab,-indent-with-non-tab,tab-in-indent,cr-at-eol,tabwidth=4
     filemode = false

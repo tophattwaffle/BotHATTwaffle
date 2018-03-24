@@ -4,23 +4,23 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BotHATTwaffle.Models
 {
-	public class Shitpost
-	{
-		//This is a table in the Master.sqlite DB
-		[Key]
-		public int seq_id { get; set; }
+    public class Shitpost
+    {
+        //This is a table in the Master.sqlite DB
+        [Key]
+        public int seq_id { get; set; }
 
-		public long snowflake { get; set; }
-		public string username { get; set; }
-		public string shitpost { get; set; }
-		public string fullmessage { get; set; }
-		public long date { get; set; }
+        public long snowflake { get; set; }
+        public string username { get; set; }
+        public string shitpost { get; set; }
+        public string fullmessage { get; set; }
+        public long date { get; set; }
 
-		[NotMapped]
-		public DateTimeOffset commandTime
-		{
-			get => DateTimeOffset.FromUnixTimeSeconds(date);
-			set => date = value.ToUnixTimeSeconds();
-		}
-	}
+        [NotMapped]
+        public DateTimeOffset commandTime
+        {
+            get => DateTimeOffset.FromUnixTimeSeconds(date);
+            set => date = value.ToUnixTimeSeconds();
+        }
+    }
 }

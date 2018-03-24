@@ -12,202 +12,202 @@ using Discord.WebSocket;
 
 namespace Summer
 {
-	class WorkshopItem
-	{
-		static WebClient client = new WebClient();
+    class WorkshopItem
+    {
+        static WebClient client = new WebClient();
 
-		public enum ItemType
-		{
-			Mod,
-			Collection,
-			Other,
-		}
+        public enum ItemType
+        {
+            Mod,
+            Collection,
+            Other,
+        }
 
-		public WorkshopItem()
-		{
-			IsValid = false;
-		}
+        public WorkshopItem()
+        {
+            IsValid = false;
+        }
 
-		private static string FormatLineBreaks(string html)
-		{
-			html = html.Replace("<br>", "\n");
+        private static string FormatLineBreaks(string html)
+        {
+            html = html.Replace("<br>", "\n");
 
-			Regex rx = new Regex("<[^>]*>");
+            Regex rx = new Regex("<[^>]*>");
 
-			html = rx.Replace(html, "");
+            html = rx.Replace(html, "");
 
-			return html;
-		}
+            return html;
+        }
 
-		public async Task Load(string url)
-		{
-			IsValid = false;
+        public async Task Load(string url)
+        {
+            IsValid = false;
 
-			url = url.Trim().ToLower();
-			if (!url.Contains("://steamcommunity.com/sharedfiles/filedetails/") && !url.Contains("://steamcommunity.com/workshop/filedetails/"))
-				return;
+            url = url.Trim().ToLower();
+            if (!url.Contains("://steamcommunity.com/sharedfiles/filedetails/") && !url.Contains("://steamcommunity.com/workshop/filedetails/"))
+                return;
 
-			Url = url;
+            Url = url;
 
-			HtmlWeb web = new HtmlWeb();
-			var htmlDoc = web.Load(Url);
+            HtmlWeb web = new HtmlWeb();
+            var htmlDoc = web.Load(Url);
 
-			if (htmlDoc == null)
-				return;
+            if (htmlDoc == null)
+                return;
 
-			Title = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='workshopItemTitle']")?.InnerHtml;
+            Title = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='workshopItemTitle']")?.InnerHtml;
 
-			Tags = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='rightDetailsBlock']")?.Descendants("a")?.Select(x => x.InnerHtml).ToArray();
+            Tags = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='rightDetailsBlock']")?.Descendants("a")?.Select(x => x.InnerHtml).ToArray();
 
-			Singleplayer = false;
-			foreach (var tag in Tags)
-			{
-				if (tag == "Singleplayer")
-					Singleplayer = true;
+            Singleplayer = false;
+            foreach (var tag in Tags)
+            {
+                if (tag == "Singleplayer")
+                    Singleplayer = true;
 
-				if (tag == "Cooperative")
-					Singleplayer = false;
-			}
+                if (tag == "Cooperative")
+                    Singleplayer = false;
+            }
 
-			Description = FormatLineBreaks(htmlDoc.DocumentNode.SelectSingleNode("//div[@class='workshopItemDescription']")?.InnerHtml);
+            Description = FormatLineBreaks(htmlDoc.DocumentNode.SelectSingleNode("//div[@class='workshopItemDescription']")?.InnerHtml);
 
-			Type = ItemType.Mod;
+            Type = ItemType.Mod;
 
-			if (htmlDoc.DocumentNode.SelectSingleNode("//div[@class='collectionHeader']") != null)
-				Type = ItemType.Collection;
+            if (htmlDoc.DocumentNode.SelectSingleNode("//div[@class='collectionHeader']") != null)
+                Type = ItemType.Collection;
 
-			if (htmlDoc.DocumentNode.SelectSingleNode("//div[@class='subscribeOption']") != null)
-				Type = ItemType.Other;
+            if (htmlDoc.DocumentNode.SelectSingleNode("//div[@class='subscribeOption']") != null)
+                Type = ItemType.Other;
 
-			Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImage")?.Attributes?.FirstOrDefault(x => x.Name == "src")?.Value;
-			if (Image == null)
-				Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImageMain")?.Attributes?.FirstOrDefault(x => x.Name == "src")?.Value;
+            Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImage")?.Attributes?.FirstOrDefault(x => x.Name == "src")?.Value;
+            if (Image == null)
+                Image = htmlDoc.DocumentNode.Descendants("img")?.FirstOrDefault(d => d.Id == "previewImageMain")?.Attributes?.FirstOrDefault(x => x.Name == "src")?.Value;
 
-			AppId = 0;
+            AppId = 0;
 
-			string shareclick = htmlDoc.DocumentNode.Descendants("span")?.FirstOrDefault(d => d.Id == "ShareItemBtn")?.Attributes["onclick"]?.Value;
-			if (shareclick != null)
-			{
-				int startAppId = shareclick.IndexOf(", '") + 3;
-				int endAppId = shareclick.LastIndexOf("'");
+            string shareclick = htmlDoc.DocumentNode.Descendants("span")?.FirstOrDefault(d => d.Id == "ShareItemBtn")?.Attributes["onclick"]?.Value;
+            if (shareclick != null)
+            {
+                int startAppId = shareclick.IndexOf(", '") + 3;
+                int endAppId = shareclick.LastIndexOf("'");
 
-				if (startAppId != -1 && endAppId != -1)
-					int.TryParse(shareclick.Substring(startAppId, endAppId - startAppId), out AppId);
-			}
+                if (startAppId != -1 && endAppId != -1)
+                    int.TryParse(shareclick.Substring(startAppId, endAppId - startAppId), out AppId);
+            }
 
-			if (AppId != 0)
-			{
-				WebClient client = new WebClient();
-				string appData = await client.DownloadStringTaskAsync(new Uri("http://store.steampowered.com/api/appdetails?appids=" + AppId));
-				int index = appData.IndexOf("name");
-				if (index != -1)
-				{
-					appData = appData.Substring(index + 7);
-					index = appData.IndexOf("\"");
-					if (index != -1)
-						AppName = appData.Substring(0, index);
-				}
-			}
+            if (AppId != 0)
+            {
+                WebClient client = new WebClient();
+                string appData = await client.DownloadStringTaskAsync(new Uri("http://store.steampowered.com/api/appdetails?appids=" + AppId));
+                int index = appData.IndexOf("name");
+                if (index != -1)
+                {
+                    appData = appData.Substring(index + 7);
+                    index = appData.IndexOf("\"");
+                    if (index != -1)
+                        AppName = appData.Substring(0, index);
+                }
+            }
 
-			AuthorName = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='friendBlockContent']")?.InnerText?.TrimStart();
-
-
-			if (AuthorName.IndexOf("\r\n") != -1)
-				AuthorName = AuthorName.Substring(0, AuthorName.IndexOf("\r\n"));
-			if (AuthorName.IndexOf("\r") != -1)
-				AuthorName = AuthorName.Substring(0, AuthorName.IndexOf("\r"));
-			if (AuthorName.IndexOf("\n") != -1)
-				AuthorName = AuthorName.Substring(0, AuthorName.IndexOf("\n"));
-
-			AuthorUrl = htmlDoc.DocumentNode.SelectSingleNode("//a[@class='friendBlockLinkOverlay']")?.Attributes["href"]?.Value;
-			AuthorImageUrl = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='creatorsBlock']")?.Descendants("div")?.First()?.Descendants("div")?.FirstOrDefault(x => x.HasClass("playerAvatar"))?.Descendants("img")?.First()?.Attributes["src"].Value;
-
-			IsValid = true;
-		}
-
-		internal async Task<Embed> HandleWorkshopEmbeds(SocketMessage msg, string images = null, string testType = null, string inputID = null)
-		{
-			string id = inputID;
-
-			if (inputID == null)
-			{
-				string content = msg.Content.Trim().ToLower();
-
-				string fileDetails = "://steamcommunity.com/sharedfiles/filedetails/?id=";
-				string workshop = "://steamcommunity.com/workshop/filedetails/?id=";
-
-				int idStartPos = -1;
-				int index;
-
-				if ((index = content.IndexOf(fileDetails)) != -1)
-					idStartPos = index + fileDetails.Length;
-				else if ((index = content.IndexOf(workshop)) != -1)
-					idStartPos = index + workshop.Length;
-
-				if (idStartPos == -1)
-					return null;// false;
-
-				id = content.Substring(idStartPos);
-
-				int spaceIndex = id.IndexOf(" ");
-
-				if (spaceIndex != -1)
-					id = id.Substring(0, spaceIndex);
-			}
-
-			string workshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
-
-			Summer.WorkshopItem item = new Summer.WorkshopItem();
-			await item.Load(workshopUrl);
-
-			if (!item.IsValid)
-				return null;// false;
+            AuthorName = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='friendBlockContent']")?.InnerText?.TrimStart();
 
 
-			EmbedBuilder builder = new EmbedBuilder();
-			builder.WithImageUrl(item.Image);
-			builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
-			builder.AddField("Game", item.AppName, true);
-			string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
-			if (type == "Mod")
-				type = "Map/Mod";
-			builder.AddField("Type", type, true);
+            if (AuthorName.IndexOf("\r\n") != -1)
+                AuthorName = AuthorName.Substring(0, AuthorName.IndexOf("\r\n"));
+            if (AuthorName.IndexOf("\r") != -1)
+                AuthorName = AuthorName.Substring(0, AuthorName.IndexOf("\r"));
+            if (AuthorName.IndexOf("\n") != -1)
+                AuthorName = AuthorName.Substring(0, AuthorName.IndexOf("\n"));
 
-			if (testType != null)
-			{
-				builder.AddField("Test Type", $"{testType}", false);
-			}
+            AuthorUrl = htmlDoc.DocumentNode.SelectSingleNode("//a[@class='friendBlockLinkOverlay']")?.Attributes["href"]?.Value;
+            AuthorImageUrl = htmlDoc.DocumentNode.SelectSingleNode("//div[@class='creatorsBlock']")?.Descendants("div")?.First()?.Descendants("div")?.FirstOrDefault(x => x.HasClass("playerAvatar"))?.Descendants("img")?.First()?.Attributes["src"].Value;
 
-			builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
-			builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
-			builder.WithUrl(item.Url);
-			builder.WithColor(new Color(52, 152, 219));
-			builder.WithTitle(item.Title);
+            IsValid = true;
+        }
 
-			if (images != null)
-			{
-				builder.AddField("Links", $"[Map Images]({images}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) " +
-				$"| [View Testing Calendar](http://playtesting.tophattwaffle.com) | [View Test Queue](https://docs.google.com/spreadsheets/d/1alpE7wj5aAlWQ08HDRbz5oWdBrG_7ev79525dPjZtC8/edit?usp=sharing)", false);
-			}
+        internal async Task<Embed> HandleWorkshopEmbeds(SocketMessage msg, string images = null, string testType = null, string inputID = null)
+        {
+            string id = inputID;
 
-			if (msg != null)
-				await msg.Channel.SendMessageAsync("", false, builder.Build());
+            if (inputID == null)
+            {
+                string content = msg.Content.Trim().ToLower();
 
-			return builder.Build();
-		}
+                string fileDetails = "://steamcommunity.com/sharedfiles/filedetails/?id=";
+                string workshop = "://steamcommunity.com/workshop/filedetails/?id=";
 
-		public bool Singleplayer;
-		public string Url;
-		public bool IsValid;
-		public string Title;
-		public string Description;
-		public string[] Tags;
-		public string Image;
-		public int AppId;
-		public string AppName;
-		public string AuthorUrl;
-		public string AuthorImageUrl;
-		public string AuthorName;
-		public ItemType Type;
-	}
+                int idStartPos = -1;
+                int index;
+
+                if ((index = content.IndexOf(fileDetails)) != -1)
+                    idStartPos = index + fileDetails.Length;
+                else if ((index = content.IndexOf(workshop)) != -1)
+                    idStartPos = index + workshop.Length;
+
+                if (idStartPos == -1)
+                    return null;// false;
+
+                id = content.Substring(idStartPos);
+
+                int spaceIndex = id.IndexOf(" ");
+
+                if (spaceIndex != -1)
+                    id = id.Substring(0, spaceIndex);
+            }
+
+            string workshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
+
+            Summer.WorkshopItem item = new Summer.WorkshopItem();
+            await item.Load(workshopUrl);
+
+            if (!item.IsValid)
+                return null;// false;
+
+
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.WithImageUrl(item.Image);
+            builder.WithAuthor(item.AuthorName, item.AuthorImageUrl, item.AuthorUrl);
+            builder.AddField("Game", item.AppName, true);
+            string type = Enum.GetName(typeof(Summer.WorkshopItem.ItemType), item.Type);
+            if (type == "Mod")
+                type = "Map/Mod";
+            builder.AddField("Type", type, true);
+
+            if (testType != null)
+            {
+                builder.AddField("Test Type", $"{testType}", false);
+            }
+
+            builder.AddField("Tags", item.Tags.Aggregate((i, j) => i + ", " + j), true);
+            builder.AddField("Description", item.Description.Length > 497 ? item.Description.Substring(0, 497) + "..." : item.Description);
+            builder.WithUrl(item.Url);
+            builder.WithColor(new Color(52, 152, 219));
+            builder.WithTitle(item.Title);
+
+            if (images != null)
+            {
+                builder.AddField("Links", $"[Map Images]({images}) | [Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) " +
+                $"| [View Testing Calendar](http://playtesting.tophattwaffle.com) | [View Test Queue](https://docs.google.com/spreadsheets/d/1alpE7wj5aAlWQ08HDRbz5oWdBrG_7ev79525dPjZtC8/edit?usp=sharing)", false);
+            }
+
+            if (msg != null)
+                await msg.Channel.SendMessageAsync("", false, builder.Build());
+
+            return builder.Build();
+        }
+
+        public bool Singleplayer;
+        public string Url;
+        public bool IsValid;
+        public string Title;
+        public string Description;
+        public string[] Tags;
+        public string Image;
+        public int AppId;
+        public string AppName;
+        public string AuthorUrl;
+        public string AuthorImageUrl;
+        public string AuthorName;
+        public ItemType Type;
+    }
 }

@@ -334,7 +334,7 @@
   <ItemGroup>
     <Content Include="res\icon.ico" />
     <Content Include="res\icon.png" />
-    <Content Include="src\Master.sqlite.sql" />
+    <Content Include="res\Master.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreRCON\src\CoreRCON\CoreRCON.csproj">

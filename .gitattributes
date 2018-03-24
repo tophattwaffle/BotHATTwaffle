@@ -1,4 +1,4 @@
-*.cs        filter=spacestotabs
+*.cs        filter=tabstospaces
 
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
