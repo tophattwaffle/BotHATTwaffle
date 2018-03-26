@@ -100,7 +100,7 @@ namespace BotHATTwaffle.Services
         internal async Task UserJoin(SocketUser user)
         {
             await WelcomeMessageDm(user);
-            await _dataService.GeneralChannel.SendMessageAsync($"Welcome {user.Mention} to the Source Engine Discord!" +
+            await _dataService.GeneralChannel.SendMessageAsync($"Welcome {user.Mention} to the Source Engine Discord!\n " +
             $"Over the next 10 minutes while we verify your account, please check out <#195009920414908416> for the rules.");
         }
 
@@ -108,7 +108,7 @@ namespace BotHATTwaffle.Services
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
-                Name = $"Hey there {user.Username}! Welcome to the r/sourceengine discord server!",
+                Name = $"Hey there {user.Username}! Welcome to the Source Engine Discord!",
                 IconUrl = _client.Guilds.FirstOrDefault()?.IconUrl
             };
 

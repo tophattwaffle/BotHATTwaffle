@@ -531,7 +531,8 @@ namespace BotHATTwaffle.Commands
                 {
                     //TODO: Move this to >MuteHistory. It is only here because I'm too lazy and this was easier...
                     reply += $"Name: {activeMute.username}\nMuted at: {DateTimeOffset.FromUnixTimeSeconds(activeMute.muted_time)}\n" +
-                             $"Muted for: {activeMute.mute_duration}";
+                             $"Muted for: {activeMute.mute_duration}\nMuted Because: {activeMute.mute_reason}\n " +
+                             $"Unmuted at: {DateTimeOffset.FromUnixTimeSeconds(activeMute.muted_time).AddMinutes(activeMute.mute_duration)}";
                 }
 
                 if (reply == null)
@@ -600,7 +601,8 @@ namespace BotHATTwaffle.Commands
 
                     embed.AddField(
                         timestamp,
-                        $"Muted by: `{mute.muted_by}`\nReason: `{reason}`\nDuration: `{mute.mute_duration}` {durationUnit}");
+                        $"Muted by: `{mute.muted_by}`\nReason: `{reason}`\nDuration: `{mute.mute_duration}` {durationUnit}\n" +
+                        $"Unmuted at: {DateTimeOffset.FromUnixTimeSeconds(mute.date).AddMinutes(mute.mute_duration):yyyy-MM-ddTHH:mm:ssZ}");
 
                     if (embed.Length() > 6000 - 26) // Total char limit - maximum possible footer length
                     {

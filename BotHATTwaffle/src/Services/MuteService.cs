@@ -135,7 +135,7 @@ namespace BotHATTwaffle.Services
 
             if (found != null)
             {
-                await UnmuteAsync(found);
+                await UnmuteAsync(found, "A moderator has taken mercy on you by lifting the mute.");
                 return true;
             }
             else
