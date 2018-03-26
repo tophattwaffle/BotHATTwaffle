@@ -531,7 +531,7 @@ namespace BotHATTwaffle.Commands
                 {
                     //TODO: Move this to >MuteHistory. It is only here because I'm too lazy and this was easier...
                     reply += $"Name: {activeMute.username}\nMuted at: {DateTimeOffset.FromUnixTimeSeconds(activeMute.muted_time)}\n" +
-                             $"Muted for: {activeMute.mute_duration}\nMuted Because: {activeMute.mute_reason}\n " +
+                             $"Muted for: {activeMute.mute_duration}\nMuted Because: {activeMute.mute_reason}\n" +
                              $"Unmuted at: {DateTimeOffset.FromUnixTimeSeconds(activeMute.muted_time).AddMinutes(activeMute.mute_duration)}";
                 }
 
