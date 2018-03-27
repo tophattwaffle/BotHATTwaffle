@@ -52,15 +52,20 @@ namespace BotHATTwaffle.Services
                         //Give them playtester role
                         u.User.AddRoleAsync(_dataService.PlayTesterRole);
 
-                        //Fire and forget to avoid compiler warning. We can't await this call because
-                        //we are not in an async method.
-                        Task fireAndForget = u.User.SendMessageAsync("", false, u.JoinMessage);
-
                         //Remove them from the list
                         _joinDelayList.Remove(u);
 
-                        //Log
-                        _dataService.ChannelLog($"{u.User} now has playtester role. Welcome DM was sent.");
+                        //Fire and forget to avoid compiler warning. We can't await this call because
+                        //we are not in an async method.
+                        try
+                        {
+                            Task fireAndForget = u.User.SendMessageAsync("", false, u.JoinMessage);
+                            _dataService.ChannelLog($"{u.User} now has playtester role. Welcome DM was sent.");
+                        }
+                        catch
+                        {
+                            _dataService.ChannelLog($"{u.User} Cannot be sent a DM. Welcome message skipped.");
+                        }
                     }
                 }
             },
