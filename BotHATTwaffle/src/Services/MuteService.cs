@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
-
 using BotHATTwaffle.Models;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -121,25 +118,16 @@ namespace BotHATTwaffle.Services
         /// <returns></returns>
         public async Task<bool> CallUnMuteAsync(SocketGuildUser user)
         {
-            UserData found = null;
-
             foreach (var m in _mutedUsers)
             {
                 if (user.Id == m.User.Id)
                 {
-                    found = m;
-
-                    break;
-                }
+					await UnmuteAsync(m, "A moderator has taken mercy on you by lifting the mute.");
+	                return true;
+				}
             }
 
-            if (found != null)
-            {
-                await UnmuteAsync(found, "A moderator has taken mercy on you by lifting the mute.");
-                return true;
-            }
-            else
-                return false;
+            return false;
         }
 
         /// <summary>
