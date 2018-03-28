@@ -31,13 +31,23 @@ namespace BotHATTwaffle.Services
         {
             firstRun = false;
             Console.WriteLine("Reading in mutes from database...");
-            foreach (var mute in DataBaseUtil.GetActiveMutes())
-            {
-                var user = _client.Guilds.FirstOrDefault().GetUser((ulong)mute.snowflake);
-                DateTimeOffset muteExp = DateTimeOffset.FromUnixTimeSeconds(mute.muted_time).AddMinutes(mute.mute_duration);
-                _mutedUsers.Add(new UserData { User = user, MuteExpiration = muteExp});
-                Console.WriteLine($"Mute added from database: {mute.username}\n");
-            }
+
+	        foreach (var mute in DataBaseUtil.GetActiveMutes())
+	        {
+		        var user = _client.Guilds.FirstOrDefault().GetUser((ulong)mute.snowflake);
+
+		        if (user != null)
+		        {
+					DateTimeOffset muteExp = DateTimeOffset.FromUnixTimeSeconds(mute.muted_time).AddMinutes(mute.mute_duration);
+					_mutedUsers.Add(new UserData {User = user, MuteExpiration = muteExp});
+					Console.WriteLine($"Mute added from database: {mute.username}\n");
+				}
+		        else
+		        {
+					DataBaseUtil.RemoveActiveMute((ulong)mute.snowflake);
+					Console.WriteLine($"User not found in server during LoadMutes. Removing mute for: {mute.username}\n");
+				}
+			}
         }
 
         /// <inheritdoc />
@@ -95,19 +105,30 @@ namespace BotHATTwaffle.Services
         /// <returns>No object or value is returned by this method when it completes.</returns>
         private async Task CheckMutesAsync()
         {
-            foreach (UserData user in _mutedUsers.ToList())
+			foreach (UserData user in _mutedUsers.ToList())
             {
-                if (!user.User.Roles.Contains(_data.MuteRole))
-                {
-                    await UnmuteAsync(user, $"The {_data.MuteRole.Name} role was manually removed.");
+	            try
+	            {
+		            if (!user.User.Roles.Contains(_data.MuteRole))
+		            {
+			            await UnmuteAsync(user, $"The {_data.MuteRole.Name} role was manually removed.");
 
-                    continue;
-                }
+			            continue;
+		            }
 
-                if (!user.MuteExpired()) continue;
+		            if (!user.MuteExpired()) continue;
 
-                await UnmuteAsync(user, "The mute expired.");
-                await Task.Delay(1000);
+		            await UnmuteAsync(user, "The mute expired.");
+		            await Task.Delay(1000);
+				}
+	            catch (Exception)
+	            {
+		            await _data.ChannelLog(
+			            "A user is the ActiveMute database is no longer in the server. " +
+			            "Removing them from the mute list. They will be removed from the table on next load.");
+
+		            _mutedUsers.Remove(user);
+	            }
             }
         }
 
@@ -143,7 +164,7 @@ namespace BotHATTwaffle.Services
 
             await user.User.RemoveRoleAsync(_data.MuteRole); // No need to check if the user has the role.
 
-            DataBaseUtil.RemoveActiveMute(user.User);
+            DataBaseUtil.RemoveActiveMute(user.User.Id);
 
             await user.User.SendMessageAsync("You have been unmuted!");
             await _data.ChannelLog($"{user.User} unmuted", reason);

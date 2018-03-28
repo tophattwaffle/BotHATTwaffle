@@ -228,13 +228,13 @@ namespace BotHATTwaffle
             }
         }
 
-        public static bool RemoveActiveMute(SocketGuildUser user)
+        public static bool RemoveActiveMute(ulong userID)
         {
             using (var dbContext = new DataBaseContext())
             {
                 try
                 {
-                    var mute = dbContext.ActiveMutes.Single(m => m.snowflake == (long)user.Id);
+                    var mute = dbContext.ActiveMutes.Single(m => m.snowflake == (long)userID);
 
                     dbContext.ActiveMutes.Remove(mute);
 

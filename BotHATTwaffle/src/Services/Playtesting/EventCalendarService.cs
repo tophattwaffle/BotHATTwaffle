@@ -146,6 +146,10 @@ namespace BotHATTwaffle.Services.Playtesting
                 finalEvent = Enumerable.Repeat<string>(null, 11).ToArray();
                 finalEvent[0] = "BAD_DESCRIPTION";
             }
+
+			//Console.WriteLine("||" + string.Join("\n", finalEvent) + "||");
+	        //Console.ReadLine();
+
             return finalEvent;
         }
     }
