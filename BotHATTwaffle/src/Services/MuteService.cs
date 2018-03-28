@@ -121,10 +121,10 @@ namespace BotHATTwaffle.Services
 		            await UnmuteAsync(user, "The mute expired.");
 		            await Task.Delay(1000);
 				}
-	            catch (Exception)
+	            catch (Exception) //TODO: Narrow exception that is cought
 	            {
 		            await _data.ChannelLog(
-			            "A user is the ActiveMute database is no longer in the server. " +
+			            "A user in the ActiveMute database is no longer in the server. " +
 			            "Removing them from the mute list. They will be removed from the table on next load.");
 
 		            _mutedUsers.Remove(user);
