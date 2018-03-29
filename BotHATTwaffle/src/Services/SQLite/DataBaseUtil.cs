@@ -13,6 +13,31 @@ namespace BotHATTwaffle
 {
     class DataBaseUtil
     {
+        public static List<string> GetStats(ulong snowflake)
+        {
+            List<string> result = new List<string>();
+
+            using (var dbContext = new DataBaseContext())
+            {
+                var cmdUsage = dbContext.CommandUsage.Where(i => i.snowflake.Equals((long)snowflake)).ToList();
+
+                var shitposts = dbContext.Shitposts.Where(i => i.snowflake.Equals((long)snowflake)).ToList();
+
+                var mutes = dbContext.Mutes.Where(i => i.snowflake.Equals((long)snowflake)).ToList();
+
+                result.Add($"{cmdUsage.Count}"); //Command Usage
+                result.Add($"{(cmdUsage.Count == 0 ? "No Command Usage Found" : cmdUsage.GroupBy(i => i.command).OrderByDescending(grp => grp.Count()).Select(grp => grp.Key).First())}"); //Most Used Command
+                result.Add($"{shitposts.Count}"); //shitpost Usage
+                result.Add($"{(shitposts.Count == 0 ? "No Shitposts Found" : shitposts.GroupBy(i => i.shitpost).OrderByDescending(grp => grp.Count()).Select(grp => grp.Key).First())}"); //Most Used Shitpost
+                result.Add($"{mutes.Count}"); //Logged Mutes
+                result.Add($"{(mutes.Count == 0 ? "No Mutes Found" : mutes.Last().mute_reason)}"); //Last Mute Reason
+                result.Add($"{(mutes.Count == 0 ? "No Mutes Found" : $"{mutes.Last().mute_duration}")}"); //Last Mute Length
+                result.Add($"{(mutes.Count == 0 ? "No Mutes Found" : $"{mutes.Last().date}")}"); //$"{DateTimeOffset.FromUnixTimeSeconds(mutes.Last().date)}"); //Last Mute Date
+            }
+            //IsNullOrEmpty(planRec.approved_by) ? "" : planRec.approved_by.toString();
+            return result;
+        }
+
         public static void AddCommand(ulong snowflake, string username, string command, string fullmessage, DateTimeOffset dateTimeOffset)
         {
             using (var dbContext = new DataBaseContext())
