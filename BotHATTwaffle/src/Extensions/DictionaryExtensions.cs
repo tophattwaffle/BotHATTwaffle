@@ -7,21 +7,21 @@ namespace BotHATTwaffle.Extensions
     /// </summary>
     public static class DictionaryExtensions
     {
-        /// <summary> Adds given key and value to dictionary if the given key does not already exist in dictionary.</summary>
+        /// <summary>Tries to add a key and value to a <paramref name="dictionary"/>. Fails if the key already exists.</summary>
         /// <typeparam name="TKey">The type of the dictionary's key.</typeparam>
         /// <typeparam name="TValue">The type of the dictionary's value.</typeparam>
-        /// <param name="dictionary">The dictionary to check.</param>
-        /// <param name="key">The key to check for existence.</param>
-        /// <param name="value">The value to add if the key is missing.</param>
-        /// <returns><c>true</c> if the key was found; <c>false</c> otherwise</returns>
-        public static bool AddKeyIfMissing<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        /// <param name="dictionary">The dictionary to which to add the key value pair.</param>
+        /// <param name="key">The key to add.</param>
+        /// <param name="value">The value to add.</param>
+        /// <returns><c>true</c> if the pair was successfully added; <c>false</c> if the key already exists.</returns>
+        public static bool TryAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
         {
             if (dictionary.ContainsKey(key))
-                return true;
+                return false;
 
             dictionary.Add(key, value);
 
-            return false;
+            return true;
         }
 
         /// <summary>

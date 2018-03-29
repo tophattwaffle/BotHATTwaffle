@@ -168,54 +168,54 @@ namespace BotHATTwaffle.Services
 
             #region Add existing settings at their default
             #region General or global
-            mainConfig.AddKeyIfMissing("botToken", "NEEDS_TO_BE_REPLACED");
-            mainConfig.AddKeyIfMissing("imgurAPI", "NEEDS_TO_BE_REPLACED");
-            mainConfig.AddKeyIfMissing("dbPath", "Master.sqlite");
-            mainConfig.AddKeyIfMissing("startDelay", "10");
-            mainConfig.AddKeyIfMissing("updateInterval", "60");
-            mainConfig.AddKeyIfMissing("calUpdateTicks", "1");
-            mainConfig.AddKeyIfMissing("logChannel", "bothattwaffle_logs");
-            mainConfig.AddKeyIfMissing("announcementChannel", "announcements");
-            mainConfig.AddKeyIfMissing("playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
-            mainConfig.AddKeyIfMissing("agreeUserCSV", "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
-            mainConfig.AddKeyIfMissing("alertUser", "[DISCORD NAME OF USER WITH #]");
-            mainConfig.AddKeyIfMissing("generalChannel", "general");
+            mainConfig.TryAdd("botToken", "NEEDS_TO_BE_REPLACED");
+            mainConfig.TryAdd("imgurAPI", "NEEDS_TO_BE_REPLACED");
+            mainConfig.TryAdd("dbPath", "Master.sqlite");
+            mainConfig.TryAdd("startDelay", "10");
+            mainConfig.TryAdd("updateInterval", "60");
+            mainConfig.TryAdd("calUpdateTicks", "1");
+            mainConfig.TryAdd("logChannel", "bothattwaffle_logs");
+            mainConfig.TryAdd("announcementChannel", "announcements");
+            mainConfig.TryAdd("playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
+            mainConfig.TryAdd("agreeUserCSV", "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
+            mainConfig.TryAdd("alertUser", "[DISCORD NAME OF USER WITH #]");
+            mainConfig.TryAdd("generalChannel", "general");
             #endregion
 
             #region Playtesting vars
-            mainConfig.AddKeyIfMissing("testCalID", "Replace My Buddy");
-            mainConfig.AddKeyIfMissing("playTesterRole", "Playtester");
-            mainConfig.AddKeyIfMissing("activeMemberRole", "Active Member");
-            mainConfig.AddKeyIfMissing("testingChannel", "csgo_level_testing");
-            mainConfig.AddKeyIfMissing("DemoPath", $"X:\\Playtesting Demos");
-            mainConfig.AddKeyIfMissing("casualConfig", $"thw");
-            mainConfig.AddKeyIfMissing("compConfig", $"thw");
-            mainConfig.AddKeyIfMissing("postConfig", $"postame");
+            mainConfig.TryAdd("testCalID", "Replace My Buddy");
+            mainConfig.TryAdd("playTesterRole", "Playtester");
+            mainConfig.TryAdd("activeMemberRole", "Active Member");
+            mainConfig.TryAdd("testingChannel", "csgo_level_testing");
+            mainConfig.TryAdd("DemoPath", $"X:\\Playtesting Demos");
+            mainConfig.TryAdd("casualConfig", $"thw");
+            mainConfig.TryAdd("compConfig", $"thw");
+            mainConfig.TryAdd("postConfig", $"postame");
             #endregion
 
             #region Eavesdropping vars
-            mainConfig.AddKeyIfMissing("pakRatEavesDropCSV", "use pakrat,download pakrat,get pakrat,use packrat");
-            mainConfig.AddKeyIfMissing("howToPackEavesDropCSV", "how do i pack,how can i pack,how to pack,how to use vide,help me pack");
-            mainConfig.AddKeyIfMissing("carveEavesDropCSV", "carve");
-            mainConfig.AddKeyIfMissing("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
-            mainConfig.AddKeyIfMissing("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
+            mainConfig.TryAdd("pakRatEavesDropCSV", "use pakrat,download pakrat,get pakrat,use packrat");
+            mainConfig.TryAdd("howToPackEavesDropCSV", "how do i pack,how can i pack,how to pack,how to use vide,help me pack");
+            mainConfig.TryAdd("carveEavesDropCSV", "carve");
+            mainConfig.TryAdd("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
+            mainConfig.TryAdd("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
             #endregion
 
             #region Command Dependent
-            mainConfig.AddKeyIfMissing("roleMeWhiteListCSV", "Programmer,Level_Designer,3D_Modeler,Texture_Artist,Blender,Maya,3dsmax");
-            mainConfig.AddKeyIfMissing("moderatorRoleName", "Moderators");
-            mainConfig.AddKeyIfMissing("mutedRoleName", "Muted");
-            mainConfig.AddKeyIfMissing("rconRoleName", "RconAccess");
-            mainConfig.AddKeyIfMissing("publicCommandWhiteListCSV", "[CONFIGME]");
-            mainConfig.AddKeyIfMissing("patreonsRole", "Patreons");
-            mainConfig.AddKeyIfMissing("communityTestRole", "Community Tester");
+            mainConfig.TryAdd("roleMeWhiteListCSV", "Programmer,Level_Designer,3D_Modeler,Texture_Artist,Blender,Maya,3dsmax");
+            mainConfig.TryAdd("moderatorRoleName", "Moderators");
+            mainConfig.TryAdd("mutedRoleName", "Muted");
+            mainConfig.TryAdd("rconRoleName", "RconAccess");
+            mainConfig.TryAdd("publicCommandWhiteListCSV", "[CONFIGME]");
+            mainConfig.TryAdd("patreonsRole", "Patreons");
+            mainConfig.TryAdd("communityTestRole", "Community Tester");
             #endregion
 
             #region  Shitpost vars
-            mainConfig.AddKeyIfMissing("catFactPath", $"X:\\Scripts\\catfacts.txt");
-            mainConfig.AddKeyIfMissing("penguinFactPath", $"X:\\Scripts\\penguinfacts.txt");
-            mainConfig.AddKeyIfMissing("tanookiFactPath", $"X:\\Scripts\\tanookifacts.txt");
-            mainConfig.AddKeyIfMissing("ShitPostDelay", $"5");
+            mainConfig.TryAdd("catFactPath", $"X:\\Scripts\\catfacts.txt");
+            mainConfig.TryAdd("penguinFactPath", $"X:\\Scripts\\penguinfacts.txt");
+            mainConfig.TryAdd("tanookiFactPath", $"X:\\Scripts\\tanookifacts.txt");
+            mainConfig.TryAdd("ShitPostDelay", $"5");
             #endregion
 
             #endregion
