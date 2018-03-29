@@ -261,6 +261,11 @@
     <Compile Include="src\Extensions\IListExtensions.cs" />
     <Compile Include="src\Extensions\MessageExtensions.cs" />
     <Compile Include="src\Extensions\StringExtensions.cs" />
+    <Compile Include="src\Migrations\20180329222759_Initial.cs" />
+    <Compile Include="src\Migrations\20180329222759_Initial.designer.cs">
+      <DependentUpon>20180329222759_Initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="src\Migrations\DataBaseContextModelSnapshot.cs" />
     <Compile Include="src\Models\ActiveMute.cs" />
     <Compile Include="src\Models\CommandUse.cs" />
     <Compile Include="src\Models\Key_Value.cs" />
@@ -296,6 +301,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Master.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -310,9 +318,7 @@
     <Content Include="res\icon.png" />
     <Content Include="res\Master.sql" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\Migrations\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

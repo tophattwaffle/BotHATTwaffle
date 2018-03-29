@@ -259,3 +259,13 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+# SQLite Database Files
+*.db
+*.db3
+*.s3db
+*.sdb
+*.sdb3
+*.sl3
+*.sqlite
+*.sqlite3
