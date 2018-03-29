@@ -67,7 +67,6 @@ namespace BotHATTwaffle.Services
         public string TanookiFactPath;
         public string AlertUser;
         public int ShitPostDelay = 5;
-        public static string dbPath;
 
         //TimerService Vars
         public int StartDelay = 10;
@@ -170,7 +169,6 @@ namespace BotHATTwaffle.Services
             #region General or global
             mainConfig.TryAdd("botToken", "NEEDS_TO_BE_REPLACED");
             mainConfig.TryAdd("imgurAPI", "NEEDS_TO_BE_REPLACED");
-            mainConfig.TryAdd("dbPath", "Master.sqlite");
             mainConfig.TryAdd("startDelay", "10");
             mainConfig.TryAdd("updateInterval", "60");
             mainConfig.TryAdd("calUpdateTicks", "1");
@@ -232,8 +230,6 @@ namespace BotHATTwaffle.Services
         {
             if (Config.ContainsKey("DemoPath"))
                 DemoPath = Config["DemoPath"];
-            if (Config.ContainsKey("dbPath"))
-                dbPath = Config["dbPath"];
             if (Config.ContainsKey("pakRatEavesDropCSV"))
                 PakRatEavesDrop = Config["pakRatEavesDropCSV"].Split(',');
             if (Config.ContainsKey("howToPackEavesDropCSV"))

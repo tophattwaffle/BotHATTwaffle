@@ -1,5 +1,6 @@
-﻿using BotHATTwaffle.Models;
-using BotHATTwaffle.Services;
+﻿using System.Configuration;
+
+using BotHATTwaffle.Models;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -7,15 +8,9 @@ namespace BotHATTwaffle
 {
     public class DataBaseContext : DbContext
     {
-        private string path;
-        public DataBaseContext()
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            path = DataService.dbPath;
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionbuilder)
-        {
-            optionbuilder.UseSqlite($"Data Source={path}");
+            optionsBuilder.UseSqlite(ConfigurationManager.ConnectionStrings["Master"].ConnectionString);
         }
 
         public DbSet<CommandUse> CommandUsage { get; set; }
