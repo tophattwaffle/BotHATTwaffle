@@ -410,12 +410,17 @@ namespace BotHATTwaffle.Commands
 
         [Command("Stats")]
         [Summary("Gives you stats about yourself in the server.")]
-        public async Task StatsAsync()
+        public async Task StatsAsync(SocketUser user = null)
         {
-            var stats = DataBaseUtil.GetStats(Context.User.Id);
+            SocketUser target = Context.User;
+
+            if (user != null)
+                target = user;
+            
+            var stats = DataBaseUtil.GetStats(target.Id);
 
             var embed = new EmbedBuilder()
-                .WithAuthor($"Stats for {Context.User}", Context.User.GetAvatarUrl())
+                .WithAuthor($"Stats for {target}", target.GetAvatarUrl())
                 .AddField("Command Usage",$"Total Command Usage: `{stats[0]}`\nFavorite Command: `{stats[1]}`")
                 .AddField("Shitposts Usage", $"Total Shitposts: `{stats[2]}`\nFavorite Shitpost: `{stats[3]}`")
                 .AddField("Latest Mute Information",$"Muted `{stats[4]}` times.\nLast Mute Reason: `{stats[5]}`\nLast Mute Length: `{stats[6]}`\nLast Mute Date: `{stats[7]}`");
