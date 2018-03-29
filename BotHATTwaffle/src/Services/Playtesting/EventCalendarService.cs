@@ -147,8 +147,8 @@ namespace BotHATTwaffle.Services.Playtesting
                 finalEvent[0] = "BAD_DESCRIPTION";
             }
 
-			//Console.WriteLine("||" + string.Join("\n", finalEvent) + "||");
-	        //Console.ReadLine();
+            //Console.WriteLine("||" + string.Join("\n", finalEvent) + "||");
+            //Console.ReadLine();
 
             return finalEvent;
         }
