@@ -13,31 +13,6 @@ namespace BotHATTwaffle
 {
     class DataBaseUtil
     {
-        public static List<string> GetStats(ulong snowflake)
-        {
-            List<string> result = new List<string>();
-
-            using (var dbContext = new DataBaseContext())
-            {
-                var cmdUsage = dbContext.CommandUsage.Where(i => i.snowflake.Equals((long)snowflake)).ToList();
-
-                var shitposts = dbContext.Shitposts.Where(i => i.snowflake.Equals((long)snowflake)).ToList();
-
-                var mutes = dbContext.Mutes.Where(i => i.snowflake.Equals((long)snowflake)).ToList();
-
-                result.Add($"{cmdUsage.Count}"); //Command Usage
-                result.Add($"{(cmdUsage.Count == 0 ? "No Command Usage Found" : cmdUsage.GroupBy(i => i.command).OrderByDescending(grp => grp.Count()).Select(grp => grp.Key).First())}"); //Most Used Command
-                result.Add($"{shitposts.Count}"); //shitpost Usage
-                result.Add($"{(shitposts.Count == 0 ? "No Shitposts Found" : shitposts.GroupBy(i => i.shitpost).OrderByDescending(grp => grp.Count()).Select(grp => grp.Key).First())}"); //Most Used Shitpost
-                result.Add($"{mutes.Count}"); //Logged Mutes
-                result.Add($"{(mutes.Count == 0 ? "No Mutes Found" : mutes.Last().mute_reason)}"); //Last Mute Reason
-                result.Add($"{(mutes.Count == 0 ? "No Mutes Found" : $"{mutes.Last().mute_duration}")}"); //Last Mute Length
-                result.Add($"{(mutes.Count == 0 ? "No Mutes Found" : $"{mutes.Last().date}")}"); //$"{DateTimeOffset.FromUnixTimeSeconds(mutes.Last().date)}"); //Last Mute Date
-            }
-            //IsNullOrEmpty(planRec.approved_by) ? "" : planRec.approved_by.toString();
-            return result;
-        }
-
         public static void AddCommand(ulong snowflake, string username, string command, string fullmessage, DateTimeOffset dateTimeOffset)
         {
             using (var dbContext = new DataBaseContext())
@@ -55,6 +30,19 @@ namespace BotHATTwaffle
             }
         }
 
+        /// <summary>
+        /// Retrieves a user's command usage records.
+        /// </summary>
+        /// <param name="userId">The ID of the user for which to retrieve records.</param>
+        /// <returns>The retrieved records.</returns>
+        public static async Task<CommandUse[]> GetCommands(ulong userId)
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                return await dbContext.CommandUsage.Where(r => r.snowflake.Equals((long)userId)).ToArrayAsync();
+            }
+        }
+
         public static void AddShitpost(ulong snowflake, string username, string shitpost, string fullmessage, DateTimeOffset dateTimeOffset)
         {
             using (var dbContext = new DataBaseContext())
@@ -69,6 +57,19 @@ namespace BotHATTwaffle
                 });
 
                 dbContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a user's shitpost log records.
+        /// </summary>
+        /// <param name="userId">The ID of the user for which to retrieve records.</param>
+        /// <returns>The retrieved records.</returns>
+        public static async Task<Shitpost[]> GetShitposts(ulong userId)
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                return await dbContext.Shitposts.Where(r => r.snowflake.Equals((long)userId)).ToArrayAsync();
             }
         }
 
@@ -287,8 +288,8 @@ namespace BotHATTwaffle
         /// <summary>
         /// Retrieves all mute records for a user.
         /// </summary>
-        /// <param name="userId">The ID of the user for which to retrieve mutes.</param>
-        /// <returns>A collection of the retrieved mute records.</returns>
+        /// <param name="userId">The ID of the user for which to retrieve records.</param>
+        /// <returns>The retrieved records.</returns>
         public static async Task<Mute[]> GetMutesAsync(ulong userId)
         {
             using (var dbContext = new DataBaseContext())
@@ -300,9 +301,9 @@ namespace BotHATTwaffle
         /// <summary>
         /// Retrieves a given quantity of the most recent mute records for a user.
         /// </summary>
-        /// <param name="userId">The ID of the user for which to retrieve mutes.</param>
+        /// <param name="userId">The ID of the user for which to retrieve records.</param>
         /// <param name="quantity">The amount of recent records to retrieve.</param>
-        /// <returns>A collection of the retrieved mute records in descending chronological order.</returns>
+        /// <returns>The retrieved records in descending chronological order.</returns>
         public static async Task<Mute[]> GetMutesAsync(ulong userId, int quantity)
         {
             using (var dbContext = new DataBaseContext())

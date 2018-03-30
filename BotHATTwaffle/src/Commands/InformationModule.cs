@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using BotHATTwaffle.Models;
 using BotHATTwaffle.Services;
 
 using Discord;
@@ -409,23 +410,44 @@ namespace BotHATTwaffle.Commands
         }
 
         [Command("Stats")]
-        [Summary("Gives you stats about yourself in the server.")]
-        public async Task StatsAsync(SocketUser user = null)
+        [Summary("Displays statics about a user.")]
+        [Remarks("Displays statistics on command usage, shitpost usage, and latest mute.")]
+        public async Task StatsAsync(
+            [Summary("The user for which to retrieve statistics. If no user is specified, the invoking user is used.")]
+            SocketUser user = null)
         {
-            SocketUser target = Context.User;
+            user = user ?? Context.User;
 
-            if (user != null)
-                target = user;
-            
-            var stats = DataBaseUtil.GetStats(target.Id);
+            CommandUse[] commands = await DataBaseUtil.GetCommands(user.Id);
+            Shitpost[] shitposts = await DataBaseUtil.GetShitposts(user.Id);
+            Mute[] mutes = await DataBaseUtil.GetMutesAsync(user.Id);
 
-            var embed = new EmbedBuilder()
-                .WithAuthor($"Stats for {target}", target.GetAvatarUrl())
-                .AddField("Command Usage",$"Total Command Usage: `{stats[0]}`\nFavorite Command: `{stats[1]}`")
-                .AddField("Shitposts Usage", $"Total Shitposts: `{stats[2]}`\nFavorite Shitpost: `{stats[3]}`")
-                .AddField("Latest Mute Information",$"Muted `{stats[4]}` times.\nLast Mute Reason: `{stats[5]}`\nLast Mute Length: `{stats[6]}`\nLast Mute Date: `{stats[7]}`");
+            EmbedBuilder embed = new EmbedBuilder().WithAuthor($"Stats for {user}", user.GetAvatarUrl());
 
-            await ReplyAsync(string.Empty, false, embed);
+            if (commands.Any())
+            {
+                string fav = commands.GroupBy(r => r.command).OrderByDescending(g => g.Count()).Select(g => g.Key).First();
+                embed.AddField("Command Usage", $"Total: `{commands.Length}`\nFavorite: `{fav}`");
+            }
+
+            if (shitposts.Any())
+            {
+                string fav = shitposts.GroupBy(r => r.shitpost).OrderByDescending(g => g.Count()).Select(g => g.Key).First();
+                embed.AddField("Shitpost Usage", $"Total: `{shitposts.Length}`\nFavorite: `{fav}`");
+            }
+
+            if (mutes.Any())
+            {
+                Mute lastMute = mutes.Last();
+                embed.AddField(
+                    "Latest Mute Information",
+                    $"Total: {mutes.Length}\n" +
+                    $"Timestamp: `{lastMute.commandTime:yyyy-MM-ddTHH:mm:ssZ}`\n" +
+                    $"Duration: `{lastMute.mute_duration}` minute(s)\n" +
+                    $"Reason: `{lastMute.mute_reason}`");
+            }
+
+            await ReplyAsync(string.Empty, embed: embed.Build());
 
             DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Stats",
                 Context.Message.Content, DateTimeOffset.Now);
