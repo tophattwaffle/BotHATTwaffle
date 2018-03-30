@@ -442,9 +442,9 @@ namespace BotHATTwaffle.Commands
                 embed.AddField(
                     "Latest Mute Information",
                     $"Total: {mutes.Length}\n" +
-                    $"Timestamp: `{lastMute.commandTime:yyyy-MM-ddTHH:mm:ssZ}`\n" +
-                    $"Duration: `{lastMute.mute_duration}` minute(s)\n" +
-                    $"Reason: `{lastMute.mute_reason}`");
+                    $"Timestamp: `{lastMute.Timestamp:yyyy-MM-ddTHH:mm:ssZ}`\n" +
+                    $"Duration: `{lastMute.Duration}` minute(s)\n" +
+                    $"Reason: `{lastMute.Reason}`");
             }
 
             await ReplyAsync(string.Empty, embed: embed.Build());

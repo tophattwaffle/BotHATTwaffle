@@ -17,8 +17,6 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using Google.Apis.Util;
-
 namespace BotHATTwaffle.Commands
 {
     public class ModerationModule : InteractiveBase
@@ -492,47 +490,64 @@ namespace BotHATTwaffle.Commands
 
         [Command("Mute")]
         [Summary("Mutes a user.")]
-        [Remarks("Only supports integer durations because expired mutes are checked at an interval of one minute.")]
+        [Remarks(
+            "Specify a duration of `0` for an indefinite mute.\n" +
+            "Only supports integer durations because expired mutes are checked at an interval of one minute.")]
         [Alias("m")]
         [RequireContext(ContextType.Guild)]
         [RequireRole(Role.Moderators)]
         public async Task MuteAsync(
             [Summary("The user to mute.")] SocketGuildUser user,
             [Summary("The duration, in minutes, of the mute.")]
-            int duration = 5,
+            long duration = 5L,
             [Summary("The reason for the mute.")] [Remainder]
             string reason = "No reason provided.")
         {
-            await _mute.MuteAsync(user, duration, Context, reason);
+            if (user.Roles.Contains(_data.ModRole))
+            {
+                await Context.Channel.SendMessageAsync(string.Empty, embed:
+                    new EmbedBuilder().WithAuthor("Mods don't mute other Mods...")
+                        .WithDescription("Now you 2 need to learn to play nice and get along."));
+            }
+
+            if (await _mute.MuteAsync(user, (SocketGuildUser)Context.User, duration, reason))
+            {
+                await Context.Channel.SendMessageAsync($"Successfully muted {user}.");
+            }
+            else
+                await Context.Channel.SendMessageAsync($"{user} is already muted!");
+
+            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Mute",
+                Context.Message.Content, DateTimeOffset.Now);
         }
 
         [Command("Unmute")]
         [Summary("Unmutes a user.")]
-        [Remarks("Unmutes the provided user")]
+        [Remarks("Lists all active mutes if invoked without arguments.")]
         [RequireContext(ContextType.Guild)]
         [RequireRole(Role.Moderators)]
         public async Task UnMuteAsync(
-            [Summary("The user to unmute.")] SocketGuildUser user = null)
+            [Summary("The user to unmute.")] SocketGuildUser user = null,
+            [Summary("The reason for the unmute.")] [Remainder]
+            string reason = "A moderator has taken mercy on you by lifting the mute.")
         {
             if (user != null)
             {
-                var result = await _mute.CallUnMuteAsync(user);
-
-                if (result)
-                    await ReplyAsync($"Mute found and removed for {user}");
+                if (await _mute.UnmuteAsync(user))
+                    await ReplyAsync($"Unmuted {user}.");
                 else
-                    await ReplyAsync($"No changes made. Could not locate a mute for {user}");
+                    await ReplyAsync($"Failed to unmute {user} because the user isn't muted.");
             }
             else
             {
-                var allMutes = DataBaseUtil.GetActiveMutes();
                 string reply = null;
-                foreach (ActiveMute activeMute in allMutes)
+
+                foreach (Mute mute in await DataBaseUtil.GetActiveMutesAsync())
                 {
                     //TODO: Move this to >MuteHistory. It is only here because I'm too lazy and this was easier...
-                    reply += $"Name: {activeMute.username}\nMuted at: {DateTimeOffset.FromUnixTimeSeconds(activeMute.muted_time)}\n" +
-                             $"Muted for: {activeMute.mute_duration}\nMuted Because: {activeMute.mute_reason}\n" +
-                             $"Unmuted at: {DateTimeOffset.FromUnixTimeSeconds(activeMute.muted_time).AddMinutes(activeMute.mute_duration)}";
+                    reply += $"Name: {mute.Username}\nMuted at: {mute.Timestamp:yyyy-MM-ddTHH:mm:ssZ}\n" +
+                             $"Duration: {mute.Duration?.ToString() ?? "indefinite"}\nReason: {reason ?? "None"}\n" +
+                             $"Expires at: {mute.Timestamp.AddMinutes(mute.Duration ?? 0)}";
                 }
 
                 if (reply == null)
@@ -540,7 +555,8 @@ namespace BotHATTwaffle.Commands
 
                 await ReplyAsync($"Current Mutes: {reply}");
             }
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Mute",
+
+            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Unmute",
                 Context.Message.Content, DateTimeOffset.Now);
         }
 
@@ -557,6 +573,8 @@ namespace BotHATTwaffle.Commands
             Mute[] mutes = await DataBaseUtil.GetMutesAsync(user.Id, quantity);
             int total = mutes.Length;
             var pages = new List<EmbedBuilder>();
+
+            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "MuteHistory", Context.Message.Content, DateTimeOffset.Now);
 
             if (mutes.Any())
                 await BuildPage();
@@ -576,8 +594,6 @@ namespace BotHATTwaffle.Commands
                 return;
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "MuteStatus", Context.Message.Content, DateTimeOffset.Now);
-
             async Task BuildPage(EmbedFieldBuilder firstField = null)
             {
                 var embed = new EmbedBuilder
@@ -593,18 +609,31 @@ namespace BotHATTwaffle.Commands
 
                 foreach (Mute mute in mutes)
                 {
-                    string timestamp = mute.commandTime.ToString("yyyy-MM-ddTHH:mm:ssZ");
-                    string durationUnit = mute.mute_duration > 1 ? "minutes" : "minute";
-                    string reason = mute.mute_reason.Truncate(
-                        1024 - 39 - mute.muted_by.Length - mute.mute_duration.ToString().Length - durationUnit.Length,
-                        true); // Limit (1024) - other text's length (39)
+                    string timestamp = mute.Timestamp.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                    string value = $"Muted by: `{mute.MuterName}`";
+                    string valueEnd;
 
-                    embed.AddField(
-                        timestamp,
-                        $"Muted by: `{mute.muted_by}`\nReason: `{reason}`\nDuration: `{mute.mute_duration}` {durationUnit}\n" +
-                        $"Unmuted at: {DateTimeOffset.FromUnixTimeSeconds(mute.date).AddMinutes(mute.mute_duration):yyyy-MM-ddTHH:mm:ssZ}");
+                    if (mute.Duration.HasValue)
+                    {
+                        string units = mute.Duration > 1 ? "minutes" : "minute";
+                        DateTimeOffset unmuted = mute.Timestamp.AddMinutes(mute.Duration.Value);
+                        valueEnd = $"\nDuration: `{mute.Duration}` {units}\nUnmuted at: `{unmuted:yyyy-MM-ddTHH:mm:ssZ}`";
+                    }
+                    else
+                        valueEnd = "\nDuration: `indefinite`";
 
-                    if (embed.Length() > 6000 - 26) // Total char limit - maximum possible footer length
+                    string reason = null;
+
+                    if (mute.Reason != null)
+                    {
+                        value += "\nReason: `";
+                        valueEnd = "`" + valueEnd;
+                        reason = mute.Reason.Truncate(1024 - value.Length - valueEnd.Length, true);
+                    }
+
+                    embed.AddField(timestamp, value + reason + valueEnd);
+
+                    if (embed.Length() > 6000 - 26) // Total char limit - maximum possible footer length.
                     {
                         EmbedFieldBuilder field = embed.Fields.Pop(); // Re-use the field in the next embed.
                         pages.Add(embed);

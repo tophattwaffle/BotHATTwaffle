@@ -265,8 +265,11 @@
     <Compile Include="src\Migrations\20180329222759_Initial.designer.cs">
       <DependentUpon>20180329222759_Initial.cs</DependentUpon>
     </Compile>
+    <Compile Include="src\Migrations\20180330185757_MutesRefactor.cs" />
+    <Compile Include="src\Migrations\20180330185757_MutesRefactor.designer.cs">
+      <DependentUpon>20180330185757_MutesRefactor.cs</DependentUpon>
+    </Compile>
     <Compile Include="src\Migrations\DataBaseContextModelSnapshot.cs" />
-    <Compile Include="src\Models\ActiveMute.cs" />
     <Compile Include="src\Models\CommandUse.cs" />
     <Compile Include="src\Models\Key_Value.cs" />
     <Compile Include="src\Models\Mute.cs" />

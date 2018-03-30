@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using BotHATTwaffle.Models;
-using Discord.Commands;
 using Discord.WebSocket;
 
 using Microsoft.EntityFrameworkCore;
@@ -210,78 +209,115 @@ namespace BotHATTwaffle
             }
         }
 
-        public static void AddMute(SocketGuildUser user, int duration, SocketCommandContext context, string reason, DateTimeOffset dateTimeOffset)
+        /// <summary>
+        /// Adds a mute record.
+        /// </summary>
+        /// <param name="user">The user to mute.</param>
+        /// <param name="muter">The user which invoked the mute operation.</param>
+        /// <param name="timestamp">When the mute was issued.</param>
+        /// <param name="duration">The duration, in minutes, of the mute.</param>
+        /// <param name="reason">The reason for the mute.</param>
+        /// <returns><c>true</c> if the mute was successfully added; <c>false</c> otherwise.</returns>
+        public static async Task<bool> AddMuteAsync(
+            SocketGuildUser user,
+            SocketGuildUser muter,
+            DateTimeOffset timestamp,
+            long? duration = null,
+            string reason = null)
         {
-            using (var dbContext = new DataBaseContext())
+            var mute = new Mute
             {
-                dbContext.Mutes.Add(new Mute()
-                {
-                    snowflake = unchecked((long)user.Id),
-                    username = $"{user}",
-                    mute_reason = reason,
-                    mute_duration = duration,
-                    muted_by = $"{context.User}",
-                    commandTime = dateTimeOffset
-                });
+                UserId = user.Id,
+                Username = user.ToString(),
+                Reason = reason,
+                Duration = duration,
+                MuterName = muter.ToString(),
+                Timestamp = timestamp
+            };
 
-                dbContext.SaveChanges();
-            }
+            return await AddMuteAsync(mute);
         }
 
-        public static bool AddActiveMute(SocketGuildUser user, int duration, SocketCommandContext context, string reason, DateTimeOffset dateTimeOffset)
+        /// <summary>
+        /// Adds a mute record.
+        /// </summary>
+        /// <param name="mute">The mute to add.</param>
+        /// <returns><c>true</c> if the mute was successfully added; <c>false</c> otherwise.</returns>
+        public static async Task<bool> AddMuteAsync(Mute mute)
         {
             using (var dbContext = new DataBaseContext())
             {
-                try {
-                    dbContext.ActiveMutes.Add(new ActiveMute
-                    {
-                        snowflake = unchecked((long)user.Id),
-                        username = $"{user}",
-                        mute_reason = reason,
-                        mute_duration = duration,
-                        muted_by = $"{context.User}",
-                        inMuteTimeOffset = dateTimeOffset
-                    });
+                dbContext.Mutes.Add(mute);
 
-                    dbContext.SaveChanges();
+                try
+                {
+                    await dbContext.SaveChangesAsync();
+
                     return true;
                 }
                 catch (DbUpdateException)
                 {
-                    //Can't add cause an entry already exists
                     return false;
                 }
             }
         }
 
-        public static bool RemoveActiveMute(ulong userID)
+        /// <summary>
+        /// Sets a user's active mute to expired.
+        /// </summary>
+        /// <param name="userId">The user for which to expire a mute.</param>
+        /// <returns><c>true</c> if the mute was successfully expired; <c>false</c> otherwise.</returns>
+        public static async Task<bool> ExpireMuteAsync(ulong userId)
         {
             using (var dbContext = new DataBaseContext())
             {
-                try
-                {
-                    var mute = dbContext.ActiveMutes.Single(m => m.snowflake == (long)userID);
+                Mute mute = await GetActiveMuteAsync(userId);
 
-                    dbContext.ActiveMutes.Remove(mute);
-
-                    dbContext.SaveChanges();
-
-                    //Success
-                    return true;
-                }
-                catch (InvalidOperationException)
-                {
-                    //Could not find server
+                if (mute == null)
                     return false;
-                }
+
+                mute.Expired = true;
+                dbContext.Mutes.Update(mute);
+                await dbContext.SaveChangesAsync();
+
+                return true;
             }
         }
 
-        public static List<ActiveMute> GetActiveMutes()
+        /// <summary>
+        /// Retrieves all non-expired mute records.
+        /// </summary>
+        /// <returns>The retrieved records.</returns>
+        public static async Task<Mute[]> GetActiveMutesAsync()
         {
             using (var dbContext = new DataBaseContext())
             {
-                return dbContext.ActiveMutes.ToList();
+                return await dbContext.Mutes.Where(m => !m.Expired).ToArrayAsync();
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a user's non-expired mute record.
+        /// </summary>
+        /// <param name="userId">The ID of the user for which to retrieve the mute.</param>
+        /// <returns>The retrieved record, or <c>null</c> if no record was found.</returns>
+        public static async Task<Mute> GetActiveMuteAsync(ulong userId)
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                return await dbContext.Mutes.Where(m => m.UserId == userId && !m.Expired).SingleOrDefaultAsync();
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all mute records.
+        /// </summary>
+        /// <returns>The retrieved records.</returns>
+        public static async Task<Mute[]> GetMutesAsync()
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                return await dbContext.Mutes.ToArrayAsync();
             }
         }
 
@@ -294,7 +330,7 @@ namespace BotHATTwaffle
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Mutes.Where(m => m.snowflake.Equals(unchecked((long)userId))).ToArrayAsync();
+                return await dbContext.Mutes.Where(m => m.UserId == userId).ToArrayAsync();
             }
         }
 
@@ -308,8 +344,8 @@ namespace BotHATTwaffle
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Mutes.Where(m => m.snowflake.Equals(unchecked((long)userId)))
-                    .OrderByDescending(m => m.date)
+                return await dbContext.Mutes.Where(m => m.UserId == userId)
+                    .OrderByDescending(m => m.UnixTimeSeconds)
                     .Take(quantity)
                     // .OrderBy(m => m.date)
                     .ToArrayAsync();

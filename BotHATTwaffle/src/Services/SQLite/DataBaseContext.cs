@@ -15,7 +15,6 @@ namespace BotHATTwaffle
 
         public DbSet<CommandUse> CommandUsage { get; set; }
         public DbSet<Mute> Mutes { get; set; }
-        public DbSet<ActiveMute> ActiveMutes { get; set; }
         public DbSet<SearchDataResult> SearchDataResults { get; set; }
         public DbSet<SearchDataTag> SearchDataTags { get; set; }
         public DbSet<Server> Servers { get; set; }
@@ -24,6 +23,13 @@ namespace BotHATTwaffle
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Mute>(
+                e =>
+                {
+                    e.HasIndex(c => new {c._userId, c.UnixTimeSeconds}).IsUnique();
+                    e.HasIndex(c => new {c._userId, c.Expired}).IsUnique().HasFilter(@"expired == 0");
+                });
+
             modelBuilder.Entity<SearchDataTag>()
                 .HasKey(t => new { t.name, t.tag, t.series });
         }
