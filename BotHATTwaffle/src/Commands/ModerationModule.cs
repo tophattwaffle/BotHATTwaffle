@@ -503,10 +503,8 @@ namespace BotHATTwaffle.Commands
                         .WithDescription("Now you 2 need to learn to play nice and get along."));
             }
 
-            if (await _mute.MuteAsync(user, (SocketGuildUser)Context.User, duration, reason))
-            {
+            if (await _mute.MuteAsync(user, (SocketGuildUser)Context.User, duration == 0 ? default(long?) : duration, reason))
                 await Context.Channel.SendMessageAsync($"Successfully muted {user}.");
-            }
             else
                 await Context.Channel.SendMessageAsync($"{user} is already muted!");
 
@@ -518,7 +516,7 @@ namespace BotHATTwaffle.Commands
         [Remarks("Lists all active mutes if invoked without arguments.")]
         [RequireContext(ContextType.Guild)]
         [RequireRole(Role.Moderators)]
-        public async Task UnMuteAsync(
+        public async Task UnmuteAsync(
             [Summary("The user to unmute.")] SocketGuildUser user = null,
             [Summary("The reason for the unmute.")] [Remainder]
             string reason = "A moderator has taken mercy on you by lifting the mute.")
