@@ -71,6 +71,14 @@ namespace BotHATTwaffle
             }
         }
 
+        /// <summary>
+        /// Logs a shitpost being triggered.
+        /// </summary>
+        /// <param name="shitpost">The name of the triggered shitpost.</param>
+        /// <param name="message">The message in which the shitpost was triggered.</param>
+        /// <returns>No object or value is returned by this method when it completes.</returns>
+        public static async Task AddShitpostAsync(string shitpost, SocketMessage message) =>
+            await AddShitpostAsync(message.Author.Id, message.Author.ToString(), shitpost, message.Content);
 
         /// <summary>
         /// Logs a shitpost being triggered.
