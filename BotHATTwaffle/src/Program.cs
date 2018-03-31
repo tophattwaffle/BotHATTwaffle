@@ -264,7 +264,8 @@ namespace BotHATTwaffle
         /// <returns>No object or value is returned by this method when it completes.</returns>
         private async Task CommandExecutedEventHandler(ICommandContext context, IResult result)
         {
-            if (result.Error is null) return; // Ignores successful executions.
+            if (result.Error is null || result.Error == CommandError.UnknownCommand)
+                return; // Ignores successful executions and unknown commands.
 
             Console.ForegroundColor = ConsoleColor.Red;
             var alert = false; // Set to true if the log message should mention the appropriate users to alert them of the error.
@@ -273,8 +274,6 @@ namespace BotHATTwaffle
 
             switch (result.Error)
             {
-                case CommandError.UnknownCommand:
-                    break;
                 case CommandError.BadArgCount:
                     string determiner = result.ErrorReason == "The input text has too many parameters." ? "many" : "few";
 
