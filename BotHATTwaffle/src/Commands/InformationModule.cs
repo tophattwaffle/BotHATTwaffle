@@ -419,13 +419,17 @@ namespace BotHATTwaffle.Commands
             if (commands.Any())
             {
                 string fav = commands.GroupBy(r => r.command).OrderByDescending(g => g.Count()).Select(g => g.Key).First();
-                embed.AddField("Command Usage", $"Total: `{commands.Length}`\nFavorite: `{fav}`");
+                int favCount = commands.Count(c => c.command == fav);
+
+                embed.AddField("Command Usage", $"Total: `{commands.Length}`\nFavorite: `{fav}` ({favCount})");
             }
 
             if (shitposts.Any())
             {
                 string fav = shitposts.GroupBy(r => r.shitpost).OrderByDescending(g => g.Count()).Select(g => g.Key).First();
-                embed.AddField("Shitpost Usage", $"Total: `{shitposts.Length}`\nFavorite: `{fav}` ({shitposts})");
+                int favCount = shitposts.Count(c => c.shitpost == fav);
+
+                embed.AddField("Shitpost Usage", $"Total: `{shitposts.Length}`\nFavorite: `{fav}` ({favCount})");
             }
 
             if (mutes.Any())
