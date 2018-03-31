@@ -187,7 +187,7 @@ namespace BotHATTwaffle.Services
                     await message.Channel.SendMessageAsync($"Hi {message.Content.Substring(3).Trim()}, I'm BotHATTwaffle.");
 
                     _canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-                    DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Dad Joke",
+                    await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "Dad Joke",
                         message.Content, DateTime.Now);
                     return;
                 }
@@ -200,7 +200,7 @@ namespace BotHATTwaffle.Services
                     };
                     await message.Channel.SendMessageAsync("",false, builder);
                     _canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-                    DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "KMS",
+                    await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "KMS",
                         message.Content, DateTime.Now);
                     return;
                 }
@@ -209,7 +209,7 @@ namespace BotHATTwaffle.Services
                 {
                     await message.Channel.SendMessageAsync("TopHATTwaffle my daddy.");
                     _canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-                    DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Daddy",
+                    await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "Daddy",
                         message.Content, DateTime.Now);
                     return;
                 }
@@ -218,7 +218,7 @@ namespace BotHATTwaffle.Services
                 {
                     await message.Channel.SendMessageAsync("ok.");
                     _canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
-                    DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Sandwich",
+                    await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "Sandwich",
                         message.Content, DateTime.Now);
                     return;
                 }
@@ -229,7 +229,7 @@ namespace BotHATTwaffle.Services
                     await message.Author.SendMessageAsync("Master Skywalker, there are too many of them. What are we going to do?");
                     _canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay);
 
-                    DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Order 66",
+                    await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "Order 66",
                         message.Content, DateTime.Now);
                     return;
                 }
@@ -249,7 +249,7 @@ namespace BotHATTwaffle.Services
                 await message.Channel.SendMessageAsync(
                     this._dataService.AgreeStrings[this._random.Next(0, this._dataService.AgreeStrings.Length)]);
 
-                DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "^",
+                await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "^",
                     message.Content, DateTime.Now);
 
                 return;
@@ -297,7 +297,7 @@ namespace BotHATTwaffle.Services
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        private Task PakRat(SocketMessage message)
+        private async Task PakRat(SocketMessage message)
         {
             var authBuilder = new EmbedAuthorBuilder() {
                 Name = $"Hey there {message.Author.Username}!",
@@ -317,10 +317,9 @@ namespace BotHATTwaffle.Services
                 "There is a newer program that handles packing better called VIDE. You should check that out instead."
             };
 
-            message.Channel.SendMessageAsync("",false,builder);
-            DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "PakRat",
+            await message.Channel.SendMessageAsync("",false,builder);
+            await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "PakRat",
                 message.Content, DateTime.Now);
-            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -328,7 +327,7 @@ namespace BotHATTwaffle.Services
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        private Task HowToPack(SocketMessage message)
+        private async Task HowToPack(SocketMessage message)
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -349,10 +348,9 @@ namespace BotHATTwaffle.Services
                 $"This is easily done using VIDE. Click the link above to download VIDE and learn how to use it."
             };
 
-            message.Channel.SendMessageAsync("", false, builder);
-            DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "HowToPack",
+            await message.Channel.SendMessageAsync("", false, builder);
+            await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "HowToPack",
                 message.Content, DateTime.Now);
-            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -360,7 +358,7 @@ namespace BotHATTwaffle.Services
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        private Task Carve(SocketMessage message)
+        private async Task Carve(SocketMessage message)
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -380,10 +378,9 @@ namespace BotHATTwaffle.Services
     $"can also cause Hammer to stop responding and crash. If you're here trying to defend using carve, just stop - you are wrong."
             };
 
-            message.Channel.SendMessageAsync("", false, builder);
-            DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Carve",
+            await message.Channel.SendMessageAsync("", false, builder);
+            await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "Carve",
                 message.Content, DateTime.Now);
-            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -391,7 +388,7 @@ namespace BotHATTwaffle.Services
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        private Task Propper(SocketMessage message)
+        private async Task Propper(SocketMessage message)
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -414,10 +411,9 @@ namespace BotHATTwaffle.Services
                 $"\n\nhttps://www.tophattwaffle.com/configuring-propper-for-steampipe/"
             };
 
-            message.Channel.SendMessageAsync("", false, builder);
-            DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "Propper",
+            await message.Channel.SendMessageAsync("", false, builder);
+            await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "Propper",
                 message.Content, DateTime.Now);
-            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -425,9 +421,9 @@ namespace BotHATTwaffle.Services
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        private Task VB(SocketMessage message)
+        private async Task VB(SocketMessage message)
         {
-            message.DeleteAsync(); //Delete their message about shit game
+            await message.DeleteAsync(); //Delete their message about shit game
             var authBuilder = new EmbedAuthorBuilder()
             {
                 Name = $"Hey there {message.Author.Username}!",
@@ -445,10 +441,9 @@ namespace BotHATTwaffle.Services
                 Description = $"I saw you posted about Velocity Brawl. How about we do not do that."
             };
 
-            message.Channel.SendMessageAsync("", false, builder);
-            DataBaseUtil.AddShitpost(message.Author.Id, message.Author.ToString(), "VB",
+            await message.Channel.SendMessageAsync("", false, builder);
+            await DataBaseUtil.AddShitpostAsync(message.Author.Id, message.Author.ToString(), "VB",
                 message.Content, DateTime.Now);
-            return Task.CompletedTask;
         }
     }
 }

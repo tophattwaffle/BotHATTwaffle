@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,6 +13,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BotHATTwaffle
 {
+    /// <summary>
+    /// Contains functions which encapsulate queries on the database.
+    /// </summary>
     class DataBaseUtil
     {
         /// <summary>
@@ -50,7 +54,7 @@ namespace BotHATTwaffle
                     commandTime = timestamp ?? DateTimeOffset.UtcNow
                 });
 
-                await dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync(); // Should never fail due to constraint violations.
             }
         }
 
@@ -58,8 +62,8 @@ namespace BotHATTwaffle
         /// Retrieves a user's command usage records.
         /// </summary>
         /// <param name="userId">The ID of the user for which to retrieve records.</param>
-        /// <returns>The retrieved records.</returns>
-        public static async Task<CommandUse[]> GetCommands(ulong userId)
+        /// <returns>The retrieved command usage records.</returns>
+        public static async Task<CommandUse[]> GetCommandsAsync(ulong userId)
         {
             using (var dbContext = new DataBaseContext())
             {
@@ -67,20 +71,36 @@ namespace BotHATTwaffle
             }
         }
 
-        public static void AddShitpost(ulong snowflake, string username, string shitpost, string fullmessage, DateTimeOffset dateTimeOffset)
+
+        /// <summary>
+        /// Logs a shitpost being triggered.
+        /// </summary>
+        /// <param name="triggererId">The triggering user's ID.</param>
+        /// <param name="triggererName">The triggering user's name.</param>
+        /// <param name="shitpost">The name of the triggered shitpost.</param>
+        /// <param name="msgContent">The contents of the message in which the shitpost was triggered.</param>
+        /// <param name="timestamp">When the shitpost was triggered. Defaults to the current time.</param>
+        /// <returns>No object or value is returned by this method when it completes.</returns>
+        public static async Task AddShitpostAsync(
+            ulong triggererId,
+            string triggererName,
+            string shitpost,
+            string msgContent,
+            DateTimeOffset? timestamp = null)
         {
             using (var dbContext = new DataBaseContext())
             {
-                dbContext.Shitposts.Add(new Shitpost()
-                {
-                    snowflake = unchecked((long)snowflake),
-                    username = username,
-                    shitpost = shitpost,
-                    fullmessage = fullmessage,
-                    commandTime = dateTimeOffset
-                });
+                dbContext.Shitposts.Add(
+                    new Shitpost
+                    {
+                        snowflake = unchecked((long)triggererId),
+                        username = triggererName,
+                        shitpost = shitpost,
+                        fullmessage = msgContent,
+                        commandTime = timestamp ?? DateTimeOffset.UtcNow
+                    });
 
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync(); // Should never fail due to constraint violations.
             }
         }
 
@@ -88,8 +108,8 @@ namespace BotHATTwaffle
         /// Retrieves a user's shitpost log records.
         /// </summary>
         /// <param name="userId">The ID of the user for which to retrieve records.</param>
-        /// <returns>The retrieved records.</returns>
-        public static async Task<Shitpost[]> GetShitposts(ulong userId)
+        /// <returns>The retrieved shitpost records.</returns>
+        public static async Task<Shitpost[]> GetShitpostsAsync(ulong userId)
         {
             using (var dbContext = new DataBaseContext())
             {
@@ -97,142 +117,183 @@ namespace BotHATTwaffle
             }
         }
 
-        public static void AddKeyValue(string key, string value)
+        /// <summary>
+        /// Adds a key-value pair.
+        /// </summary>
+        /// <param name="key">The key of the pair to add.</param>
+        /// <param name="value">The value of the pair to add.</param>
+        /// <returns>
+        /// <c>true</c> if successfully added; <c>false</c> if the <paramref name="key"/> already exists.</returns>
+        public static async Task<bool> AddKeyValueAsync(string key, string value)
         {
             using (var dbContext = new DataBaseContext())
             {
-                dbContext.KeyVaules.Add(new Key_Value()
-                {
-                    key = key,
-                    value = value
-                });
+                dbContext.KeyVaules.Add(new Key_Value { key = key, value = value });
 
-                dbContext.SaveChanges();
-            }
-        }
-
-        public static Key_Value GetKeyValue(string requestedKey)
-        {
-
-            using (var dbContext = new DataBaseContext())
-            {
                 try
                 {
-                    return dbContext.KeyVaules.Single(s => s.key.Equals(requestedKey));
-                }
-                catch (InvalidOperationException)
-                {
-                    //If we got more than one, or none - return null.
-                    return null;
-                }
+                    await dbContext.SaveChangesAsync();
 
-            }
-        }
-
-        public static void DeleteKeyValue(Key_Value kv)
-        {
-            using (var dbContext = new DataBaseContext())
-            {
-                dbContext.KeyVaules.Remove(kv);
-                dbContext.SaveChanges();
-            }
-        }
-
-        public static void AddSearchInformation()
-        {
-            //TODO: Actually code
-        }
-
-        public static List<SearchDataResult> GetSearchInformation(string[] search, string series)
-        {
-            List<SearchDataResult> found = new List<SearchDataResult>();
-            List<SearchDataTag> temp = new List<SearchDataTag>();
-            using (var dbContext = new DataBaseContext())
-            {
-                if (series.Equals("all", StringComparison.OrdinalIgnoreCase))
-                {
-                    foreach (var s in search)
-                    {
-                        temp.AddRange(
-                            dbContext.SearchDataTags.Include(r => r.VirtualSearchDataResult)
-                                .Where(a => a.tag.Equals(s.ToLower()))
-                                .AsNoTracking()
-                                .ToList());
-                    }
-                }
-                else
-                {
-                    foreach (var s in search)
-                    {
-                        temp.AddRange(
-                            dbContext.SearchDataTags.Include(r => r.VirtualSearchDataResult)
-                                .Where(a => a.tag.Equals(s.ToLower()) && a.series.Equals(series))
-                                .AsNoTracking()
-                                .ToList());
-                    }
-                }
-
-                //Remove doups if any, and convert to result.
-                temp.Distinct().ToList().ForEach(x => found.Add(x.VirtualSearchDataResult));
-
-                return found;
-            }
-        }
-
-        public static void AddServer(Server server)
-        {
-            using (var dbContext = new DataBaseContext())
-            {
-                dbContext.Servers.Add(server);
-
-                dbContext.SaveChanges();
-
-                //TODO: Handle exception for if unique key exists already
-            }
-        }
-
-        public static bool RemoveServer(Server server)
-        {
-            using (var dbContext = new DataBaseContext())
-            {
-                try
-                {
-                    dbContext.Servers.Remove(server);
-
-                    dbContext.SaveChanges();
-
-                    //Success
                     return true;
                 }
-                catch (InvalidOperationException)
+                catch (DbUpdateException)
                 {
-                    //Could not find server
                     return false;
                 }
             }
         }
 
-        public static Server GetServer(string serverStr)
+        /// <summary>
+        /// Retrieves a key-value pair.
+        /// </summary>
+        /// <param name="key">The key of the key-value pair to retrieve.</param>
+        /// <returns>The retrieved key-value pair or <c>null</c> if the <paramref name="key"/> could not be found.</returns>
+        public static async Task<Key_Value> GetKeyValueAsync(string key)
         {
             using (var dbContext = new DataBaseContext())
             {
+                return await dbContext.KeyVaules.AsNoTracking().SingleOrDefaultAsync(s => s.key.Equals(key));
+            }
+        }
+
+        /// <summary>
+        /// Removes a key-value pair.
+        /// </summary>
+        /// <param name="kv">The key-value pair to remove.</param>
+        /// <returns><c>true</c> if successfully removed; <c>false</c> if the pair could not be found.</returns>
+        public static async Task<bool> DeleteKeyValueAsync(Key_Value kv)
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                dbContext.KeyVaules.Remove(kv);
+
                 try
                 {
-                    return dbContext.Servers.AsNoTracking().Single(s => s.name.Equals(serverStr));
+                    await dbContext.SaveChangesAsync();
+
+                    return true;
                 }
-                catch (InvalidOperationException)
+                catch (DbUpdateException)
                 {
-                    //If we got more than one, or none - return null.
-                    return null;
+                    return false;
                 }
             }
         }
 
-        public static List<Server> GetAllServer()
+        public static async Task<bool> AddSearchInformationAsync() => throw new NotImplementedException();
+
+        /// <summary>
+        /// Retrieves tutorials by their <paramref name="tags"/> and <paramref name="series"/>.
+        /// </summary>
+        /// <param name="tags">The tags for which to search.</param>
+        /// <param name="series">The series for which to search.</param>
+        /// <returns>The retrieved tutorials.</returns>
+        public static async Task<ImmutableArray<SearchDataResult>> GetTutorialsAsync(string[] tags, string series)
+        {
+            var temp = new List<SearchDataTag>();
+
+            using (var dbContext = new DataBaseContext())
+            {
+                if (series.Equals("all", StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach (string s in tags)
+                    {
+                        temp.AddRange(
+                            await dbContext.SearchDataTags.Include(r => r.VirtualSearchDataResult)
+                                .Where(a => a.tag.Equals(s.ToLower()))
+                                .AsNoTracking()
+                                .ToArrayAsync());
+                    }
+                }
+                else
+                {
+                    foreach (string s in tags)
+                    {
+                        temp.AddRange(
+                            await dbContext.SearchDataTags.Include(r => r.VirtualSearchDataResult)
+                                .Where(a => a.tag.Equals(s.ToLower()) && a.series.Equals(series))
+                                .AsNoTracking()
+                                .ToArrayAsync());
+                    }
+                }
+
+                // Remove any duplicates and convert to a result.
+                return temp.Distinct().Select(t => t.VirtualSearchDataResult).ToImmutableArray();
+            }
+        }
+
+        /// <summary>
+        /// Adds a <see cref="server"/>.
+        /// </summary>
+        /// <param name="server">The server to add.</param>
+        /// <returns><c>true</c> if successfully added; <c>false</c> if a server with the same name already exists.</returns>
+        public static async Task<bool> AddServerAsync(Server server)
         {
             using (var dbContext = new DataBaseContext())
             {
-                return dbContext.Servers.AsNoTracking().ToList();
+                dbContext.Servers.Add(server);
+
+                try
+                {
+                    await dbContext.SaveChangesAsync();
+
+                    return true;
+                }
+                catch (DbUpdateException)
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes a <paramref name="server"/>.
+        /// </summary>
+        /// <param name="server">The server to remove.</param>
+        /// <returns>
+        /// <c>true</c> if successfully removed; <c>false</c> if the <paramref name="server"/> could not be found.
+        /// </returns>
+        public static async Task<bool> RemoveServerAsync(Server server)
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                dbContext.Servers.Remove(server);
+
+                try
+                {
+                    await dbContext.SaveChangesAsync();
+
+                    return true;
+                }
+                catch (DbUpdateException)
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a server which has the given <paramref name="name"/>.
+        /// </summary>
+        /// <param name="name">The name of the server to retrieve.</param>
+        /// <returns>The retrieved server or <c>null</c> if the server could not be found.</returns>
+        public static async Task<Server> GetServerAsync(string name)
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                return await dbContext.Servers.AsNoTracking().SingleOrDefaultAsync(s => s.name.Equals(name));
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all playtesting servers.
+        /// </summary>
+        /// <returns>The retrieved servers.</returns>
+        public static async Task<Server[]> GetServersAsync()
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                return await dbContext.Servers.AsNoTracking().ToArrayAsync();
             }
         }
 
@@ -244,7 +305,7 @@ namespace BotHATTwaffle
         /// <param name="timestamp">When the mute was issued.</param>
         /// <param name="duration">The duration, in minutes, of the mute.</param>
         /// <param name="reason">The reason for the mute.</param>
-        /// <returns><c>true</c> if the mute was successfully added; <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if the mute was successfully added; <c>false</c> if the user is already muted.</returns>
         public static async Task<bool> AddMuteAsync(
             SocketGuildUser user,
             SocketGuildUser muter,
@@ -269,7 +330,7 @@ namespace BotHATTwaffle
         /// Adds a mute record.
         /// </summary>
         /// <param name="mute">The mute to add.</param>
-        /// <returns><c>true</c> if the mute was successfully added; <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if the mute was successfully added; <c>false</c> if the user is already muted.</returns>
         public static async Task<bool> AddMuteAsync(Mute mute)
         {
             using (var dbContext = new DataBaseContext())
@@ -293,7 +354,7 @@ namespace BotHATTwaffle
         /// Sets a user's active mute to expired.
         /// </summary>
         /// <param name="userId">The user for which to expire a mute.</param>
-        /// <returns><c>true</c> if the mute was successfully expired; <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if the mute was successfully set as expired; <c>false</c> if the user isn't muted.</returns>
         public static async Task<bool> ExpireMuteAsync(ulong userId)
         {
             using (var dbContext = new DataBaseContext())
@@ -314,7 +375,7 @@ namespace BotHATTwaffle
         /// <summary>
         /// Retrieves all non-expired mute records sorted in descending chronological order.
         /// </summary>
-        /// <returns>The retrieved records in descending chronological order.</returns>
+        /// <returns>The retrieved mute records in descending chronological order.</returns>
         public static async Task<Mute[]> GetActiveMutesAsync()
         {
             using (var dbContext = new DataBaseContext())
@@ -330,7 +391,9 @@ namespace BotHATTwaffle
         /// Retrieves a user's non-expired mute record.
         /// </summary>
         /// <param name="userId">The ID of the user for which to retrieve the mute.</param>
-        /// <returns>The retrieved record, or <c>null</c> if no record was found.</returns>
+        /// <returns>
+        /// The retrieved mute record or <c>null</c> if the user isn't muted.
+        /// </returns>
         public static async Task<Mute> GetActiveMuteAsync(ulong userId)
         {
             using (var dbContext = new DataBaseContext())
@@ -342,7 +405,7 @@ namespace BotHATTwaffle
         /// <summary>
         /// Retrieves all mute records sorted in descending chronological order.
         /// </summary>
-        /// <returns>The retrieved records.</returns>
+        /// <returns>The retrieved mute records in descending chronological order.</returns>
         public static async Task<Mute[]> GetMutesAsync()
         {
             using (var dbContext = new DataBaseContext())
@@ -355,7 +418,7 @@ namespace BotHATTwaffle
         /// Retrieves all mute records for a user sorted in descending chronological order.
         /// </summary>
         /// <param name="userId">The ID of the user for which to retrieve records.</param>
-        /// <returns>The retrieved records in descending chronological order.</returns>
+        /// <returns>The retrieved mute records in descending chronological order.</returns>
         public static async Task<Mute[]> GetMutesAsync(ulong userId)
         {
             using (var dbContext = new DataBaseContext())
@@ -372,7 +435,7 @@ namespace BotHATTwaffle
         /// </summary>
         /// <param name="userId">The ID of the user for which to retrieve records.</param>
         /// <param name="quantity">The amount of recent records to retrieve.</param>
-        /// <returns>The retrieved records in descending chronological order.</returns>
+        /// <returns>The retrieved mute records in descending chronological order.</returns>
         public static async Task<Mute[]> GetMutesAsync(ulong userId, int quantity)
         {
             using (var dbContext = new DataBaseContext())

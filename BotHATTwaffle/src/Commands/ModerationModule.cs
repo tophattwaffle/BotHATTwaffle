@@ -156,7 +156,7 @@ namespace BotHATTwaffle.Commands
                 return;
             }
 
-            Server server = _data.GetServer(serverCode);
+            Server server = await _data.GetServer(serverCode);
 
             if (server == null)
             {
@@ -246,7 +246,7 @@ namespace BotHATTwaffle.Commands
             string gameMode = _playtesting.CurrentEventInfo[7];
 
             // Gets the given server. Otherwise, uses the current event's server.
-            Server server = _data.GetServer(serverCode ?? _playtesting.CurrentEventInfo[10].Substring(0, 3));
+            Server server = await _data.GetServer(serverCode ?? _playtesting.CurrentEventInfo[10].Substring(0, 3));
 
             if (gameMode.Equals("competitive", StringComparison.OrdinalIgnoreCase ) ||
                 gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
@@ -740,7 +740,7 @@ namespace BotHATTwaffle.Commands
                     return;
                 }
 
-                DataBaseUtil.AddServer(new Server()
+                await DataBaseUtil.AddServerAsync(new Server()
                 {
                     name = vars[0],
                     description = vars[1],
@@ -757,7 +757,7 @@ namespace BotHATTwaffle.Commands
             }
             else if (action.StartsWith("g", StringComparison.OrdinalIgnoreCase))
             {
-                var server = DataBaseUtil.GetServer(values.Substring(0, 3));
+                var server = await DataBaseUtil.GetServerAsync(values.Substring(0, 3));
 
                 if(server != null)
                     await ReplyAsync($"`{server.ToString()}`");
@@ -766,12 +766,12 @@ namespace BotHATTwaffle.Commands
             }
             else if (action.StartsWith("r", StringComparison.OrdinalIgnoreCase))
             {
-                Server removedServer = DataBaseUtil.GetServer(values.Substring(0, 3));
+                Server removedServer = await DataBaseUtil.GetServerAsync(values.Substring(0, 3));
 
                 if (removedServer != null)
                 {
                     await ReplyAsync($"Removing server\n`{removedServer.ToString()}`");
-                    DataBaseUtil.RemoveServer(removedServer);
+                    await DataBaseUtil.RemoveServerAsync(removedServer);
                 }
                 else
                 {

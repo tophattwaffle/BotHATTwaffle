@@ -105,7 +105,7 @@ namespace BotHATTwaffle.Commands
                 $":eyes: Searching for **{term}** in **{series}**. This may take a moment! :eyes:");
 
             bool isPrivate = Context.IsPrivate;
-            List<List<string>> results = _dataService.Search(series, term, isPrivate); // Peforms a search.
+            List<List<string>> results = await _dataService.Search(series, term, isPrivate); // Peforms a search.
 
             await _dataService.ChannelLog($"{Context.User} ran a search", $"Series: {series}\nSearch Term: {term}");
 
@@ -410,8 +410,8 @@ namespace BotHATTwaffle.Commands
         {
             user = user ?? Context.User;
 
-            CommandUse[] commands = await DataBaseUtil.GetCommands(user.Id);
-            Shitpost[] shitposts = await DataBaseUtil.GetShitposts(user.Id);
+            CommandUse[] commands = await DataBaseUtil.GetCommandsAsync(user.Id);
+            Shitpost[] shitposts = await DataBaseUtil.GetShitpostsAsync(user.Id);
             Mute[] mutes = await DataBaseUtil.GetMutesAsync(user.Id);
 
             EmbedBuilder embed = new EmbedBuilder().WithAuthor($"Stats for {user}", user.GetAvatarUrl());

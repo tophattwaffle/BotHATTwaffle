@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -436,9 +437,9 @@ namespace BotHATTwaffle.Services
         /// </summary>
         /// <param name="serverStr">3 letter server code</param>
         /// <returns>Server object that was located in Database</returns>
-        public Server GetServer(string serverStr)
+        public async Task<Server> GetServer(string serverStr)
         {
-            return DataBaseUtil.GetServer(serverStr);
+            return await DataBaseUtil.GetServerAsync(serverStr);
         }
 
         /// <summary>
@@ -446,7 +447,7 @@ namespace BotHATTwaffle.Services
         /// and gives you an embed that lets you visualize their information.
         /// </summary>
         /// <returns>Embed object with server information</returns>
-        public Discord.Embed GetAllServers()
+        public async Task<Discord.Embed> GetAllServers()
         {
             var authBuilder = new EmbedAuthorBuilder()
             {
@@ -454,7 +455,7 @@ namespace BotHATTwaffle.Services
                 IconUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
             };
 
-            List<Server> servers = DataBaseUtil.GetAllServer();
+            Server[] servers = await DataBaseUtil.GetServersAsync();
 
             List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
             foreach (var s in servers)
@@ -520,9 +521,9 @@ namespace BotHATTwaffle.Services
         /// <param name="searchTerm">What term to search</param>
         /// <param name="isPrivate">Was this invoked from a DM?</param>
         /// <returns>Returns a 2D list of strings</returns>
-        public List<List<string>> Search(string searchSeries, string searchTerm, bool isPrivate)
+        public async Task<List<List<string>>> Search(string searchSeries, string searchTerm, bool isPrivate)
         {
-            List<SearchDataResult> foundData = new List<SearchDataResult>();
+            var foundData = new ImmutableArray<SearchDataResult>();
             List<List<string>> listResults = new List<List<string>>();
 
             //Let's us search on multiple terms at a time
@@ -537,37 +538,37 @@ namespace BotHATTwaffle.Services
                 case "v2series":
                 case "v2":
                 case "1":
-                    foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "v2");
+                    foundData = await DataBaseUtil.GetTutorialsAsync(searchTermArray, "v2");
                     break;
                 case "csgobootcamp":
                 case "bc":
                 case "2":
-                    foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "bc");
+                    foundData = await DataBaseUtil.GetTutorialsAsync(searchTermArray, "bc");
                     break;
                 case "3dsmax":
                 case "3ds":
                 case "3":
-                    foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "3ds");
+                    foundData = await DataBaseUtil.GetTutorialsAsync(searchTermArray, "3ds");
                     break;
                 case "writtentutorials":
                 case "written":
                 case "4":
-                    foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "written");
+                    foundData = await DataBaseUtil.GetTutorialsAsync(searchTermArray, "written");
                     break;
                 case "legacyseries":
                 case "v1":
                 case "lg":
                 case "5":
-                    foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "lg");
+                    foundData = await DataBaseUtil.GetTutorialsAsync(searchTermArray, "lg");
                     break;
                 case "hammertroubleshooting":
                 case "ht":
                 case "6":
                 case "misc":
-                    foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "ht");
+                    foundData = await DataBaseUtil.GetTutorialsAsync(searchTermArray, "ht");
                     break;
                 case "all":
-                    foundData = DataBaseUtil.GetSearchInformation(searchTermArray, "all");
+                    foundData = await DataBaseUtil.GetTutorialsAsync(searchTermArray, "all");
                     break;
                 default:
                     //do nothing

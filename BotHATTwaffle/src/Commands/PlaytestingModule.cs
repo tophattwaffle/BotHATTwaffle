@@ -59,7 +59,7 @@ namespace BotHATTwaffle.Commands
             }
 
             //Get the server
-            var server = _dataService.GetServer(serverCode);
+            var server = await _dataService.GetServer(serverCode);
 
             //Cannot find server
             if (server == null)
@@ -165,7 +165,7 @@ namespace BotHATTwaffle.Commands
         [RequireRole(Role.ActiveMember, Role.Moderators, Role.RconAccess)]
         public async Task ListServersAsync()
         {
-            await ReplyAsync(string.Empty, false, _dataService.GetAllServers());
+            await ReplyAsync(string.Empty, false, await _dataService.GetAllServers());
 
             await DataBaseUtil.AddCommandAsync("Servers", Context);
         }
@@ -403,7 +403,7 @@ namespace BotHATTwaffle.Commands
             }
             else
             {
-                server = _dataService.GetServer(serverCode);
+                server = await _dataService.GetServer(serverCode);
             }
 
             //Server found, process command

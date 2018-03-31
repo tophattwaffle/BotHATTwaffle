@@ -108,8 +108,8 @@ namespace BotHATTwaffle.Services.Playtesting
         public async Task Announce()
         {
             //Attempt to get Keys from DB
-            var announceNameKeyValue = DataBaseUtil.GetKeyValue("AnnounceName");
-            var announceIDKeyValue = DataBaseUtil.GetKeyValue("AnnounceID");
+            var announceNameKeyValue = await DataBaseUtil.GetKeyValueAsync("AnnounceName");
+            var announceIDKeyValue = await DataBaseUtil.GetKeyValueAsync("AnnounceID");
 
             //First program run and a previous announce exists.
             if (_firstRun && announceIDKeyValue != null)
@@ -232,15 +232,15 @@ namespace BotHATTwaffle.Services.Playtesting
         /// <returns>No object or value is returned by this method when it completes.</returns>
         private async Task PostAnnounce(Discord.Embed embed)
         {
-            var announceIDKeyValue = DataBaseUtil.GetKeyValue("AnnounceID");
-            var announceNameKeyValue = DataBaseUtil.GetKeyValue("AnnounceName");
+            var announceIDKeyValue = await DataBaseUtil.GetKeyValueAsync("AnnounceID");
+            var announceNameKeyValue = await DataBaseUtil.GetKeyValueAsync("AnnounceName");
             AnnounceMessage = await _dataService.AnnouncementChannel.SendMessageAsync("", false, embed) as IUserMessage;
             await GetAlbum();
             //If data exists, just delete it so it can be remade with the new test info.
             if (announceIDKeyValue != null)
             {
-                DataBaseUtil.DeleteKeyValue(announceIDKeyValue);
-                DataBaseUtil.DeleteKeyValue(announceNameKeyValue);
+                await DataBaseUtil.DeleteKeyValueAsync(announceIDKeyValue);
+                await DataBaseUtil.DeleteKeyValueAsync(announceNameKeyValue);
                 announceNameKeyValue = null;
                 announceIDKeyValue = null;
             }
@@ -248,8 +248,8 @@ namespace BotHATTwaffle.Services.Playtesting
             //Create the text file containing the announce message
             if (announceIDKeyValue == null)
             {
-                DataBaseUtil.AddKeyValue("AnnounceID", $"{AnnounceMessage.Id}");
-                DataBaseUtil.AddKeyValue("AnnounceName", CurrentEventInfo[2]);
+                await DataBaseUtil.AddKeyValueAsync("AnnounceID", $"{AnnounceMessage.Id}");
+                await DataBaseUtil.AddKeyValueAsync("AnnounceName", CurrentEventInfo[2]);
             }
             await _dataService.ChannelLog("Posting Playtest Announcement", $"Posting Playtest for {CurrentEventInfo[2]}");
             LastEventInfo = CurrentEventInfo;
@@ -327,7 +327,7 @@ namespace BotHATTwaffle.Services.Playtesting
         {
             //type true = Change map
             //type false = set config
-            var server = _dataService.GetServer(serverStr.Substring(0, 3));
+            var server = await _dataService.GetServer(serverStr.Substring(0, 3));
 
             if (type) //Change map
             {
@@ -761,7 +761,7 @@ namespace BotHATTwaffle.Services.Playtesting
         /// <returns></returns>
         public async Task ClearServerReservations(string serverStr)
         {
-            var server = _dataService.GetServer(serverStr);
+            var server = await _dataService.GetServer(serverStr);
 
             if (server == null)
                 return;
