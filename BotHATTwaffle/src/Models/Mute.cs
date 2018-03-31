@@ -53,6 +53,6 @@ namespace BotHATTwaffle.Models
         /// Determines if the mute has expired.
         /// </summary>
         /// <returns><c>true</c> if expired; <c>false</c> if still active.</returns>
-        public bool CheckExpired() => (DateTimeOffset.UtcNow - Timestamp).TotalSeconds > Duration;
+        public bool CheckExpired() => (DateTimeOffset.UtcNow - Timestamp).TotalMinutes > Duration;
     }
 }
