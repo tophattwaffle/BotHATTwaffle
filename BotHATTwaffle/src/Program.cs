@@ -95,8 +95,8 @@ namespace BotHATTwaffle
             // Event subscriptions.
             _client.GuildAvailable += GuildAvailableEventHandler;
             _client.Log += LogEventHandler;
-            _client.Ready += ReadyHandler;
-            _client.UserJoined += _messageListener.UserJoin; // When a user joins the server.
+            _client.Ready += ReadyEventHandler;
+            _client.UserJoined += UserJoinedEventHandler;
 
             await InstallCommandsAsync();
 
@@ -225,12 +225,25 @@ namespace BotHATTwaffle
         /// Raised when guild data has finished downloading.
         /// </summary>
         /// <returns>No object or value is returned by this method when it completes.</returns>
-        private Task ReadyHandler()
+        private Task ReadyEventHandler()
         {
             _timer.Stop();
             _timer.Start();
 
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Raised when a user joins a guild.
+        /// </summary>
+        /// <param name="user">The user which joined.</param>
+        /// <returns>No object or value is returned by this method when it completes.</returns>
+        internal async Task UserJoinedEventHandler(SocketGuildUser user)
+        {
+            await _messageListener.WelcomeMessageDm(user);
+            await _data.GeneralChannel.SendMessageAsync(
+                $"Welcome {user.Mention} to the Source Engine Discord!\n" +
+                "Over the next 10 minutes while we verify your account, please check out <#195009920414908416> for the rules.");
         }
 
         /// <summary>

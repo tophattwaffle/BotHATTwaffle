@@ -97,18 +97,6 @@ namespace BotHATTwaffle.Services
             });
         }
 
-        /// <summary>
-        /// Run when the UserJoined event is raised.
-        /// </summary>
-        /// <param name="user">User that raised event</param>
-        /// <returns></returns>
-        internal async Task UserJoin(SocketUser user)
-        {
-            await WelcomeMessageDm(user);
-            await _dataService.GeneralChannel.SendMessageAsync($"Welcome {user.Mention} to the Source Engine Discord!\n" +
-            $"Over the next 10 minutes while we verify your account, please check out <#195009920414908416> for the rules.");
-        }
-
         internal async Task WelcomeMessageDm(SocketUser user)
         {
             var authBuilder = new EmbedAuthorBuilder()
