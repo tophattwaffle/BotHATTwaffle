@@ -63,7 +63,7 @@ namespace BotHATTwaffle
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.CommandUsage.Where(r => r.snowflake.Equals((long)userId)).ToArrayAsync();
+                return await dbContext.CommandUsage.Where(r => r.snowflake.Equals((long)userId)).AsNoTracking().ToArrayAsync();
             }
         }
 
@@ -93,7 +93,7 @@ namespace BotHATTwaffle
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Shitposts.Where(r => r.snowflake.Equals((long)userId)).ToArrayAsync();
+                return await dbContext.Shitposts.Where(r => r.snowflake.Equals((long)userId)).AsNoTracking().ToArrayAsync();
             }
         }
 
@@ -149,13 +149,14 @@ namespace BotHATTwaffle
             List<SearchDataTag> temp = new List<SearchDataTag>();
             using (var dbContext = new DataBaseContext())
             {
-                if(series.Equals("all", StringComparison.OrdinalIgnoreCase))
+                if (series.Equals("all", StringComparison.OrdinalIgnoreCase))
                 {
                     foreach (var s in search)
                     {
                         temp.AddRange(
                             dbContext.SearchDataTags.Include(r => r.VirtualSearchDataResult)
                                 .Where(a => a.tag.Equals(s.ToLower()))
+                                .AsNoTracking()
                                 .ToList());
                     }
                 }
@@ -166,6 +167,7 @@ namespace BotHATTwaffle
                         temp.AddRange(
                             dbContext.SearchDataTags.Include(r => r.VirtualSearchDataResult)
                                 .Where(a => a.tag.Equals(s.ToLower()) && a.series.Equals(series))
+                                .AsNoTracking()
                                 .ToList());
                     }
                 }
@@ -216,7 +218,7 @@ namespace BotHATTwaffle
             {
                 try
                 {
-                    return dbContext.Servers.Single(s => s.name.Equals(serverStr));
+                    return dbContext.Servers.AsNoTracking().Single(s => s.name.Equals(serverStr));
                 }
                 catch (InvalidOperationException)
                 {
@@ -230,7 +232,7 @@ namespace BotHATTwaffle
         {
             using (var dbContext = new DataBaseContext())
             {
-                return dbContext.Servers.ToList();
+                return dbContext.Servers.AsNoTracking().ToList();
             }
         }
 
@@ -317,7 +319,10 @@ namespace BotHATTwaffle
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Mutes.Where(m => !m.Expired).OrderByDescending(m => m.UnixTimeSeconds).ToArrayAsync();
+                return await dbContext.Mutes.Where(m => !m.Expired)
+                    .OrderByDescending(m => m.UnixTimeSeconds)
+                    .AsNoTracking()
+                    .ToArrayAsync();
             }
         }
 
@@ -330,7 +335,7 @@ namespace BotHATTwaffle
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Mutes.Where(m => m.UserId == userId && !m.Expired).SingleOrDefaultAsync();
+                return await dbContext.Mutes.Where(m => m.UserId == userId && !m.Expired).AsNoTracking().SingleOrDefaultAsync();
             }
         }
 
@@ -342,7 +347,7 @@ namespace BotHATTwaffle
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Mutes.OrderByDescending(m => m.UnixTimeSeconds).ToArrayAsync();
+                return await dbContext.Mutes.OrderByDescending(m => m.UnixTimeSeconds).AsNoTracking().ToArrayAsync();
             }
         }
 
@@ -357,6 +362,7 @@ namespace BotHATTwaffle
             {
                 return await dbContext.Mutes.Where(m => m.UserId == userId)
                     .OrderByDescending(m => m.UnixTimeSeconds)
+                    .AsNoTracking()
                     .ToArrayAsync();
             }
         }
@@ -374,6 +380,7 @@ namespace BotHATTwaffle
                 return await dbContext.Mutes.Where(m => m.UserId == userId)
                     .OrderByDescending(m => m.UnixTimeSeconds)
                     .Take(quantity)
+                    .AsNoTracking()
                     .ToArrayAsync();
             }
         }
