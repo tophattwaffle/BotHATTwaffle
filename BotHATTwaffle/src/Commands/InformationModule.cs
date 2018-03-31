@@ -438,7 +438,7 @@ namespace BotHATTwaffle.Commands
 
             if (mutes.Any())
             {
-                Mute lastMute = mutes.Last();
+                Mute lastMute = mutes.First();
                 embed.AddField(
                     "Latest Mute Information",
                     $"Total: {mutes.Length}\n" +

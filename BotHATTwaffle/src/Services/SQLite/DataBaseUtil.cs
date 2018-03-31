@@ -285,14 +285,14 @@ namespace BotHATTwaffle
         }
 
         /// <summary>
-        /// Retrieves all non-expired mute records.
+        /// Retrieves all non-expired mute records sorted in descending chronological order.
         /// </summary>
-        /// <returns>The retrieved records.</returns>
+        /// <returns>The retrieved records in descending chronological order.</returns>
         public static async Task<Mute[]> GetActiveMutesAsync()
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Mutes.Where(m => !m.Expired).ToArrayAsync();
+                return await dbContext.Mutes.Where(m => !m.Expired).OrderByDescending(m => m.UnixTimeSeconds).ToArrayAsync();
             }
         }
 
@@ -310,32 +310,34 @@ namespace BotHATTwaffle
         }
 
         /// <summary>
-        /// Retrieves all mute records.
+        /// Retrieves all mute records sorted in descending chronological order.
         /// </summary>
         /// <returns>The retrieved records.</returns>
         public static async Task<Mute[]> GetMutesAsync()
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Mutes.ToArrayAsync();
+                return await dbContext.Mutes.OrderByDescending(m => m.UnixTimeSeconds).ToArrayAsync();
             }
         }
 
         /// <summary>
-        /// Retrieves all mute records for a user.
+        /// Retrieves all mute records for a user sorted in descending chronological order.
         /// </summary>
         /// <param name="userId">The ID of the user for which to retrieve records.</param>
-        /// <returns>The retrieved records.</returns>
+        /// <returns>The retrieved records in descending chronological order.</returns>
         public static async Task<Mute[]> GetMutesAsync(ulong userId)
         {
             using (var dbContext = new DataBaseContext())
             {
-                return await dbContext.Mutes.Where(m => m.UserId == userId).ToArrayAsync();
+                return await dbContext.Mutes.Where(m => m.UserId == userId)
+                    .OrderByDescending(m => m.UnixTimeSeconds)
+                    .ToArrayAsync();
             }
         }
 
         /// <summary>
-        /// Retrieves a given quantity of the most recent mute records for a user.
+        /// Retrieves a given quantity of the most recent mute records for a user sorted in descending chronological order.
         /// </summary>
         /// <param name="userId">The ID of the user for which to retrieve records.</param>
         /// <param name="quantity">The amount of recent records to retrieve.</param>
@@ -347,7 +349,6 @@ namespace BotHATTwaffle
                 return await dbContext.Mutes.Where(m => m.UserId == userId)
                     .OrderByDescending(m => m.UnixTimeSeconds)
                     .Take(quantity)
-                    // .OrderBy(m => m.date)
                     .ToArrayAsync();
             }
         }
