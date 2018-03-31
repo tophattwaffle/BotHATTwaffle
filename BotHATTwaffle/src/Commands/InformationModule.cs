@@ -425,18 +425,23 @@ namespace BotHATTwaffle.Commands
             if (shitposts.Any())
             {
                 string fav = shitposts.GroupBy(r => r.shitpost).OrderByDescending(g => g.Count()).Select(g => g.Key).First();
-                embed.AddField("Shitpost Usage", $"Total: `{shitposts.Length}`\nFavorite: `{fav}`");
+                embed.AddField("Shitpost Usage", $"Total: `{shitposts.Length}`\nFavorite: `{fav}` ({shitposts})");
             }
 
             if (mutes.Any())
             {
-                Mute lastMute = mutes.First();
-                embed.AddField(
-                    "Latest Mute Information",
-                    $"Total: {mutes.Length}\n" +
-                    $"Timestamp: `{lastMute.Timestamp:yyyy-MM-ddTHH:mm:ssZ}`\n" +
-                    $"Duration: `{lastMute.Duration}` minute(s)\n" +
-                    $"Reason: `{lastMute.Reason}`");
+                Mute mute = mutes.First();
+                string value = $"Total: {mutes.Length}\nTimestamp: `{mute.Timestamp:yyyy-MM-ddTHH:mm:ssZ}`\nDuration: `";
+
+                if (mute.Duration.HasValue)
+                    value += mute.Duration + (mute.Duration == 1 ? "` minute" : "` minutes");
+                else
+                    value += "indefinite`";
+
+                if (mute.Reason != null)
+                    value += $"\nReason: `{mute.Reason}`";
+
+                embed.AddField("Latest Mute Information", value);
             }
 
             await ReplyAsync(string.Empty, embed: embed.Build());
