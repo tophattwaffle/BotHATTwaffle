@@ -155,8 +155,7 @@ namespace BotHATTwaffle.Commands
                 };
                 await ReplyAsync("", false, builder);
             }
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PublicServer",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("PublicServer", Context);
         }
 
         [Command("Servers")]
@@ -168,8 +167,7 @@ namespace BotHATTwaffle.Commands
         {
             await ReplyAsync(string.Empty, false, _dataService.GetAllServers());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Servers",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Servers", Context);
         }
 
         [Command("PublicCommand")]
@@ -367,8 +365,7 @@ namespace BotHATTwaffle.Commands
                 await ReplyAsync("", false, builder);
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PublicCommand",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("PublicCommand", Context);
         }
 
         [Command("PublicAnnounce")]
@@ -450,8 +447,7 @@ namespace BotHATTwaffle.Commands
                 await ReplyAsync("", false, builder);
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PublicAnnounce",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("PublicAnnounce", Context);
         }
 
         [Command("ReleaseServer")]
@@ -488,8 +484,7 @@ namespace BotHATTwaffle.Commands
                 await ReplyAsync("```I could not locate a server reservation for your account.```");
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "ReleaseServer",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("ReleaseServer", Context);
         }
 
         [Command("ShowReservations")]
@@ -500,8 +495,7 @@ namespace BotHATTwaffle.Commands
         {
             await ReplyAsync("", false, _playtesting.DisplayServerReservations());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "ShowReservations",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("ShowReservations", Context);
         }
 
         [Command("Playtester")]
@@ -526,8 +520,7 @@ namespace BotHATTwaffle.Commands
                 await ((IGuildUser)user).AddRoleAsync(_dataService.PlayTesterRole);
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Playtester",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Playtester", Context);
         }
 
         [Command("Upcoming")]
@@ -543,8 +536,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync("", false, await _playtesting.FormatPlaytestInformationAsync(_playtesting.CurrentEventInfo, true));
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Upcoming",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Upcoming", Context);
         }
     }
 }

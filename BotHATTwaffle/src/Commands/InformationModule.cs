@@ -76,8 +76,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, builder.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VDC",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("VDC", Context);
         }
 
         [Command("Search", RunMode = RunMode.Async)]
@@ -145,8 +144,7 @@ namespace BotHATTwaffle.Commands
             if (!isPrivate)
                 await wait.DeleteAsync();
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Search",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Search", Context);
         }
 
         [Command("Tutorials")]
@@ -271,8 +269,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Tutorials",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Tutorials", Context);
         }
 
         [Command("CatFact", RunMode = RunMode.Async)]
@@ -310,8 +307,7 @@ namespace BotHATTwaffle.Commands
             await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A CAT FACT");
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "CatFact",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("CatFact", Context);
         }
 
         [Command("Unsubscribe")]
@@ -320,8 +316,7 @@ namespace BotHATTwaffle.Commands
         public async Task CatFactUnsubAsync()
         {
             await ReplyAsync("You cannot unsubscribe from cat facts...");
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Unsubscribe",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Unsubscribe", Context);
         }
 
         [Command("PenguinFact", RunMode = RunMode.Async)]
@@ -354,8 +349,7 @@ namespace BotHATTwaffle.Commands
             await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "PenguineFact",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("PenguineFact", Context);
         }
 
         [Command("TanookiFact", RunMode = RunMode.Async)]
@@ -388,8 +382,7 @@ namespace BotHATTwaffle.Commands
             await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A TANOOKI FACT");
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "TanookiFact",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("TanookiFact", Context);
         }
 
         [Command("TanookiIRL", RunMode = RunMode.Async)]
@@ -405,8 +398,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "TanookiIRL",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("TanookiIRL", Context);
         }
 
         [Command("Stats")]
@@ -449,8 +441,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, embed: embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Stats",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Stats", Context);
         }
     }
 }

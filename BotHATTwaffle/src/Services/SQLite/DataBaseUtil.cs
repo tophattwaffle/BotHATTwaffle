@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using BotHATTwaffle.Models;
+
+using Discord.Commands;
 using Discord.WebSocket;
 
 using Microsoft.EntityFrameworkCore;
@@ -12,20 +14,43 @@ namespace BotHATTwaffle
 {
     class DataBaseUtil
     {
-        public static void AddCommand(ulong snowflake, string username, string command, string fullmessage, DateTimeOffset dateTimeOffset)
+        /// <summary>
+        /// Logs the use of a command.
+        /// </summary>
+        /// <param name="command">The name of the invoked command.</param>
+        /// <param name="context">The context in which the command was invoked.</param>
+        /// <returns>No object or value is returned by this method when it completes.</returns>
+        public static async Task AddCommandAsync(string command, SocketCommandContext context) =>
+            await AddCommandAsync(context.User.Id, context.User.ToString(), command, context.Message.Content);
+
+        /// <summary>
+        /// Logs the use of a command.
+        /// </summary>
+        /// <param name="invokerId">The invoking user's ID.</param>
+        /// <param name="invokerName">The invoking user's name.</param>
+        /// <param name="command">The name of the invoked command.</param>
+        /// <param name="msgContent">The contents of the message in which the command was invoked.</param>
+        /// <param name="timestamp">When the command was invoked. Defaults to the current time.</param>
+        /// <returns>No object or value is returned by this method when it completes.</returns>
+        public static async Task AddCommandAsync(
+            ulong invokerId,
+            string invokerName,
+            string command,
+            string msgContent,
+            DateTimeOffset? timestamp = null)
         {
             using (var dbContext = new DataBaseContext())
             {
                 dbContext.CommandUsage.Add(new CommandUse()
                 {
-                    snowflake = unchecked((long)snowflake),
-                    username = username,
+                    snowflake = unchecked((long)invokerId),
+                    username = invokerName,
                     command = command,
-                    fullmessage = fullmessage,
-                    commandTime = dateTimeOffset
+                    fullmessage = msgContent,
+                    commandTime = timestamp ?? DateTimeOffset.UtcNow
                 });
 
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
             }
         }
 

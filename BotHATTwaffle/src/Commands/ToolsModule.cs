@@ -43,8 +43,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VTFEdit",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("VTFEdit", Context);
         }
 
         [Command("GCFScape")]
@@ -93,8 +92,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VMTEditor",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("VMTEditor", Context);
         }
 
         [Command("VIDE")]
@@ -119,8 +117,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "VIDE",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("VIDE", Context);
         }
 
         [Command("WallWorm")]
@@ -145,8 +142,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "WallWorm",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("WallWorm", Context);
         }
 
         [Command("BSPSource")]
@@ -172,8 +168,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "BSPSource",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("BSPSource", Context);
         }
 
         [Command("Log")]
@@ -199,8 +194,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Log",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Log", Context);
         }
     }
 }

@@ -64,8 +64,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Shaders",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Shaders", Context);
         }
     }
 }

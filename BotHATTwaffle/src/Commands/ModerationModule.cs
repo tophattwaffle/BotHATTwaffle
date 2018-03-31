@@ -67,8 +67,7 @@ namespace BotHATTwaffle.Commands
                              $"message has changed.\n\nCurrent Alert Flags:\n{_playtesting.GetAnnounceFlags()}```");
             await _data.ChannelLog($"{Context.User} changed playtest alert flag suppression", _playtesting.GetAnnounceFlags());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Suppress",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Suppress", Context);
         }
 
         [Command("Announce", RunMode = RunMode.Async)]
@@ -131,8 +130,7 @@ namespace BotHATTwaffle.Commands
                 await _data.LogChannel.SendMessageAsync(string.Empty, false, embed);
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Announce",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Announce", Context);
         }
 
         [Command("Rcon")]
@@ -215,8 +213,7 @@ namespace BotHATTwaffle.Commands
                 }
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Rcon",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Rcon", Context);
         }
 
         [Command("Playtest")]
@@ -343,8 +340,7 @@ namespace BotHATTwaffle.Commands
                     "Invalid action, please try:\n`pre`\n`start`\n`post`\n`scramble` or `s`\n`pause` or `p`\n`unpause` or `u`");
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Playtest",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Playtest", Context);
         }
 
         /// <summary>
@@ -433,8 +429,7 @@ namespace BotHATTwaffle.Commands
         [RequireRole(Role.Moderators)]
         public async Task ShutdownAsync()
         {
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Shutdown",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Shutdown", Context);
 
             await Context.Message.DeleteAsync();
             await _data.ChannelLog($"{Context.Message.Author} is shutting down the bot.");
@@ -458,8 +453,7 @@ namespace BotHATTwaffle.Commands
             _timer.Stop();
             _timer.Start();
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Reload",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Reload", Context);
         }
 
         [Command("DumpSettings")]
@@ -484,8 +478,7 @@ namespace BotHATTwaffle.Commands
 
             await _data.ChannelLog($"{Context.User} dumped the settings.");
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "DumpSettings",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("DumpSettings", Context);
         }
 
         [Command("Mute")]
@@ -517,8 +510,7 @@ namespace BotHATTwaffle.Commands
             else
                 await Context.Channel.SendMessageAsync($"{user} is already muted!");
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Mute",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Mute", Context);
         }
 
         [Command("Unmute")]
@@ -556,8 +548,7 @@ namespace BotHATTwaffle.Commands
                 await ReplyAsync($"Current Mutes: {reply}");
             }
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Unmute",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Unmute", Context);
         }
 
         [Command("MuteHistory")]
@@ -574,7 +565,7 @@ namespace BotHATTwaffle.Commands
             int total = mutes.Length;
             var pages = new List<EmbedBuilder>();
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "MuteHistory", Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("MuteHistory", Context);
 
             if (mutes.Any())
                 await BuildPage();
@@ -680,8 +671,7 @@ namespace BotHATTwaffle.Commands
 
             await ReplyAsync(string.Empty, false, _playtesting.DisplayServerReservations());
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "ClearReservations",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("ClearReservations", Context);
         }
 
         [Command("Active")]
@@ -694,8 +684,7 @@ namespace BotHATTwaffle.Commands
             await ReplyAsync($"{user.Mention} has been given {_data.ActiveRole.Mention}!\n\nThanks for being an active member in our community!");
             await ((IGuildUser)user).AddRoleAsync(_data.ActiveRole);
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "Active",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("Active", Context);
         }
 
         //TODO: Quick and dirty command to allow us to manage servers without requiring manual DB editing. Improve later.
@@ -796,8 +785,7 @@ namespace BotHATTwaffle.Commands
             else
                 await ReplyAsync("Invalid command. Please see the help text.");
 
-            DataBaseUtil.AddCommand(Context.User.Id, Context.User.ToString(), "EditServers",
-                Context.Message.Content, DateTimeOffset.Now);
+            await DataBaseUtil.AddCommandAsync("EditServers", Context);
         }
     }
 }
