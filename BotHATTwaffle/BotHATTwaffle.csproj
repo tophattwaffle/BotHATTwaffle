@@ -251,6 +251,7 @@
     <Compile Include="src\Commands\Preconditions\RequireBoundariesAttribute.cs" />
     <Compile Include="src\Commands\Preconditions\RequireRoleAttribute.cs" />
     <Compile Include="src\Commands\Readers\ChannelTypeReader.cs" />
+    <Compile Include="src\Commands\Readers\RoleTypeReader.cs" />
     <Compile Include="src\Commands\ShadersModule.cs" />
     <Compile Include="src\Commands\ToolsModule.cs" />
     <Compile Include="src\Commands\UtilitiesModule.cs" />
