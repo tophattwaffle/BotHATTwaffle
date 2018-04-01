@@ -236,7 +236,7 @@ namespace BotHATTwaffle.Services
                      ((SocketGuildUser)message.Author).Roles.Contains(this._dataService.PatreonsRole) && message.Content.Equals("^")))
             {
                 await message.Channel.SendMessageAsync(
-                    this._dataService.AgreeStrings[this._random.Next(0, this._dataService.AgreeStrings.Length)]);
+                    this._dataService.AgreeStrings.ElementAt(_random.Next(0, _dataService.AgreeStrings.Count)));
 
                 await DataBaseUtil.AddShitpostAsync("^", message);
 

@@ -83,6 +83,6 @@ namespace BotHATTwaffle.Services
         /// <returns>No object or value is returned by this method when it completes.</returns>
         // TODO: Move elsewhere.
         private async Task ChangePlayingAsync() =>
-            await _client.SetGameAsync(_data.PlayingStrings[_random.Next(0, _data.PlayingStrings.Length)]);
+            await _client.SetGameAsync(_data.PlayingStrings.ElementAt(_random.Next(0, _data.PlayingStrings.Count)));
     }
 }

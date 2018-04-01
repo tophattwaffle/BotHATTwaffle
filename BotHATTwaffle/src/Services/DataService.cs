@@ -29,7 +29,7 @@ namespace BotHATTwaffle.Services
 
         // Miscellaneous
         public string AlertUser { get; private set; }
-        public string[] RoleMeWhiteList { get; private set; }
+        public IImmutableSet<string> RoleMeWhiteList { get; private set; }
 
         // Channels
         public SocketTextChannel GeneralChannel { get; private set; }
@@ -47,30 +47,30 @@ namespace BotHATTwaffle.Services
         public SocketRole CommunityTesterRole { get; private set; }
 
         // MessageListener
-        public string[] PakRatEavesDrop { get; private set; }
-        public string[] HowToPackEavesDrop { get; private set; }
-        public string[] CarveEavesDrop { get; private set; }
-        public string[] PropperEavesDrop { get; private set; }
-        public string[] VbEavesDrop { get; private set; }
+        public IImmutableSet<string> PakRatEavesDrop { get; private set; } = ImmutableHashSet<string>.Empty;
+        public IImmutableSet<string> HowToPackEavesDrop { get; private set; } = ImmutableHashSet<string>.Empty;
+        public IImmutableSet<string> CarveEavesDrop { get; private set; } = ImmutableHashSet<string>.Empty;
+        public IImmutableSet<string> PropperEavesDrop { get; private set; } = ImmutableHashSet<string>.Empty;
+        public IImmutableSet<string> VbEavesDrop { get; private set; } = ImmutableHashSet<string>.Empty;
 
         // Shitposts
         public string CatFactPath { get; private set; }
         public string PenguinFactPath { get; private set; }
         public string TanookiFactPath { get; private set; }
-        public string[] AgreeEavesDrop { get; private set; }
-        public string[] AgreeStrings { get; private set; }
+        public IImmutableSet<string> AgreeEavesDrop { get; private set; } = ImmutableHashSet<string>.Empty;
+        public IImmutableSet<string> AgreeStrings { get; private set; } = ImmutableHashSet<string>.Empty;
         public int ShitPostDelay { get; private set; } = 5;
 
         // TimerService
         public int StartDelay { get; private set; } = 10;
         public int UpdateInterval { get; private set; } = 60;
-        public string[] PlayingStrings { get; private set; }
+        public IImmutableSet<string> PlayingStrings { get; private set; } = ImmutableHashSet<string>.Empty;
 
         // Playtesting
         public string CasualConfig { get; private set; }
         public string CompConfig { get; private set; }
         public string PostConfig { get; private set; }
-        public string[] PublicCommandWhiteList { get; private set; }
+        public IImmutableSet<string> PublicCommandWhiteList { get; private set; } = ImmutableHashSet<string>.Empty;
         public int CalUpdateTicks { get; private set; } = 2;
         public string ImgurApi { get; private set; }
         public string DemoPath { get; private set; }
@@ -194,12 +194,12 @@ namespace BotHATTwaffle.Services
             if (Config.TryGetValue("testCalID", out string temp))
                 CalendarId = temp;
             else
-                throw new InvalidOperationException("Failed to load value for key 'testCalID'");
+                throw new InvalidOperationException("Failed to load value for key 'testCalID'.");
 
             if (Config.TryGetValue("DemoPath", out temp))
                 DemoPath = temp;
             else
-                throw new InvalidOperationException("Failed to load value for key 'DemoPath'");
+                throw new InvalidOperationException("Failed to load value for key 'DemoPath'.");
 
             if (Config.TryGetValue("casualConfig", out temp))
                 CasualConfig = temp;
@@ -222,7 +222,7 @@ namespace BotHATTwaffle.Services
             if (Config.TryGetValue("alertUser", out temp))
                 AlertUser = temp;
             else
-                throw new InvalidOperationException("Failed to load value for key 'alertUser'");
+                throw new InvalidOperationException("Failed to load value for key 'alertUser'.");
 
             if (Config.TryGetValue("imgurAPI", out temp))
                 ImgurApi = temp;
@@ -230,34 +230,34 @@ namespace BotHATTwaffle.Services
                 throw new InvalidOperationException("Failed to load value for key 'imgurAPI'.");
 
             if (Config.TryGetValue("pakRatEavesDropCSV", out temp))
-                PakRatEavesDrop = temp.Split(',');
+                PakRatEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("howToPackEavesDropCSV", out temp))
-                HowToPackEavesDrop = temp.Split(',');
+                HowToPackEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("carveEavesDropCSV", out temp))
-                CarveEavesDrop = temp.Split(',');
+                CarveEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("propperEavesDropCSV", out temp))
-                PropperEavesDrop = temp.Split(',');
+                PropperEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("vbEavesDropCSV", out temp))
-                VbEavesDrop = temp.Split(',');
+                VbEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("agreeStringsCSV", out temp))
-                AgreeStrings = temp.Split(',');
+                AgreeStrings = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("agreeUserCSV", out temp))
-                AgreeEavesDrop = temp.Split(',');
+                AgreeEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("roleMeWhiteListCSV", out temp))
-                RoleMeWhiteList = temp.Split(',');
+                RoleMeWhiteList = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("publicCommandWhiteListCSV", out temp))
-                PublicCommandWhiteList = temp.Split(',');
+                PublicCommandWhiteList = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("playingStringsCSV", out temp))
-                PlayingStrings = temp.Split(',');
+                PlayingStrings = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("startDelay", out temp) && int.TryParse(temp, out int i))
                 StartDelay = i;
