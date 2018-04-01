@@ -536,7 +536,7 @@ namespace BotHATTwaffle.Commands
                 {
                     //TODO: Move this to >MuteHistory. It is only here because I'm too lazy and this was easier...
                     reply += $"Name: {mute.Username}\nMuted at: {mute.Timestamp:yyyy-MM-ddTHH:mm:ssZ}\n" +
-                             $"Duration: {mute.Duration?.ToString() ?? "indefinite"}\nReason: {reason ?? "None"}\n" +
+                             $"Duration: {mute.Duration?.ToString() ?? "indefinite"}\nReason: {mute.Reason ?? "None"}\n" +
                              $"Expires at: {mute.Timestamp.AddMinutes(mute.Duration ?? 0)}";
                 }
 
