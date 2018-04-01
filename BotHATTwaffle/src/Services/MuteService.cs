@@ -26,7 +26,7 @@ namespace BotHATTwaffle.Services
         /// <inheritdoc />
         public async Task<bool> MuteAsync(
             SocketGuildUser user,
-            SocketGuildUser muter,
+            SocketUser muter,
             long? duration = null,
             string reason = null)
         {
@@ -88,17 +88,20 @@ namespace BotHATTwaffle.Services
         }
 
         /// <inheritdoc />
-        public async Task<bool> UnmuteAsync(SocketGuildUser user, string reason = null)
+        public async Task<bool> UnmuteAsync(SocketGuildUser user, SocketUser unmuter, string reason = null)
         {
             if (!await DataBaseUtil.ExpireMuteAsync(user.Id))
             {
-                await _data.ChannelLog($"Failure Unmuting {user}", "No active mute found.");
+                if (unmuter != _client.CurrentUser)
+                    await _data.ChannelLog($"Failure Unmuting {user}", "No active mute found.");
 
                 return false;
             }
 
             // No need to check if the user has the role.
-            await user.RemoveRoleAsync(_data.MuteRole, new RequestOptions { AuditLogReason = reason?.Truncate(512, true) });
+            await user.RemoveRoleAsync(
+                _data.MuteRole,
+                new RequestOptions {AuditLogReason = $"{unmuter}: {reason}".Truncate(512, true)});
 
             #region Messages
 
@@ -115,7 +118,7 @@ namespace BotHATTwaffle.Services
                 await _data.GeneralChannel.SendMessageAsync($"Hey {user.Mention}!\n{message}");
             }
 
-            await _data.ChannelLog($"Unmuted {user}", reason);
+            await _data.ChannelLog($"Unmuted {user}", $"Unmuter: {unmuter}\n{reason}");
 
             #endregion
 
@@ -145,7 +148,7 @@ namespace BotHATTwaffle.Services
 
                 if (!user.Roles.Contains(_data.MuteRole))
                 {
-                    await UnmuteAsync(user, $"The {_data.MuteRole.Name} role was manually removed.");
+                    await UnmuteAsync(user, _client.CurrentUser, $"The {_data.MuteRole.Name} role was manually removed.");
                     await Task.Delay(1000);
 
                     continue;
@@ -153,7 +156,7 @@ namespace BotHATTwaffle.Services
 
                 if (mute.CheckExpired())
                 {
-                    await UnmuteAsync(user, "The mute expired.");
+                    await UnmuteAsync(user, _client.CurrentUser, "The mute expired.");
                     await Task.Delay(1000);
                 }
             }

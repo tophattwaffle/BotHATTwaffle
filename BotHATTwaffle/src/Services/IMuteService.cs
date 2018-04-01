@@ -16,14 +16,15 @@ namespace BotHATTwaffle.Services
         /// <param name="muter">The user which invoked the mute operation.</param>
         /// <param name="reason">The reason for the mute.</param>
         /// <returns><c>true</c> if successfully muted; <c>false</c> otherwise.</returns>
-        Task<bool> MuteAsync(SocketGuildUser user, SocketGuildUser muter, long? duration = null, string reason = null);
+        Task<bool> MuteAsync(SocketGuildUser user, SocketUser muter, long? duration = null, string reason = null);
 
         /// <summary>
         /// Unmutes a user with an optional <paramref name="reason"/> (for logging).
         /// </summary>
         /// <param name="user">The user to unmute.</param>
+        /// <param name="unmuter">The user which invoked the unmute operation.</param>
         /// <param name="reason">The reason for the unmute.</param>
         /// <returns><c>true</c> if successfully unmuted; <c>false</c> otherwise.</returns>
-        Task<bool> UnmuteAsync(SocketGuildUser user, string reason = null);
+        Task<bool> UnmuteAsync(SocketGuildUser user, SocketUser unmuter, string reason = null);
     }
 }

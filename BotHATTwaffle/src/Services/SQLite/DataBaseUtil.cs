@@ -315,8 +315,8 @@ namespace BotHATTwaffle
         /// <param name="reason">The reason for the mute.</param>
         /// <returns><c>true</c> if the mute was successfully added; <c>false</c> if the user is already muted.</returns>
         public static async Task<bool> AddMuteAsync(
-            SocketGuildUser user,
-            SocketGuildUser muter,
+            SocketUser user,
+            SocketUser muter,
             DateTimeOffset timestamp,
             long? duration = null,
             string reason = null)

@@ -523,7 +523,7 @@ namespace BotHATTwaffle.Commands
         {
             if (user != null)
             {
-                if (await _mute.UnmuteAsync(user))
+                if (await _mute.UnmuteAsync(user, (SocketGuildUser)Context.User, reason))
                     await ReplyAsync($"Unmuted {user}.");
                 else
                     await ReplyAsync($"Failed to unmute {user} because the user isn't muted.");
