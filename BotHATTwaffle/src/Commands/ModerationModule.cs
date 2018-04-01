@@ -501,6 +501,8 @@ namespace BotHATTwaffle.Commands
                 await Context.Channel.SendMessageAsync(string.Empty, embed:
                     new EmbedBuilder().WithAuthor("Mods don't mute other Mods...")
                         .WithDescription("Now you 2 need to learn to play nice and get along."));
+
+                return;
             }
 
             if (await _mute.MuteAsync(user, (SocketGuildUser)Context.User, duration == 0 ? default(long?) : duration, reason))
