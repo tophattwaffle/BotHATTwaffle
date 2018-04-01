@@ -191,11 +191,10 @@ namespace BotHATTwaffle
         /// </remarks>
         /// <param name="guild">The guild that has become available.</param>
         /// <returns>No object or value is returned by this method when it completes.</returns>
-        private Task GuildAvailableEventHandler(SocketGuild guild)
+        private async Task GuildAvailableEventHandler(SocketGuild guild)
         {
-            _data.ReloadSettings();
+            await _data.DeserialiseConfig();
             _services.GetServices<IMuteService>();
-            return Task.CompletedTask;
         }
 
         /// <summary>

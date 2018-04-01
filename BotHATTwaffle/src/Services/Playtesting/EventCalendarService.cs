@@ -87,7 +87,7 @@ namespace BotHATTwaffle.Services.Playtesting
             var finalEvent = new string[11];
 
             // Defines request and parameters.
-            EventsResource.ListRequest request = _calendar.Events.List(_dataService.Config["testCalID"]);
+            EventsResource.ListRequest request = _calendar.Events.List(_dataService.CalendarId);
 
             request.Q = " by "; // This will limit all search requests to ONLY get playtest events.
             request.TimeMin = DateTime.Now;

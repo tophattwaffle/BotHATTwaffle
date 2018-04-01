@@ -3,6 +3,7 @@
     public enum Role : ulong
     {
         ActiveMember = 249671633696981002UL,
+        CommunityTester = 424239050812293121UL,
         Moderators = 188015393233698816UL,
         Muted = 209947543201775618UL,
         Patreons = 279918640256778240UL,

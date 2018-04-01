@@ -449,7 +449,7 @@ namespace BotHATTwaffle.Commands
             await ReplyAsync("```Reloading Settings!```");
             await _data.ChannelLog($"{Context.User} is reloading the bot's settings.");
 
-            _data.ReloadSettings();
+            await _data.DeserialiseConfig();
             _timer.Stop();
             _timer.Start();
 

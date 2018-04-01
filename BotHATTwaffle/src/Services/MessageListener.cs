@@ -32,12 +32,6 @@ namespace BotHATTwaffle.Services
             _dataService = dataService;
             _random = random;
 
-            _dataService.AgreeStrings = new string[]{
-                "^",
-                "^^^",
-                "^^^ I agree with ^^^",
-            };
-
             //Subtract value so we can shitpost once right away.
             _canShitPost = DateTime.Now.AddMinutes(_dataService.ShitPostDelay * -1);
 
