@@ -232,11 +232,12 @@ namespace BotHATTwaffle.Services
             }
 
             //Is a shit post.
-            if (this._dataService.AgreeEavesDrop.Any( s => message.Content.Equals("^") && message.Author.Username.Equals(s) ||
-                     ((SocketGuildUser)message.Author).Roles.Contains(this._dataService.PatreonsRole) && message.Content.Equals("^")))
+            if (message.Content.Equals("^") &&
+                (_dataService.ShitpostAgreeUserIds.Contains(message.Author.Id) ||
+                 ((SocketGuildUser)message.Author).Roles.Contains(_dataService.PatreonsRole)))
             {
                 await message.Channel.SendMessageAsync(
-                    this._dataService.AgreeStrings.ElementAt(_random.Next(0, _dataService.AgreeStrings.Count)));
+                    _dataService.ShitpostAgreeReplies.ElementAt(_random.Next(0, _dataService.ShitpostAgreeReplies.Count)));
 
                 await DataBaseUtil.AddShitpostAsync("^", message);
 

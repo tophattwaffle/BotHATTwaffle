@@ -62,10 +62,7 @@ namespace BotHATTwaffle.Services
             {"propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper"},
             {"vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack"},
             {"agreeStringsCSV", "^,^^^,^^^ I agree with ^^^"},
-            {
-                "agreeUserCSV",
-                "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm"
-            }
+            {"agreeUserCSV", null}
 
             #endregion
         }.ToImmutableDictionary();
@@ -105,8 +102,8 @@ namespace BotHATTwaffle.Services
         public string CatFactPath { get; private set; }
         public string PenguinFactPath { get; private set; }
         public string TanookiFactPath { get; private set; }
-        public IImmutableSet<string> AgreeEavesDrop { get; private set; } = ImmutableHashSet<string>.Empty;
-        public IImmutableSet<string> AgreeStrings { get; private set; } = ImmutableHashSet<string>.Empty;
+        public IImmutableSet<ulong> ShitpostAgreeUserIds { get; private set; } = ImmutableHashSet<ulong>.Empty;
+        public IImmutableSet<string> ShitpostAgreeReplies { get; private set; } = ImmutableHashSet<string>.Empty;
         public int ShitPostDelay { get; private set; } = 5;
 
         // TimerService
@@ -270,10 +267,20 @@ namespace BotHATTwaffle.Services
                 VbEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("agreeStringsCSV", out temp))
-                AgreeStrings = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+                ShitpostAgreeReplies = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
             if (Config.TryGetValue("agreeUserCSV", out temp))
-                AgreeEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            {
+                var set = new HashSet<ulong>();
+
+                foreach (string idStr in temp.Split(','))
+                {
+                    if (ulong.TryParse(idStr.Trim(), out ulong id))
+                        set.Add(id);
+                }
+
+                ShitpostAgreeUserIds = set.ToImmutableHashSet();
+            }
 
             if (Config.TryGetValue("roleMeWhiteListCSV", out temp))
                 RoleMeWhiteList = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
@@ -389,7 +396,7 @@ namespace BotHATTwaffle.Services
         /// <param name="message">Message to log</param>
         /// <param name="mention">Alert TopHATTwaffle?</param>
         /// <returns>Task</returns>
-        public Task ChannelLog(string title, string message, Boolean mention = false)
+        public Task ChannelLog(string title, string message, bool mention = false)
         {
             string alert = null;
             if (mention)
