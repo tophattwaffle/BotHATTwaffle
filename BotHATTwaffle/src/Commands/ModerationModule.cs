@@ -492,7 +492,7 @@ namespace BotHATTwaffle.Commands
         public async Task MuteAsync(
             [Summary("The user to mute.")] SocketGuildUser user,
             [Summary("The duration, in minutes, of the mute.")]
-            [RequireBoundaries(1L, 43200L)] long duration = 5L,
+            [RequireBoundaries(1, 43200)] int duration = 5,
             [Summary("The reason for the mute.")] [Remainder]
             string reason = "No reason provided.")
         {
@@ -505,7 +505,7 @@ namespace BotHATTwaffle.Commands
                 return;
             }
 
-            if (await _mute.MuteAsync(user, (SocketGuildUser)Context.User, duration == 0 ? default(long?) : duration, reason))
+            if (await _mute.MuteAsync(user, (SocketGuildUser)Context.User, duration == 0 ? default(int?) : duration, reason))
                 await Context.Channel.SendMessageAsync($"Successfully muted {user}.");
             else
                 await Context.Channel.SendMessageAsync($"{user} is already muted!");
