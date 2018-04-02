@@ -529,12 +529,8 @@ namespace BotHATTwaffle.Commands
         [Alias("up")]
         public async Task UpcomingAsync()
         {
-            //Purges last and current stored info about the test. This is a easy way to reset the stored info manually
-            //if something happens and the announcement glitches out.
-            _playtesting.CurrentEventInfo = _playtesting.EventCalendarService.GetEvents();
-            _playtesting.LastEventInfo = _playtesting.CurrentEventInfo;
-
-            await ReplyAsync("", false, await _playtesting.FormatPlaytestInformationAsync(_playtesting.CurrentEventInfo, true));
+			//TODO: Remove this after 4/9/2018
+            await ReplyAsync("This command is getting removed due to redundancy! Please check <#202532581541937153> for the same information.");
 
             await DataBaseUtil.AddCommandAsync("Upcoming", Context);
         }

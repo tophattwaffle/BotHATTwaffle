@@ -492,7 +492,7 @@ namespace BotHATTwaffle.Commands
         public async Task MuteAsync(
             [Summary("The user to mute.")] SocketGuildUser user,
             [Summary("The duration, in minutes, of the mute.")]
-            long duration = 5L,
+            [RequireBoundaries(1L, 43200L)] long duration = 5L,
             [Summary("The reason for the mute.")] [Remainder]
             string reason = "No reason provided.")
         {

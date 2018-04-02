@@ -141,15 +141,8 @@ namespace BotHATTwaffle.Services
 
                 if (user == null)
                 {
-                    await _data.ChannelLog($"Failure Unmuting {mute.Username}", "User not found.");
-
-                    continue;
-                }
-
-                if (!user.Roles.Contains(_data.MuteRole))
-                {
-                    await UnmuteAsync(user, _client.CurrentUser, $"The {_data.MuteRole.Name} role was manually removed.");
-                    await Task.Delay(1000);
+					//TODO: Handle this better so it does not spam each mute cycle
+                    //await _data.ChannelLog($"Failure Unmuting {mute.Username}", "User not found.");
 
                     continue;
                 }
@@ -158,8 +151,16 @@ namespace BotHATTwaffle.Services
                 {
                     await UnmuteAsync(user, _client.CurrentUser, "The mute expired.");
                     await Task.Delay(1000);
-                }
-            }
+
+	                continue;
+				}
+
+	            if (!user.Roles.Contains(_data.MuteRole))
+	            {
+		            await user.AddRoleAsync(_data.MuteRole);
+		            await Task.Delay(1000);
+	            }
+			}
         }
     }
 }

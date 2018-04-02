@@ -234,7 +234,8 @@ namespace BotHATTwaffle.Services
             //Is a shit post.
             if (message.Content.Equals("^") &&
                 (_dataService.ShitpostAgreeUserIds.Contains(message.Author.Id) ||
-                 ((SocketGuildUser)message.Author).Roles.Contains(_dataService.PatreonsRole)))
+                 ((SocketGuildUser)message.Author).Roles.Contains(_dataService.PatreonsRole) ||
+                ((SocketGuildUser)message.Author).Roles.Contains(_dataService.ModRole)))
             {
                 await message.Channel.SendMessageAsync(
                     _dataService.ShitpostAgreeReplies.ElementAt(_random.Next(0, _dataService.ShitpostAgreeReplies.Count)));
