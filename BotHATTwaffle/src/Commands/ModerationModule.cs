@@ -161,7 +161,7 @@ namespace BotHATTwaffle.Commands
             if (server == null)
             {
                 await ReplyAsync(
-                    $"```The command was not sent because the server '{serverCode}' could not be found.\nIs it in the JSON?```");
+                    $"```The command was not sent because the server '{serverCode}' could not be found.```");
 
                 return;
             }
