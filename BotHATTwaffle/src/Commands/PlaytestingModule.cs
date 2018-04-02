@@ -529,7 +529,7 @@ namespace BotHATTwaffle.Commands
         [Alias("up")]
         public async Task UpcomingAsync()
         {
-			//TODO: Remove this after 4/9/2018
+            //TODO: Remove this after 4/9/2018
             await ReplyAsync("This command is getting removed due to redundancy! Please check <#202532581541937153> for the same information.");
 
             await DataBaseUtil.AddCommandAsync("Upcoming", Context);

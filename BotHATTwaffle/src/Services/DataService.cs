@@ -213,105 +213,57 @@ namespace BotHATTwaffle.Services
         /// <exception cref="InvalidOperationException">Thrown when required settings can't be retrieved.</exception>
         private void DeserialiseSettings()
         {
-            if (Config.TryGetValue("testCalID", out string temp))
-                CalendarId = temp;
-            else
-                throw new InvalidOperationException("Failed to load value for key 'testCalID'.");
+            CalendarId = Config["testCalID"];
+            DemoPath = Config["DemoPath"];
+            CasualConfig = Config["casualConfig"];
+            CompConfig = Config["compConfig"];
+            PostConfig = Config["postConfig"];
+            CatFactPath = Config["catFactPath"];
+            PenguinFactPath = Config["penguinFactPath"];
+            TanookiFactPath = Config["tanookiFactPath"];
+            AlertUser = Config["alertUser"];
+            ImgurApi = Config["imgurAPI"];
+            PakRatEavesDrop = Config["pakRatEavesDropCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            HowToPackEavesDrop = Config["howToPackEavesDropCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            CarveEavesDrop = Config["carveEavesDropCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            PropperEavesDrop = Config["propperEavesDropCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            VbEavesDrop = Config["vbEavesDropCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            ShitpostAgreeReplies = Config["agreeStringsCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            RoleMeWhiteList = Config["roleMeWhiteListCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            PublicCommandWhiteList = Config["publicCommandWhiteListCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
+            PlayingStrings = Config["playingStringsCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
-            if (Config.TryGetValue("DemoPath", out temp))
-                DemoPath = temp;
-            else
-                throw new InvalidOperationException("Failed to load value for key 'DemoPath'.");
-
-            if (Config.TryGetValue("casualConfig", out temp))
-                CasualConfig = temp;
-
-            if (Config.TryGetValue("compConfig", out temp))
-                CompConfig = temp;
-
-            if (Config.TryGetValue("postConfig", out temp))
-                PostConfig = temp;
-
-            if (Config.TryGetValue("catFactPath", out temp))
-                CatFactPath = temp;
-
-            if (Config.TryGetValue("penguinFactPath", out temp))
-                PenguinFactPath = temp;
-
-            if (Config.TryGetValue("tanookiFactPath", out temp))
-                TanookiFactPath = temp;
-
-            if (Config.TryGetValue("alertUser", out temp))
-                AlertUser = temp;
-            else
-                throw new InvalidOperationException("Failed to load value for key 'alertUser'.");
-
-            if (Config.TryGetValue("imgurAPI", out temp))
-                ImgurApi = temp;
-            else
-                throw new InvalidOperationException("Failed to load value for key 'imgurAPI'.");
-
-            if (Config.TryGetValue("pakRatEavesDropCSV", out temp))
-                PakRatEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("howToPackEavesDropCSV", out temp))
-                HowToPackEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("carveEavesDropCSV", out temp))
-                CarveEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("propperEavesDropCSV", out temp))
-                PropperEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("vbEavesDropCSV", out temp))
-                VbEavesDrop = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("agreeStringsCSV", out temp))
-                ShitpostAgreeReplies = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("agreeUserCSV", out temp))
-            {
-                var set = new HashSet<ulong>();
-
-                foreach (string idStr in temp.Split(','))
-                {
-                    if (ulong.TryParse(idStr.Trim(), out ulong id))
-                        set.Add(id);
-                }
-
-                ShitpostAgreeUserIds = set.ToImmutableHashSet();
-            }
-
-            if (Config.TryGetValue("roleMeWhiteListCSV", out temp))
-                RoleMeWhiteList = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("publicCommandWhiteListCSV", out temp))
-                PublicCommandWhiteList = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("playingStringsCSV", out temp))
-                PlayingStrings = temp.Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-
-            if (Config.TryGetValue("startDelay", out temp) && int.TryParse(temp, out int i))
-                StartDelay = i;
+            if (int.TryParse(Config["startDelay"], out int temp))
+                StartDelay = temp;
             else
                 Console.WriteLine($"Key \"startDelay\" not found or valid. Using default {StartDelay}.");
 
-            if (Config.TryGetValue("updateInterval", out temp) && int.TryParse(temp, out i))
-                UpdateInterval = i;
+            if (int.TryParse(Config["updateInterval"], out temp))
+                UpdateInterval = temp;
             else
                 Console.WriteLine($"Key \"updateInterval\" not found or valid. Using default {UpdateInterval}.");
 
-            if (Config.TryGetValue("ShitPostDelay", out temp) && int.TryParse(temp, out i))
-                ShitPostDelay = i;
+            if (int.TryParse(Config["ShitPostDelay"], out temp))
+                ShitPostDelay = temp;
             else
                 Console.WriteLine($"Key \"ShitPostDelay\" not found or valid. Using default {ShitPostDelay}.");
 
-            if (Config.TryGetValue("calUpdateTicks", out temp) && int.TryParse(temp, out i))
-                CalUpdateTicks = i;
+            if (int.TryParse(Config["calUpdateTicks"], out temp))
+                CalUpdateTicks = temp;
             else
                 Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {CalUpdateTicks}.");
 
             CalUpdateTicks -= 1;
+
+            var set = new HashSet<ulong>();
+
+            foreach (string idStr in Config["agreeUserCSV"].Split(','))
+            {
+                if (ulong.TryParse(idStr.Trim(), out ulong id))
+                    set.Add(id);
+            }
+
+            ShitpostAgreeUserIds = set.ToImmutableHashSet();
         }
 
         /// <summary>
@@ -330,10 +282,7 @@ namespace BotHATTwaffle.Services
 
             async Task<SocketTextChannel> ParseChannel(string key)
             {
-                SocketTextChannel channel = null;
-
-                if (Config.TryGetValue(key, out string temp))
-                    channel = await ChannelTypeReader<SocketTextChannel>.GetBestResultAsync(guild, temp);
+                SocketTextChannel channel = await ChannelTypeReader<SocketTextChannel>.GetBestResultAsync(guild, Config[key]);
 
                 if (channel == null)
                     throw new InvalidOperationException($"The value of key '{key}' could not be parsed as a channel.");
