@@ -287,6 +287,7 @@ namespace BotHATTwaffle
                     break;
                 case CommandError.ParseFailed:
                 case CommandError.UnmetPrecondition:
+                case CommandError.ObjectNotFound:
                     await context.Channel.SendMessageAsync(result.ErrorReason);
 
                     break;
