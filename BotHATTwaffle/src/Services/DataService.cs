@@ -22,6 +22,54 @@ namespace BotHATTwaffle.Services
 {
     public class DataService
     {
+        private static readonly ImmutableDictionary<string, string> _DefaultConfig = new Dictionary<string, string>
+        {
+            #region Default Config
+
+            {"botToken", null},
+            {"imgurAPI", null},
+            {"testCalID", null},
+            {"startDelay", "10"},
+            {"updateInterval", "60"},
+            {"ShitPostDelay", "5"},
+            {"calUpdateTicks", "1"},
+            {"alertUser", null},
+
+            // Channels
+            {"generalChannel", "general"},
+            {"announcementChannel", "announcements"},
+            {"testingChannel", "csgo_level_testing"},
+            {"logChannel", "bothattwaffle_logs"},
+
+            // Paths
+            {"DemoPath", ".\\Demos"},
+            {"catFactPath", "catfacts.txt"},
+            {"penguinFactPath", "penguinfacts.txt"},
+            {"tanookiFactPath", "tanookifacts.txt"},
+
+            // Playtesting
+            {"casualConfig", "thw"},
+            {"compConfig", "thw"},
+            {"postConfig", "postame"},
+
+            // CSVs
+            {"publicCommandWhiteListCSV", null},
+            {"playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming"},
+            {"roleMeWhiteListCSV", "Programmer,Level Designer,3D Modeler,Texture Artist,Blender,Maya,3dsmax,Playtester"},
+            {"pakRatEavesDropCSV", "use pakrat,download pakrat,get pakrat,use packrat"},
+            {"howToPackEavesDropCSV", "how do i pack,how can i pack,how to pack,how to use vide,help me pack"},
+            {"carveEavesDropCSV", "carve"},
+            {"propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper"},
+            {"vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack"},
+            {"agreeStringsCSV", "^,^^^,^^^ I agree with ^^^"},
+            {
+                "agreeUserCSV",
+                "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm"
+            }
+
+            #endregion
+        }.ToImmutableDictionary();
+
         private readonly DiscordSocketClient _client;
         private readonly Random _random;
 
@@ -96,76 +144,53 @@ namespace BotHATTwaffle.Services
         /// <returns>Dictionary with all the program's settings</returns>
         private void ReadConfig()
         {
-            Dictionary<string, string> dict;
+            var dict = new Dictionary<string, string>();
             const string CONFIG_PATH = "settings.ini";
 
-            if (File.Exists(CONFIG_PATH))
+            using (var fs = new FileStream(CONFIG_PATH, FileMode.OpenOrCreate, FileAccess.Read))
+            using (var stream = new StreamReader(fs))
             {
-                dict = File.ReadAllLines(CONFIG_PATH)
-                    .ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
+                string line = stream.ReadLine();
+
+                for (var i = 1U; line != null; ++i, line = stream.ReadLine())
+                {
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    string[] kv = line.Split('=');
+                    string key = kv[0].Trim(); // 0th index always exists.
+                    string value = kv.ElementAtOrDefault(1)?.Trim();
+
+                    if (kv.Length > 2 || string.IsNullOrWhiteSpace(key))
+                        throw new InvalidOperationException($"Error reading config at line {i}: invalid format.");
+
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new InvalidOperationException($"Error reading config at line {i}: key has no value.");
+
+                    dict.Add(key, value);
+                }
             }
-            else
-                dict = new Dictionary<string, string>(); // Creates the config when it doesn't exist.
 
-            #region Adds Missing Fields
+            var missing = _DefaultConfig.Where(kv => !dict.ContainsKey(kv.Key)).ToImmutableDictionary();
 
-            #region General/Global
+            if (missing.Any())
+            {
+                File.WriteAllLines(CONFIG_PATH, dict.Concat(missing).Select(kv => $"{kv.Key} = {kv.Value}"));
 
-            dict.TryAdd("botToken", "NEEDS_TO_BE_REPLACED");
-            dict.TryAdd("imgurAPI", "NEEDS_TO_BE_REPLACED");
-            dict.TryAdd("startDelay", "10");
-            dict.TryAdd("updateInterval", "60");
-            dict.TryAdd("generalChannel", "general");
-            dict.TryAdd("logChannel", "bothattwaffle_logs");
-            dict.TryAdd("alertUser", "[DISCORD NAME OF USER WITH #]");
-            dict.TryAdd("playingStringsCSV",
-                "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming");
-            dict.TryAdd("roleMeWhiteListCSV", "Programmer,Level_Designer,3D_Modeler,Texture_Artist,Blender,Maya,3dsmax");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(
+                    "The following keys are missing from the config and have been written with default values. " +
+                    "Configure the values and restart the bot.\n" + string.Join("\n", missing.Keys));
+                Console.ResetColor();
 
-            #endregion
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
 
-            #region Playtesting
-
-            dict.TryAdd("calUpdateTicks", "1");
-            dict.TryAdd("testCalID", "Replace My Buddy");
-            dict.TryAdd("announcementChannel", "announcements");
-            dict.TryAdd("testingChannel", "csgo_level_testing");
-            dict.TryAdd("DemoPath", "X:\\Playtesting Demos");
-            dict.TryAdd("casualConfig", "thw");
-            dict.TryAdd("compConfig", "thw");
-            dict.TryAdd("postConfig", "postame");
-            dict.TryAdd("publicCommandWhiteListCSV", "[CONFIGME]");
-
-            #endregion
-
-            #region Message Listener
-
-            dict.TryAdd("pakRatEavesDropCSV", "use pakrat,download pakrat,get pakrat,use packrat");
-            dict.TryAdd("howToPackEavesDropCSV", "how do i pack,how can i pack,how to pack,how to use vide,help me pack");
-            dict.TryAdd("carveEavesDropCSV", "carve");
-            dict.TryAdd("propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper");
-            dict.TryAdd("vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack");
-
-            #endregion
-
-            #region  Shitposts
-
-            dict.TryAdd("catFactPath", "X:\\Scripts\\catfacts.txt");
-            dict.TryAdd("penguinFactPath", "X:\\Scripts\\penguinfacts.txt");
-            dict.TryAdd("tanookiFactPath", "X:\\Scripts\\tanookifacts.txt");
-            dict.TryAdd("ShitPostDelay", "5");
-            dict.TryAdd("agreeStringsCSV", "^,^^^,^^^ I agree with ^^^");
-            dict.TryAdd(
-                "agreeUserCSV",
-                "TopHATTwaffle,Phoby,thewhaleman,maxgiddens,CSGO John Madden,Wazanator,TanookiSuit3,JSadones,Lykrast,maxgiddens,Zelz Storm");
-
-            #endregion
-
-            #endregion
+                Environment.Exit(1);
+            }
 
             // Saves the new config file.
-            File.WriteAllLines(CONFIG_PATH, dict.Select(kvp => $"{kvp.Key} = {kvp.Value}").ToArray());
-
+            File.WriteAllLines(CONFIG_PATH, dict.Select(kv => $"{kv.Key} = {kv.Value}"));
             Config = dict.ToImmutableDictionary();
         }
 
