@@ -496,7 +496,7 @@ namespace BotHATTwaffle.Commands
             [Summary("The reason for the mute.")] [Remainder]
             string reason = "No reason provided.")
         {
-            if (user.Roles.Contains(_data.ModRole) || user.Roles.Contains(_data.RconRole))
+            if (user.Roles.Contains(_data.ModRole))
             {
                 await Context.Channel.SendMessageAsync(string.Empty, embed:
                     new EmbedBuilder().WithAuthor("Mods don't mute other Mods...")
