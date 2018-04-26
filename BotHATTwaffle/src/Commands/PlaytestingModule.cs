@@ -522,17 +522,5 @@ namespace BotHATTwaffle.Commands
 
             await DataBaseUtil.AddCommandAsync("Playtester", Context);
         }
-
-        [Command("Upcoming")]
-        [Summary("Displays the upcoming playtest event.")]
-        [Remarks("Automatically looks up the next playtest event. It can also always be found in #announcements.")]
-        [Alias("up")]
-        public async Task UpcomingAsync()
-        {
-            //TODO: Remove this after 4/9/2018
-            await ReplyAsync("This command is getting removed due to redundancy! Please check <#202532581541937153> for the same information.");
-
-            await DataBaseUtil.AddCommandAsync("Upcoming", Context);
-        }
     }
 }

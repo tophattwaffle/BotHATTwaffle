@@ -122,7 +122,7 @@ namespace BotHATTwaffle.Services
                               $" `Playtester`. This role is used to notify you when we have a playtest starting. You can remove yourself from the " +
                               $"notifications by typing: `>playtester`.\n\nIf you want to see any of my commands, type: `>help`. Thanks for reading," +
                               $" and we hope you enjoy your stay here!" +
-                              $"\n\nThere are roles you can use to show what skills you have. To see what roles you can give yourself, type: `>roleme display`" +
+                              $"\n\nThere are roles you can use to show what skills you have. To see what roles you can give yourself, type: `>roleme`" +
                               $"\n\nGLHF"
             };
 
@@ -147,6 +147,13 @@ namespace BotHATTwaffle.Services
             {
                 await message.DeleteAsync();
                 var msgSplit = message.Content.Split('|');
+                /*msgSplit Layout
+                 0 - BotKey to get here
+                 1 - Discord user
+                 2 - Test type
+                 3 - Workshop URL
+                 4 - Map images
+                */
 
                 var splitUser = msgSplit[1].Split('#');
 
