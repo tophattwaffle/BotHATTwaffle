@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 using System;
 using System.Collections.Generic;
@@ -239,7 +239,7 @@ namespace BotHATTwaffle.Services
             }
 
             //Is a shit post.
-            if (message.Content.Equals("^") &&
+            if (message.Content.Equals("^") && _dataService.ShitpostAgreeReplies.Any() &&
                 (_dataService.ShitpostAgreeUserIds.Contains(message.Author.Id) ||
                  ((SocketGuildUser)message.Author).Roles.Contains(_dataService.PatreonsRole) ||
                 ((SocketGuildUser)message.Author).Roles.Contains(_dataService.ModRole)))

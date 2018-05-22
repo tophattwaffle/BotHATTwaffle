@@ -92,11 +92,6 @@ namespace BotHATTwaffle
             _services.GetRequiredService<IHelpService>();
             _services.GetRequiredService<PlaytestingService>();
 
-            // Retrieves the bot's token from the config file; effectively exits the program if botToken can't be retrieved.
-            // This is the only setting that has to be retrieved this way so it can start up properly.
-            // Once the guild becomes ready the rest of the settings are fully loaded.
-            if (!_data.Config.TryGetValue("botToken", out string botToken)) return;
-
             // Event subscriptions.
             _client.GuildAvailable += GuildAvailableEventHandler;
             _client.Log += LogEventHandler;
@@ -105,7 +100,7 @@ namespace BotHATTwaffle
 
             await InstallCommandsAsync();
 
-            await _client.LoginAsync(TokenType.Bot, botToken);
+            await _client.LoginAsync(TokenType.Bot, _data.Config["botToken"]);
             await _client.StartAsync();
 
             // Subscribes to connect/disconnect after logging in because they would otherwise be raised before needed.

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Web;
 
 using BotHATTwaffle.Commands.Readers;
-using BotHATTwaffle.Extensions;
 using BotHATTwaffle.Models;
 
 using CoreRCON;
@@ -42,10 +41,10 @@ namespace BotHATTwaffle.Services
             {"logChannel", "bothattwaffle_logs"},
 
             // Paths
-            {"DemoPath", ".\\Demos"},
-            {"catFactPath", "catfacts.txt"},
-            {"penguinFactPath", "penguinfacts.txt"},
-            {"tanookiFactPath", "tanookifacts.txt"},
+            {"DemoPath", @".\Demos"},
+            {"catFactPath", string.Empty},
+            {"penguinFactPath", string.Empty},
+            {"tanookiFactPath", string.Empty},
 
             // Playtesting
             {"casualConfig", "thw"},
@@ -53,16 +52,16 @@ namespace BotHATTwaffle.Services
             {"postConfig", "postame"},
 
             // CSVs
-            {"publicCommandWhiteListCSV", null},
-            {"playingStringsCSV", "Eating Waffles,Not working on Titan,The year is 20XX,Hopefully not crashing,>help,>upcoming"},
-            {"roleMeWhiteListCSV", "Programmer,Level Designer,3D Modeler,Texture Artist,Blender,Maya,3dsmax,Playtester"},
-            {"pakRatEavesDropCSV", "use pakrat,download pakrat,get pakrat,use packrat"},
-            {"howToPackEavesDropCSV", "how do i pack,how can i pack,how to pack,how to use vide,help me pack"},
-            {"carveEavesDropCSV", "carve"},
-            {"propperEavesDropCSV", "use propper,download propper,get propper,configure propper,setup propper"},
-            {"vbEavesDropCSV", "velocity brawl,velocitybrawl,velocity ballsack"},
-            {"agreeStringsCSV", "^,^^^,^^^ I agree with ^^^"},
-            {"agreeUserCSV", null}
+            {"publicCommandWhiteListCSV", string.Empty},
+            {"playingStringsCSV", string.Empty},
+            {"roleMeWhiteListCSV", string.Empty},
+            {"pakRatEavesDropCSV", string.Empty},
+            {"howToPackEavesDropCSV", string.Empty},
+            {"carveEavesDropCSV", string.Empty},
+            {"propperEavesDropCSV", string.Empty},
+            {"vbEavesDropCSV", string.Empty},
+            {"agreeStringsCSV", string.Empty},
+            {"agreeUserCSV", string.Empty}
 
             #endregion
         }.ToImmutableDictionary();
@@ -79,8 +78,8 @@ namespace BotHATTwaffle.Services
         // Channels
         public SocketTextChannel GeneralChannel { get; private set; }
         public SocketTextChannel LogChannel { get; private set; }
-        public SocketTextChannel AnnouncementChannel  { get; private set; }
-        public SocketTextChannel TestingChannel  { get; private set; }
+        public SocketTextChannel AnnouncementChannel { get; private set; }
+        public SocketTextChannel TestingChannel { get; private set; }
 
         // Roles
         public SocketRole PlayTesterRole { get; private set; }
@@ -164,27 +163,48 @@ namespace BotHATTwaffle.Services
                     if (kv.Length > 2 || string.IsNullOrWhiteSpace(key))
                         throw new InvalidOperationException($"Error reading config at line {i}: invalid format.");
 
-                    if (string.IsNullOrWhiteSpace(value))
-                        throw new InvalidOperationException($"Error reading config at line {i}: key has no value.");
+                    bool keyExists = _DefaultConfig.TryGetValue(key, out string defaultVal);
 
-                    dict.Add(key, value);
+                    if (string.IsNullOrWhiteSpace(value) && keyExists)
+                    {
+                        if (defaultVal == null)
+                        {
+                            throw new InvalidOperationException(
+                                $"Error reading config at line {i}: mandatory key '{key}' has no value.");
+                        }
+
+                        if (defaultVal.Length > 0)
+                        {
+                            value = defaultVal;
+                            Console.WriteLine(
+                                $"Warning reading config at line {i}: mandatory key '{key}' has no value. " +
+                                $"Using default of '{defaultVal}'.");
+                        }
+                    }
+
+                    if (keyExists)
+                        dict.Add(key, value);
                 }
             }
 
             var missing = _DefaultConfig.Where(kv => !dict.ContainsKey(kv.Key)).ToImmutableDictionary();
-
-            if (missing.Any())
-            {
-                File.WriteAllLines(CONFIG_PATH, dict.Concat(missing).Select(kv => $"{kv.Key} = {kv.Value}"));
-
-                throw new InvalidOperationException(
-                    "The following keys are missing from the config and have been written with default values. " +
-                    "Configure the values and restart the bot.\n" +
-                    string.Join("\n", missing.Keys));
-            }
+            var mandatory = missing.Where(kv => _DefaultConfig[kv.Key] == null).ToImmutableDictionary();
+            dict = dict.Concat(missing).ToDictionary(kv => kv.Key, kv => kv.Value);
 
             // Saves the new config file.
             File.WriteAllLines(CONFIG_PATH, dict.Select(kv => $"{kv.Key} = {kv.Value}"));
+
+            if (missing.Count > mandatory.Count)
+                Console.WriteLine("Some config keys are missing and have been written with defaults values.");
+
+            if (mandatory.Any())
+            {
+                throw new InvalidOperationException(
+                    "The following mandatory config keys are missing and have no default values. " +
+                    "Configure the values and restart/reload the bot.\n" +
+                    string.Join("\n", mandatory.Keys));
+            }
+
             Config = dict.ToImmutableDictionary();
         }
 
@@ -192,6 +212,7 @@ namespace BotHATTwaffle.Services
         /// Deserialises the configuration file into fields.
         /// </summary>
         /// <param name="reread"><c>true</c> if the config file should be re-read; <c>false</c> otherwise.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the config fails to be read or deserialised.</exception>
         /// <returns>No object or value is returned by this method when it completes.</returns>
         public async Task DeserialiseConfig(bool reread = false)
         {
@@ -212,7 +233,6 @@ namespace BotHATTwaffle.Services
         /// <summary>
         /// Deserialises settings from configuraton file.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when required settings can't be retrieved.</exception>
         private void DeserialiseSettings()
         {
             CalendarId = Config["testCalID"];
@@ -238,22 +258,22 @@ namespace BotHATTwaffle.Services
             if (int.TryParse(Config["startDelay"], out int temp))
                 StartDelay = temp;
             else
-                Console.WriteLine($"Key \"startDelay\" not found or valid. Using default {StartDelay}.");
+                Console.WriteLine($"Key 'startDelay' not found or valid. Using default {StartDelay}.");
 
             if (int.TryParse(Config["updateInterval"], out temp))
                 UpdateInterval = temp;
             else
-                Console.WriteLine($"Key \"updateInterval\" not found or valid. Using default {UpdateInterval}.");
+                Console.WriteLine($"Key 'updateInterval' not found or valid. Using default {UpdateInterval}.");
 
             if (int.TryParse(Config["ShitPostDelay"], out temp))
                 ShitPostDelay = temp;
             else
-                Console.WriteLine($"Key \"ShitPostDelay\" not found or valid. Using default {ShitPostDelay}.");
+                Console.WriteLine($"Key 'ShitPostDelay' not found or valid. Using default {ShitPostDelay}.");
 
             if (int.TryParse(Config["calUpdateTicks"], out temp))
                 CalUpdateTicks = temp;
             else
-                Console.WriteLine($"Key \"calUpdateTicks\" not found or valid. Using default {CalUpdateTicks}.");
+                Console.WriteLine($"Key 'calUpdateTicks' not found or valid. Using default {CalUpdateTicks}.");
 
             CalUpdateTicks -= 1;
 
