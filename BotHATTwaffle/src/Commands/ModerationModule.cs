@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -449,7 +449,7 @@ namespace BotHATTwaffle.Commands
             await ReplyAsync("```Reloading Settings!```");
             await _data.ChannelLog($"{Context.User} is reloading the bot's settings.");
 
-            await _data.DeserialiseConfig();
+            await _data.DeserialiseConfig(true);
             _timer.Stop();
             _timer.Start();
 

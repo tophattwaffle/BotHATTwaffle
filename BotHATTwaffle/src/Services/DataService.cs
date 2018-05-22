@@ -194,13 +194,18 @@ namespace BotHATTwaffle.Services
         /// <summary>
         /// Deserialises the configuration file into fields.
         /// </summary>
+        /// <param name="reread"><c>true</c> if the config file should be re-read; <c>false</c> otherwise.</param>
         /// <returns>No object or value is returned by this method when it completes.</returns>
-        public async Task DeserialiseConfig()
+        public async Task DeserialiseConfig(bool reread = false)
         {
-            ReadConfig();
+            if (reread)
+            {
+                ReadConfig();
+                DeserialiseSettings();
+            }
+
             await DeserialiseChannels();
             GetRoles();
-            DeserialiseSettings();
 
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
