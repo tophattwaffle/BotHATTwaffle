@@ -446,12 +446,21 @@ namespace BotHATTwaffle.Commands
         [RequireRole(Role.Moderators)]
         public async Task ReloadAsync()
         {
-            await ReplyAsync("```Reloading Settings!```");
-            await _data.ChannelLog($"{Context.User} is reloading the bot's settings.");
+            try
+            {
+                await _data.DeserialiseConfig(true);
+                _timer.Stop();
+                _timer.Start();
 
-            await _data.DeserialiseConfig(true);
-            _timer.Stop();
-            _timer.Start();
+                await ReplyAsync("```Successfully reloaded settings.```");
+                await _data.ChannelLog($"{Context.User} successfully reloaded the settings.");
+            }
+            catch (InvalidOperationException e)
+            {
+                await _data.ChannelLog($"{Context.User} failed to reload the settings.", e.Message);
+                await Context.Channel.SendMessageAsync(
+                    $"An error occurred reloading the config. Reverting to the previous config. ```{e.Message}```");
+            }
 
             await DataBaseUtil.AddCommandAsync("Reload", Context);
         }
