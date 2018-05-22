@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -78,7 +78,12 @@ namespace BotHATTwaffle
                 .BuildServiceProvider();
 
             // Retrieves services that this class uses.
-            _data = _services.GetRequiredService<DataService>();
+            await SafeExecuteConfigCallback(
+                () =>
+                {
+                    _data = _services.GetRequiredService<DataService>();
+                    return Task.CompletedTask;
+                });
             _timer = _services.GetRequiredService<ITimerService>();
             _messageListener = _services.GetRequiredService<MessageListener>();
 
@@ -193,7 +198,7 @@ namespace BotHATTwaffle
         /// <returns>No object or value is returned by this method when it completes.</returns>
         private async Task GuildAvailableEventHandler(SocketGuild guild)
         {
-            await _data.DeserialiseConfig();
+            await SafeExecuteConfigCallback(async () => await _data.DeserialiseConfig());
             _services.GetServices<IMuteService>();
         }
 
@@ -237,7 +242,7 @@ namespace BotHATTwaffle
         /// </summary>
         /// <param name="user">The user which joined.</param>
         /// <returns>No object or value is returned by this method when it completes.</returns>
-        internal async Task UserJoinedEventHandler(SocketGuildUser user)
+        private async Task UserJoinedEventHandler(SocketGuildUser user)
         {
             await _messageListener.WelcomeMessageDm(user);
             await _data.GeneralChannel.SendMessageAsync(
@@ -313,6 +318,28 @@ namespace BotHATTwaffle
                 logMessage,
                 alert);
             Console.ResetColor();
+        }
+
+        /// <summary>
+        /// Safely executes a config-related function. If it throws an <see cref="InvalidOperationException"/>, the program
+        /// is terminated.
+        /// </summary>
+        /// <param name="callback">The function to execute.</param>
+        /// <returns>No object or value is returned by this method when it completes.</returns>
+        private async Task SafeExecuteConfigCallback(Func<Task> callback)
+        {
+            try
+            {
+                await callback();
+            }
+            catch (InvalidOperationException e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine($"{e.GetType().Name}: {e.Message}");
+                Console.ResetColor();
+
+                Environment.Exit(1);
+            }
         }
     }
 }

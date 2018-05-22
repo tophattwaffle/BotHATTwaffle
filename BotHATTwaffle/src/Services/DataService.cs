@@ -138,6 +138,9 @@ namespace BotHATTwaffle.Services
         /// default values.
         /// </para>
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the config is incorrectly formatted or has missing values.
+        /// </exception>
         /// <returns>Dictionary with all the program's settings</returns>
         private void ReadConfig()
         {
@@ -174,16 +177,10 @@ namespace BotHATTwaffle.Services
             {
                 File.WriteAllLines(CONFIG_PATH, dict.Concat(missing).Select(kv => $"{kv.Key} = {kv.Value}"));
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(
+                throw new InvalidOperationException(
                     "The following keys are missing from the config and have been written with default values. " +
-                    "Configure the values and restart the bot.\n" + string.Join("\n", missing.Keys));
-                Console.ResetColor();
-
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
-
-                Environment.Exit(1);
+                    "Configure the values and restart the bot.\n" +
+                    string.Join("\n", missing.Keys));
             }
 
             // Saves the new config file.
