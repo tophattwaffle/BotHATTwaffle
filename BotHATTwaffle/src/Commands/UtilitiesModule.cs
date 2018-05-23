@@ -68,16 +68,17 @@ namespace BotHATTwaffle.Commands
         {
             if (string.IsNullOrWhiteSpace(roles))
             {
-                await ReplyAsync($"Toggleable roles are:```\n{string.Join("\n", _dataService.RoleMeWhiteList)}```" +
-                                 $"\n`Example: >roleme Level Designer Programmer` will give you both `Level Designer` and `Programmer` roles.");
+                await ReplyAsync(
+                    $"Toggleable roles are:```\n{string.Join("\n", _dataService.RoleMeWhiteList.Select(r => r.Name))}```\n" +
+                    "`Example: >roleme Level Designer Programmer` will give you both `Level Designer` and `Programmer` roles.");
                 return;
             }
 
-            var roleNames = new List<string>();
+            var rolesValid = new List<SocketRole>();
 
-            foreach (string role in _dataService.RoleMeWhiteList)
+            foreach (SocketRole role in _dataService.RoleMeWhiteList)
             {
-                Match match = Regex.Match(roles, $@"\b{role}\b", RegexOptions.IgnoreCase);
+                Match match = Regex.Match(roles, $@"\b{role.Name}\b", RegexOptions.IgnoreCase);
 
                 if (!match.Success) continue;
 
@@ -85,18 +86,14 @@ namespace BotHATTwaffle.Commands
                 while (match.Success)
                 {
                     roles = roles.Remove(match.Index, match.Length);
-                    match = Regex.Match(roles, $@"\b{role}\b", RegexOptions.IgnoreCase);
+                    match = Regex.Match(roles, $@"\b{role.Name}\b", RegexOptions.IgnoreCase);
                 }
 
-                roleNames.Add(role);
+                rolesValid.Add(role);
             }
 
             // Splits the remaining roles not found in the whitelist. Filters out empty elements.
             ImmutableArray<string> rolesInvalid = roles.Split(' ').Where(r => !string.IsNullOrWhiteSpace(r)).ToImmutableArray();
-
-            // Finds all SocketRoles from roleNames.
-            IEnumerable<SocketRole> rolesValid =
-                Context.Guild.Roles.Where(r => roleNames.Contains(r.Name, StringComparer.InvariantCultureIgnoreCase));
 
             var user = (SocketGuildUser)Context.User;
             var rolesAdded = new List<SocketRole>();
@@ -107,12 +104,12 @@ namespace BotHATTwaffle.Commands
             {
                 if (user.Roles.Contains(role))
                 {
-                    await ((IGuildUser)user).RemoveRoleAsync(role);
+                    await user.RemoveRoleAsync(role);
                     rolesRemoved.Add(role);
                 }
                 else
                 {
-                    await ((IGuildUser)user).AddRoleAsync(role);
+                    await user.AddRoleAsync(role);
                     rolesAdded.Add(role);
                 }
             }

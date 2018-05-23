@@ -73,7 +73,7 @@ namespace BotHATTwaffle.Services
 
         // Miscellaneous
         public string AlertUser { get; private set; }
-        public IImmutableSet<string> RoleMeWhiteList { get; private set; }
+        public IImmutableSet<SocketRole> RoleMeWhiteList { get; private set; } = ImmutableHashSet<SocketRole>.Empty;
 
         // Channels
         public SocketTextChannel GeneralChannel { get; private set; }
@@ -223,7 +223,7 @@ namespace BotHATTwaffle.Services
             }
 
             await DeserialiseChannels();
-            GetRoles();
+            await GetRoles();
 
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
@@ -251,7 +251,6 @@ namespace BotHATTwaffle.Services
             PropperEavesDrop = Config["propperEavesDropCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
             VbEavesDrop = Config["vbEavesDropCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
             ShitpostAgreeReplies = Config["agreeStringsCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
-            RoleMeWhiteList = Config["roleMeWhiteListCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
             PublicCommandWhiteList = Config["publicCommandWhiteListCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
             PlayingStrings = Config["playingStringsCSV"].Split(',').Select(v => v.Trim()).ToImmutableHashSet();
 
@@ -277,15 +276,15 @@ namespace BotHATTwaffle.Services
 
             CalUpdateTicks -= 1;
 
-            var set = new HashSet<ulong>();
+            var agreeUserIds = new HashSet<ulong>();
 
             foreach (string idStr in Config["agreeUserCSV"].Split(','))
             {
                 if (ulong.TryParse(idStr.Trim(), out ulong id))
-                    set.Add(id);
+                    agreeUserIds.Add(id);
             }
 
-            ShitpostAgreeUserIds = set.ToImmutableHashSet();
+            ShitpostAgreeUserIds = agreeUserIds.ToImmutableHashSet();
         }
 
         /// <summary>
@@ -317,7 +316,7 @@ namespace BotHATTwaffle.Services
         /// Retrieves role socket entities from the IDs in the <see cref="Role"/> enum.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown when a role can't be found.</exception>
-        private void GetRoles()
+        private async Task GetRoles()
         {
             SocketGuild guild = _client.Guilds.FirstOrDefault();
 
@@ -329,6 +328,13 @@ namespace BotHATTwaffle.Services
             PatreonsRole = GetRole(Role.Patreons);
             CommunityTesterRole = GetRole(Role.CommunityTester);
 
+            var roleMeRoles = new HashSet<SocketRole>();
+
+            foreach (string role in Config["roleMeWhiteListCSV"].Split(','))
+                roleMeRoles.Add(await ParseRole(role));
+
+            RoleMeWhiteList = roleMeRoles.ToImmutableHashSet();
+
             SocketRole GetRole(Role role)
             {
                 SocketRole r = guild?.GetRole((ulong)role);
@@ -337,6 +343,16 @@ namespace BotHATTwaffle.Services
                     throw new InvalidOperationException($"The role '{role}' could not be found.");
 
                 return r;
+            }
+
+            async Task<SocketRole> ParseRole(string name)
+            {
+                SocketRole role = await RoleTypeReader<SocketRole>.GetBestResultAsync(guild, name);
+
+                if (role == null)
+                    throw new InvalidOperationException($"'{name}' could not be parsed as a role.");
+
+                return role;
             }
         }
 
