@@ -33,6 +33,7 @@ specifics.
 
 ### Requirements
 * [.NET Core 2.1 Runtime](https://www.microsoft.com/net/download/dotnet-core/2.1)
+    * Not required for a self-contained deployment. However, .NET Core's native dependencies will still be required.
 
 #### Development
 * [.NET Core 2.1 SDK](https://www.microsoft.com/net/download/dotnet-core/2.1)
@@ -40,6 +41,15 @@ specifics.
     * [JetBrains Rider](https://www.jetbrains.com/rider/) should, in theory, also work. However, it is untested.
 * `OPTIONAL` [EF Core Tools](https://docs.microsoft.com/en-us/ef/core/miscellaneous/cli/index)
     * Only useful for scaffolding and managing migrations. Starting with .NET Core 2.1, these tools are already included.
+
+### Deployment
+If you wish to run the bot outside its build directory or even on another machine, you need to run the
+[`dotnet publish`](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish) command. Here's a basic
+example for a [framework-dependent deployment](https://docs.microsoft.com/en-us/dotnet/core/deploying/index):
+
+```bash
+dotnet publish ./BotHATTwaffle/BotHATTwaffle.csproj -c Release -o /some/output/dir/
+```
 
 ### Running
 Run the following command:
