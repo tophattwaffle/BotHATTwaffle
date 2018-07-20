@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -18,6 +18,18 @@ namespace BotHATTwaffle
     /// </summary>
     class DataBaseUtil
     {
+        /// <summary>
+        /// Creates the database file if it does not exist. Wrapper of <see cref="RelationalDatabaseFacadeExtensions.Migrate"/>.
+        /// </summary>
+        /// <returns>No object or value is returned by this method when it completes.</returns>
+        public static async Task InitialiseAsync()
+        {
+            using (var dbContext = new DataBaseContext())
+            {
+                await dbContext.Database.MigrateAsync();
+            }
+        }
+
         /// <summary>
         /// Logs the use of a command.
         /// </summary>

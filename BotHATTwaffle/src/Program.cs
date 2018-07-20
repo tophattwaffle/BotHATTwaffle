@@ -59,6 +59,8 @@ namespace BotHATTwaffle
             Directory.CreateDirectory(LOG_PATH);
             var _ = new ConsoleCopy(LOG_PATH + logName);
 
+            await DataBaseUtil.InitialiseAsync();
+
             // Dependency injection. All objects use constructor injection.
             _client = new DiscordSocketClient();
             _commands = new CommandService();
