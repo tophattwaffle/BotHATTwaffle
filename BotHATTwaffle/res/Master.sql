@@ -1,73 +1,13 @@
-begin transaction;
-
-create table if not exists Shitposts (
-    seq_id      integer primary key autoincrement,
-    snowflake   integer,
-    username    text,
-    shitpost    text,
-    fullmessage text,
-    date        integer
-);
-
-create table if not exists Servers (
-    name          text,
-    description   text,
-    address       text,
-    rcon_password text,
-    ftp_path      text,
-    ftp_username  text,
-    ftp_password  text,
-    ftp_type      text,
-    primary key (name)
-);
-
-create table if not exists SearchDataTags (
-    name   text,
-    tag    text,
-    series text,
-    primary key (name, tag, series)
-);
-
-create table if not exists Mutes (
-    seq_id        integer primary key autoincrement,
-    snowflake     integer,
-    username      text,
-    mute_reason   text,
-    mute_duration integer,
-    muted_by      text,
-    date          integer
-);
-
-create table if not exists KeyVaules (
-    key   text,
-    value text,
-    primary key (key)
-);
-
-create table if not exists CommandUsage (
-    seq_id      integer primary key autoincrement,
-    snowflake   integer,
-    username    text,
-    command     text,
-    fullmessage text,
-    date        integer
-);
-
-create table if not exists ActiveMutes (
-    snowflake     integer,
-    username      text,
-    mute_reason   text,
-    mute_duration integer,
-    muted_by      text,
-    muted_time    integer,
-    primary key (snowflake)
-);
-
-create table if not exists SearchDataResults (
-    name text,
-    url  text,
-    primary key (name)
-);
+insert into servers
+values (
+    'abc',
+    'Playtest Server',
+    'abc.example.com',
+    'password',
+    '/home/csgo/',
+    'user',
+    'pass',
+    'ftp');
 
 insert into SearchDataTags values ('v2 1', '1', 'v2');
 insert into SearchDataTags values ('v2 1', 'installing', 'v2');
@@ -1385,5 +1325,3 @@ insert into SearchDataResults
 values (
     'legacy100',
     'https://www.tophattwaffle.com/hammer-tutorial-100-creating-and-editing-particle-systems/');
-
-commit;
