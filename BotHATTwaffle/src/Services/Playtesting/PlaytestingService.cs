@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -459,19 +459,25 @@ namespace BotHATTwaffle.Services.Playtesting
                 if (timeCompare > 0 && !_alertedHour)
                 {
                     //Nag Creator
-                    try
+                    if (author != null)
                     {
-                        // Tries to send a DM.
-                        await author.SendMessageAsync($"Don't forget, you have a playtest in 1 hour on the Source Engine Discord!" +
-                                                      $"If for some reason you cannot make it, let TopHATTwaffle know!");
-                        await _dataService.ChannelLog($"Sent message to {author} about their playtest in 1 hour.");
-                    }
-                    catch
-                    {
-                        // Mentions the author in the the context channel instead.
-                        await _dataService.TestingChannel.SendMessageAsync($"Hey {author.Mention}!\n\nDon't forget, you have a playtest in 1 hour!" +
-                                                                           $"If for some reason you cannot make it, let TopHATTwaffle know!");
-                        await _dataService.ChannelLog($"Tagged {author} in #csgo_level_testing about their playtest in 1 hour.");
+                        try
+                        {
+                            // Tries to send a DM.
+                            await author.SendMessageAsync(
+                                "Don't forget, you have a playtest in 1 hour on the Source Engine Discord! " +
+                                "If for some reason you cannot make it, let TopHATTwaffle know!");
+                            await _dataService.ChannelLog($"Sent message to {author} about their playtest in 1 hour.");
+                        }
+                        catch
+                        {
+                            // Mentions the author in the the context channel instead.
+                            await _dataService.TestingChannel.SendMessageAsync(
+                                $"Hey {author.Mention}!\n\nDon't forget, you have a playtest in 1 hour! " +
+                                "If for some reason you cannot make it, let TopHATTwaffle know!");
+                            await _dataService.ChannelLog(
+                                $"Tagged {author} in #csgo_level_testing about their playtest in 1 hour.");
+                        }
                     }
 
                     //Disables server reservations with >ps and clears existing ones
@@ -519,19 +525,25 @@ namespace BotHATTwaffle.Services.Playtesting
                     await SetupServerAsync(eventInfo[10], false);
 
                     //Nag Creator
-                    try
+                    if (author != null)
                     {
-                        // Tries to send a DM.
-                        await author.SendMessageAsync($"Don't forget, you have a playtest in 15 minutes on the Source Engine Discord!" +
-                                                      $"If for some reason you cannot make it, let TopHATTwaffle know!");
-                        await _dataService.ChannelLog($"Sent message to {author} about their playtest in 15 minutes.");
-                    }
-                    catch
-                    {
-                        // Mentions the author in the the context channel instead.
-                        await _dataService.TestingChannel.SendMessageAsync($"Hey {author.Mention}!\n\nDon't forget, you have a playtest in 15 minutes!" +
-                                                                           $"If for some reason you cannot make it, let TopHATTwaffle know!");
-                        await _dataService.ChannelLog($"Tagged {author} in #csgo_level_testing about their playtest in 15 minutes.");
+                        try
+                        {
+                            // Tries to send a DM.
+                            await author.SendMessageAsync(
+                                "Don't forget, you have a playtest in 15 minutes on the Source Engine Discord! " +
+                                "If for some reason you cannot make it, let TopHATTwaffle know!");
+                            await _dataService.ChannelLog($"Sent message to {author} about their playtest in 15 minutes.");
+                        }
+                        catch
+                        {
+                            // Mentions the author in the the context channel instead.
+                            await _dataService.TestingChannel.SendMessageAsync(
+                                $"Hey {author.Mention}!\n\nDon't forget, you have a playtest in 15 minutes!" +
+                                "If for some reason you cannot make it, let TopHATTwaffle know!");
+                            await _dataService.ChannelLog(
+                                $"Tagged {author} in #csgo_level_testing about their playtest in 15 minutes.");
+                        }
                     }
                 }
 
