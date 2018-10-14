@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,7 +12,7 @@ namespace BotHATTwaffle.Extensions
         // Shuffle: https://stackoverflow.com/a/1653204/5717792
 
         /// <summary>
-        /// Peforms a Fisher-Yates-Durstenfeld shuffle on the collection.
+        /// Performs a Fisher-Yates-Durstenfeld shuffle on the collection.
         /// </summary>
         /// <typeparam name="T">The type of the objects in the collection.</typeparam>
         /// <param name="source">The collection on which to perform the shuffle.</param>
@@ -20,7 +20,7 @@ namespace BotHATTwaffle.Extensions
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source) => source.Shuffle(new Random());
 
         /// <summary>
-        /// Peforms a Fisher-Yates-Durstenfeld shuffle on the collection using the specified <see cref="Random"/> instance.
+        /// Performs a Fisher-Yates-Durstenfeld shuffle on the collection using the specified <see cref="Random"/> instance.
         /// </summary>
         /// <typeparam name="T">The type of the objects in the collection.</typeparam>
         /// <param name="source">The collection on which to perform the shuffle.</param>
@@ -37,7 +37,7 @@ namespace BotHATTwaffle.Extensions
         }
 
         /// <summary>
-        /// Peforms a Fisher-Yates-Durstenfeld shuffle on the collection using the specified <see cref="Random"/> instance.
+        /// Performs a Fisher-Yates-Durstenfeld shuffle on the collection using the specified <see cref="Random"/> instance.
         /// </summary>
         /// <typeparam name="T">The type of the objects in the collection.</typeparam>
         /// <param name="source">The collection on which to perform the shuffle.</param>

@@ -172,7 +172,7 @@ namespace BotHATTwaffle.Services
                 return;
             }
 
-            //If the message is from a bot, dont process shitposts
+            //If the message is from a bot, don't process shitposts
             if (message.Author.IsBot)
                 return;
 
@@ -254,7 +254,7 @@ namespace BotHATTwaffle.Services
 
             if (_dataService.PakRatEavesDrop.Any(s => message.Content.ToLower().Contains(s)))
             {
-                await PakRat(message);
+                await Pakrat(message);
 
                 return;
             }
@@ -290,11 +290,11 @@ namespace BotHATTwaffle.Services
         private bool CanShitPost() => _canShitPost < DateTime.Now;
 
         /// <summary>
-        /// Nags users to not use pakrat.
+        /// Nags users to not use Pakrat.
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        private async Task PakRat(SocketMessage message)
+        private async Task Pakrat(SocketMessage message)
         {
             var authBuilder = new EmbedAuthorBuilder() {
                 Name = $"Hey there {message.Author.Username}!",
@@ -309,13 +309,13 @@ namespace BotHATTwaffle.Services
                 ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2013/11/vide.png",
                 Color = new Color(243, 128, 72),
 
-                Description = "I was minding my own business when I heard you mention something about PakRat. " +
-                "Don't know if you know this, but PakRat is super old and has been know to cause issues in newer games. " +
+                Description = "I was minding my own business when I heard you mention something about Pakrat. " +
+                "Don't know if you know this, but Pakrat is super old and has been know to cause issues in newer games. " +
                 "There is a newer program that handles packing better called VIDE. You should check that out instead."
             };
 
             await message.Channel.SendMessageAsync("",false,builder);
-            await DataBaseUtil.AddShitpostAsync("PakRat", message);
+            await DataBaseUtil.AddShitpostAsync("PakRat", message); // TODO: Fix typo & create migration.
         }
 
         /// <summary>
@@ -400,8 +400,8 @@ namespace BotHATTwaffle.Services
                 Color = new Color(243, 128, 72),
 
                 Description = $"I saw you were asking about propper. While Propper still works, it's advised to learn " +
-                $"a better modeling solution. The preferred method for Source Engine is using 3dsmax with WallWorm Model Tools" +
-                $" If you don't want to learn 3dsmax and WWMT, you can learn to configure propper at the link below.: " +
+                $"a better modeling solution. The preferred method for Source Engine is using 3ds Max with WallWorm Model" +
+                $"Tools. If you don't want to learn 3ds Max and WWMT, you can learn to configure propper at the link below: " +
                 $"\n\nhttps://www.tophattwaffle.com/configuring-propper-for-steampipe/"
             };
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -105,7 +105,7 @@ namespace BotHATTwaffle.Commands
                 $":eyes: Searching for **{term}** in **{series}**. This may take a moment! :eyes:");
 
             bool isPrivate = Context.IsPrivate;
-            List<List<string>> results = await _dataService.Search(series, term, isPrivate); // Peforms a search.
+            List<List<string>> results = await _dataService.Search(series, term, isPrivate); // Performs a search.
 
             await _dataService.ChannelLog($"{Context.User} ran a search", $"Series: {series}\nSearch Term: {term}");
 
@@ -174,7 +174,7 @@ namespace BotHATTwaffle.Commands
                     bodyUrl = "https://goo.gl/XoVXzd";
                     bodyDescription = "The Version 2 Tutorial series was created with the knowledge that I gained from " +
                                       "creating the Version 1 (now legacy) series of tutorials. The goal is to help someone " +
-                                      "who hasn’t ever touched the tools get up and running in Source level design. You can " +
+                                      "who hasn't ever touched the tools get up and running in Source level design. You can " +
                                       "watch them in any order, but they have been designed to build upon each other.";
 
                     break;
@@ -313,7 +313,7 @@ namespace BotHATTwaffle.Commands
         [Command("Unsubscribe")]
         [Summary("Unsubscribes the invoking user from cat facts.")]
         [Remarks("Takes the invoking user off the cat fact list.")]
-        public async Task CatFactUnsubAsync()
+        public async Task CatFactUnsubscribeAsync()
         {
             await ReplyAsync("You cannot unsubscribe from cat facts...");
             await DataBaseUtil.AddCommandAsync("Unsubscribe", Context);
@@ -349,7 +349,7 @@ namespace BotHATTwaffle.Commands
             await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            await DataBaseUtil.AddCommandAsync("PenguineFact", Context);
+            await DataBaseUtil.AddCommandAsync("PenguineFact", Context); // TODO: Fix typo & create migration.
         }
 
         [Command("TanookiFact", RunMode = RunMode.Async)]

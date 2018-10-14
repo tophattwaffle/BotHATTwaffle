@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -39,7 +39,6 @@ namespace BotHATTwaffle.Commands.Readers
                     AddResult(results, guild.GetRole(id) as T, 0.90f);
 
                 // By Name (0.7-0.8)
-                // Acounts for name being null because GetrolesAsync returns categories in 1.0.
                 foreach (IRole role in roles.Where(x => string.Equals(input, x.Name, StringComparison.OrdinalIgnoreCase)))
                     AddResult(results, role as T, role.Name == input ? 0.80f : 0.70f);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -46,7 +46,7 @@ namespace BotHATTwaffle.Services.Playtesting
         {
             using (var stream = new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
             {
-                // TODO: Chage this to the executable's directory or make it configurable.
+                // TODO: Change this to the executable's directory or make it configurable.
                 string credPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
                 credPath = Path.Combine(credPath, ".credentials/calendar-dotnet-quickstart.json");
 

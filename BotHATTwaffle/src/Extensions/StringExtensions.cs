@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace BotHATTwaffle.Extensions
 {
@@ -14,7 +14,7 @@ namespace BotHATTwaffle.Extensions
         /// <param name="toCheck">The string to search for an occurence of.</param>
         /// <param name="comp">The comparison rules to use.</param>
         /// <returns>
-        /// <c>true</c> if <paramref name="source"/> contains <paramref name="toCheck"/>; <c>false</c> othwerise.
+        /// <c>true</c> if <paramref name="source"/> contains <paramref name="toCheck"/>; <c>false</c> otherwise.
         /// </returns>
         public static bool Contains(this string source, string toCheck, StringComparison comp) =>
             source?.IndexOf(toCheck, comp) >= 0;
@@ -25,12 +25,12 @@ namespace BotHATTwaffle.Extensions
         /// <remarks>If the string's length is less than the maximum length, the original string is returned.</remarks>
         /// <param name="input">The string to truncate.</param>
         /// <param name="maxLength">The maximum length the resulting string should be.</param>
-        /// <param name="addElipses"><c>true</c> to append elipses to the string when truncated; <c>false</c> otheriwse.</param>
+        /// <param name="addEllipses"><c>true</c> to append ellipses to the string when truncated; <c>false</c> otherwise.</param>
         /// <returns>The resulting string.</returns>
-        public static string Truncate(this string input, int maxLength, bool addElipses = false)
+        public static string Truncate(this string input, int maxLength, bool addEllipses = false)
         {
             return input.Length < maxLength ? input :
-                addElipses ? input.Substring(0, maxLength - 3) + "..." : input.Substring(0, maxLength);
+                addEllipses ? input.Substring(0, maxLength - 3) + "..." : input.Substring(0, maxLength);
         }
     }
 }

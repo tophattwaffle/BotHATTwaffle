@@ -616,9 +616,9 @@ namespace BotHATTwaffle.Services.Playtesting
             //There isn't a playtest to display
             else
             {
-                string announceDiag = null;
+                string errorMessage = null;
                 if (eventInfo[0].Equals("BAD_DESCRIPTION"))
-                    announceDiag = "\n\n\nThere was an issue with the Google Calendar event. Someone tell TopHATTwaffle..." +
+                    errorMessage = "\n\n\nThere was an issue with the Google Calendar event. Someone tell TopHATTwaffle..." +
                         "If you're seeing this, that means there is probably a test scheduled, but the description contains " +
                         "HTML code so I cannot properly parse it. ReeeeeeEEEeeE";
 
@@ -645,7 +645,7 @@ namespace BotHATTwaffle.Services.Playtesting
                     //ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
                     Color = new Color(214, 91, 47),
 
-                    Description = $"Believe it or not, there aren't any tests scheduled. Click the link above to schedule your own playtest! {announceDiag}"
+                    Description = $"Believe it or not, there aren't any tests scheduled. Click the link above to schedule your own playtest! {errorMessage}"
                 };
             }
             return builder.Build();

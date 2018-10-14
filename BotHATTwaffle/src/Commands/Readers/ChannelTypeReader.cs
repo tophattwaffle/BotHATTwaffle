@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -43,7 +43,7 @@ namespace BotHATTwaffle.Commands.Readers
                     AddResult(results, await guild.GetChannelAsync(id, CacheMode.CacheOnly).ConfigureAwait(false) as T, 0.90f);
 
                 // By Name (0.7-0.8)
-                // Acounts for name being null because GetChannelsAsync returns categories in 1.0.
+                // Accounts for name being null because GetChannelsAsync returns categories in 1.0.
                 foreach (var channel in channels.Where(c => c.Name?.Equals(input, StringComparison.OrdinalIgnoreCase) ?? false))
                     AddResult(results, channel as T, channel.Name == input ? 0.80f : 0.70f);
 

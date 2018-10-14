@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -140,7 +140,7 @@ namespace BotHATTwaffle.Commands
 
                 var authBuilder = new EmbedAuthorBuilder()
                 {
-                    Name = $"Unable to Reserver Server for {Context.Message.Author.Username}!",
+                    Name = $"Unable to Reserve Server for {Context.Message.Author.Username}!",
                     IconUrl = Context.Message.Author.GetAvatarUrl(),
                 };
 
@@ -185,7 +185,7 @@ namespace BotHATTwaffle.Commands
             if (!_playtesting.CanReserve)
             {
                 await ReplyAsync($"```Servers cannot be reserved at this time." +
-                    $"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+                    $"\nServer reservation is blocked 1 hour before a scheduled test, and resumes once the calendar event has passed.```");
                 return;
             }
 
@@ -381,7 +381,7 @@ namespace BotHATTwaffle.Commands
             {
                 await ReplyAsync(
                     $"```Servers cannot be reserved at this time." +
-                    $"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
+                    $"\nServer reservation is blocked 1 hour before a scheduled test, and resumes once the calendar event has passed.```");
 
                 return;
             }

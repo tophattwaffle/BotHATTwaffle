@@ -76,7 +76,7 @@ namespace BotHATTwaffle.Commands
             "The entire embed can also be built at once using the following template:```{Author Name}{Thumbnail}{Title}{URL}" +
             "{Color}{Description}{Image}{Footer Text}{Field}{}{}{Submit}```\n" +
             "Example:```{Author Name}myAuthName{Thumbnail}http://www.myThumb.com{Title}myTitle{URL}http://www.myURL.com{Color}" +
-            "255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldtitle{}myFieldText{}(t" +
+            "255 100 50{Description}myDesc{Image}http://www.myImg.com{Footer Text}myFooter{Field}myFieldTitle{}myFieldText{}(t" +
             "|f){submit}general```\n" +
             "Fields can be omitted. Multiple fields can be added simultaneously.")]
         [Alias("a")]
@@ -282,7 +282,7 @@ namespace BotHATTwaffle.Commands
                 await ReplyAsync($"```Playtest Start on {server.name}\nexec {config}\ntv_record {demoName}```");
                 await _data.ChannelLog(
                     $"Playtest Start on {server.name}",
-                    $"exec {config}\ntv_record {demoName}\nsay Playtest of {title} is now live! Be respectiful and GLHF!");
+                    $"exec {config}\ntv_record {demoName}\nsay Playtest of {title} is now live! Be respectful and GLHF!");
 
                 await _data.RconCommand($"exec {config}", server);
                 await Task.Delay(3250);
@@ -329,7 +329,7 @@ namespace BotHATTwaffle.Commands
             else if (action.Equals("unpause", StringComparison.OrdinalIgnoreCase ) ||
                      action.Equals("u", StringComparison.OrdinalIgnoreCase ))
             {
-                await _data.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
+                await _data.RconCommand(@"mp_unpause_match; say Resuming Match", server);
 
                 await ReplyAsync($"```Playtest Unpause on {server.name}\nmp_unpause_match```");
                 await _data.ChannelLog($"Playtest Unpause on {server.name}", "mp_unpause_match");
@@ -684,7 +684,7 @@ namespace BotHATTwaffle.Commands
         }
 
         [Command("Active")]
-        [Summary("Grants a user the Active Memeber role")]
+        [Summary("Grants a user the Active Member role")]
         [RequireContext(ContextType.Guild)]
         [RequireRole(Role.Moderators)]
         public async Task ActiveAsync([Summary("User to give role to")]SocketGuildUser user)

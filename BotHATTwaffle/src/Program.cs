@@ -29,7 +29,7 @@ namespace BotHATTwaffle
         private MessageListener _messageListener;
 
         /// <summary>
-        /// The entry point of the program. Creates an asyncronous environment to run the bot.
+        /// The entry point of the program. Creates an asynchronous environment to run the bot.
         /// </summary>
         private static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
 
@@ -181,7 +181,7 @@ namespace BotHATTwaffle
         }
 
         /// <summary>
-        /// Raised when the guild (server) becomes avaiable.
+        /// Raised when the guild (server) becomes available.
         /// <para>
         /// Calls for the configuration to be read from the file.
         /// </para>
@@ -205,7 +205,7 @@ namespace BotHATTwaffle
         /// Listens to all messages with <see cref="MessageListener"/> and determines if messages are commands.
         /// </para>
         /// </summary>
-        /// <param name="messageParam">The message recieved.</param>
+        /// <param name="messageParam">The message received.</param>
         /// <returns>No object or value is returned by this method when it completes.</returns>
         private async Task MessageReceivedEventHandler(SocketMessage messageParam)
         {
@@ -255,7 +255,7 @@ namespace BotHATTwaffle
         /// </para>
         /// </summary>
         /// <remarks>
-        /// It is intended to eventully subscribe to the <see cref="CommandService.CommandExecuted"/> event with this handler.
+        /// It is intended to eventually subscribe to the <see cref="CommandService.CommandExecuted"/> event with this handler.
         /// However, it is not yet implemented on Discord.Net 1.0 Therefore, it is raised manually in
         /// <see cref="ProcessCommandAsync"/>. Meanwhile, the <see cref="CommandInfo"/> parameter is excluded from the signature;
         /// no practical way of obtaining it currently exists.

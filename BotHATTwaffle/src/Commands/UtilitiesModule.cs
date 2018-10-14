@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -26,13 +26,13 @@ namespace BotHATTwaffle.Commands
         }
 
         /// <summary>
-        /// Displays the estimated round-trip latency, in miliseconds, to the gateway server.
+        /// Displays the estimated round-trip latency, in milliseconds, to the gateway server.
         /// </summary>
         /// <seealso cref="DiscordSocketClient.Latency"/>
         /// <returns>No object or value is returned by this method when it completes.</returns>
         [Command("ping")]
         [Summary("Replies with the bot's latency to Discord.")]
-        [Remarks("The ping is the estimated round-trip latency, in miliseconds, to the gateway server.")]
+        [Remarks("The ping is the estimated round-trip latency, in milliseconds, to the gateway server.")]
         public async Task PingAsync()
         {
             var builder = new EmbedBuilder

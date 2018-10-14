@@ -1,4 +1,4 @@
-﻿using System.Configuration;
+using System.Configuration;
 
 using BotHATTwaffle.Models;
 
@@ -18,7 +18,7 @@ namespace BotHATTwaffle
         public DbSet<SearchDataResult> SearchDataResults { get; set; }
         public DbSet<SearchDataTag> SearchDataTags { get; set; }
         public DbSet<Server> Servers { get; set; }
-        public DbSet<Key_Value> KeyVaules { get; set; }
+        public DbSet<Key_Value> KeyVaules { get; set; } // TODO: Fix typo & create migration.
         public DbSet<Shitpost> Shitposts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

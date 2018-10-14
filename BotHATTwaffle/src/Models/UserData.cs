@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Discord;
 using Discord.WebSocket;
@@ -19,13 +19,13 @@ namespace BotHATTwaffle.Models
         /// <summary>
         /// Determines if a user's server reservation has expired.
         /// </summary>
-        /// <returns><c>true</c> if expired; <c>false</c> othwerise.</returns>
+        /// <returns><c>true</c> if expired; <c>false</c> otherwise.</returns>
         public bool ReservationExpired() => ReservationExpiration < DateTime.Now;
 
         /// <summary>
         /// Determines if a user's server reservation can be extended.
         /// </summary>
-        /// <returns><c>true</c> if expired; <c>false</c> othwerise.</returns>
+        /// <returns><c>true</c> if expired; <c>false</c> otherwise.</returns>
         public bool CanExtend() => ReservationExpiration.AddMinutes(-30) < DateTime.Now;
 
         /// <summary>

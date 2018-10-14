@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -164,7 +164,7 @@ namespace BotHATTwaffle.Commands
             embed.AddInlineField("Author", "[TopHATTwaffle](https://github.com/tophattwaffle)");
             embed.AddInlineField(
                 "Contributors",
-                "[BenBlodgi](https://github.com/BenVlodgi)\n" +
+                "[BenVlodgi](https://github.com/BenVlodgi)\n" +
                 "[Mark](https://github.com/MarkKoz)\n" +
                 "[JimWood](https://github.com/JamesT-W)");
             embed.AddInlineField(

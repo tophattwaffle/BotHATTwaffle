@@ -231,7 +231,7 @@ namespace BotHATTwaffle.Services
         }
 
         /// <summary>
-        /// Deserialises settings from configuraton file.
+        /// Deserialises settings from configuration file.
         /// </summary>
         private void DeserialiseSettings()
         {
