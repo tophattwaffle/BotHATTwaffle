@@ -27,6 +27,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.8.9" />
     <PackageReference Include="Imgur.API" Version="4.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.4" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
