@@ -1,4 +1,6 @@
+using System;
 using System.Configuration;
+using System.IO;
 
 using BotHATTwaffle.Models;
 
@@ -10,7 +12,10 @@ namespace BotHATTwaffle
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite(ConfigurationManager.ConnectionStrings["Master"].ConnectionString);
+            // TODO: "Hack" for EF Core tools trying to read ef.dll.config instead of BotHATTwaffle.dll.config.
+            string location = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            Configuration config = ConfigurationManager.OpenExeConfiguration(location);
+            optionsBuilder.UseSqlite(config.ConnectionStrings.ConnectionStrings["Master"].ConnectionString);
         }
 
         public DbSet<CommandUse> CommandUsage { get; set; }
