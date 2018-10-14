@@ -1,4 +1,4 @@
-﻿namespace BotHATTwaffle.Models
+namespace BotHATTwaffle.Models
 {
     public enum Role : ulong
     {
