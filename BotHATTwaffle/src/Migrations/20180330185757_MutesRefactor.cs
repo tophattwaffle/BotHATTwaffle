@@ -9,61 +9,67 @@ namespace BotHATTwaffle.src.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(
-@"create table mutes_new (
-    id         integer primary key,
-    user_id    integer not null,
-    user_name  text    not null,
-    reason     text,
-    duration   integer,
-    muter_name text    not null,
-    timestamp  integer not null,
-    expired    integer not null check (expired in (0, 1)) default 0);");
+            @"
+                create table mutes_new (
+                    id         integer primary key,
+                    user_id    integer not null,
+                    user_name  text    not null,
+                    reason     text,
+                    duration   integer,
+                    muter_name text    not null,
+                    timestamp  integer not null,
+                    expired    integer not null check (expired in (0, 1)) default 0);
+            ");
 
             migrationBuilder.Sql(
-@"insert into mutes_new (
-    user_id,
-    user_name,
-    reason,
-    duration,
-    muter_name,
-    timestamp,
-    expired)
-select
-    snowflake,
-    username,
-    mute_reason,
-    mute_duration,
-    muted_by,
-    date,
-    1
-from mutes
-where
-    username is not null and
-    muted_by is not null
-order by date;");
+            @"
+                insert into mutes_new (
+                    user_id,
+                    user_name,
+                    reason,
+                    duration,
+                    muter_name,
+                    timestamp,
+                    expired)
+                select
+                    snowflake,
+                    username,
+                    mute_reason,
+                    mute_duration,
+                    muted_by,
+                    date,
+                    1
+                from mutes
+                where
+                    username is not null and
+                    muted_by is not null
+                order by date;
+            ");
 
             migrationBuilder.DropTable(
                 name: "mutes");
 
             migrationBuilder.Sql(
-@"insert or replace into mutes_new (
-    user_id,
-    user_name,
-    reason,
-    duration,
-    muter_name,
-    timestamp)
-select
-    snowflake,
-    username,
-    mute_reason,
-    mute_duration,
-    muted_by,
-    muted_time
-from activemutes
-where
-    username is not null and
-    muted_by is not null;");
+            @"
+                insert or replace into mutes_new (
+                    user_id,
+                    user_name,
+                    reason,
+                    duration,
+                    muter_name,
+                    timestamp)
+                select
+                    snowflake,
+                    username,
+                    mute_reason,
+                    mute_duration,
+                    muted_by,
+                    muted_time
+                from activemutes
+                where
+                    username is not null and
+                    muted_by is not null;
+            ");
 
             migrationBuilder.DropTable(
                 name: "ActiveMutes");
@@ -86,9 +92,11 @@ where
                 unique: true);
 
             migrationBuilder.Sql(
-@"update commandusage
-set command = 'MuteHistory'
-where command == 'MuteStatus'");
+            @"
+                update commandusage
+                set command = 'MuteHistory'
+                where command == 'MuteStatus'
+            ");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -116,32 +124,34 @@ where command == 'MuteStatus'");
                 });
 
             migrationBuilder.Sql(
-@"insert into mutes (
-    snowflake,
-    username,
-    mute_reason,
-    mute_duration,
-    muted_by,
-    date)
-select
-    user_id,
-    user_name,
-    reason,
-    duration,
-    muter_name,
-    timestamp
-from (
-    select
-        user_id,
-        user_name,
-        reason,
-        duration,
-        muter_name,
-        timestamp,
-        expired
-    from mutes_new
-    where expired == 1)
-order by timestamp;");
+            @"
+                insert into mutes (
+                    snowflake,
+                    username,
+                    mute_reason,
+                    mute_duration,
+                    muted_by,
+                    date)
+                select
+                    user_id,
+                    user_name,
+                    reason,
+                    duration,
+                    muter_name,
+                    timestamp
+                from (
+                    select
+                        user_id,
+                        user_name,
+                        reason,
+                        duration,
+                        muter_name,
+                        timestamp,
+                        expired
+                    from mutes_new
+                    where expired == 1)
+                order by timestamp;
+            ");
 
             migrationBuilder.CreateTable(
                 name: "ActiveMutes",
@@ -161,32 +171,34 @@ order by timestamp;");
                 });
 
             migrationBuilder.Sql(
-@"insert into activemutes (
-    snowflake,
-    username,
-    mute_reason,
-    mute_duration,
-    muted_by,
-    muted_time)
-select
-    user_id,
-    user_name,
-    reason,
-    duration,
-    muter_name,
-    timestamp
-from (
-    select
-        user_id,
-        user_name,
-        reason,
-        duration,
-        muter_name,
-        timestamp,
-        expired
-    from mutes_new
-    where expired == 0)
-order by timestamp;");
+            @"
+                insert into activemutes (
+                    snowflake,
+                    username,
+                    mute_reason,
+                    mute_duration,
+                    muted_by,
+                    muted_time)
+                select
+                    user_id,
+                    user_name,
+                    reason,
+                    duration,
+                    muter_name,
+                    timestamp
+                from (
+                    select
+                        user_id,
+                        user_name,
+                        reason,
+                        duration,
+                        muter_name,
+                        timestamp,
+                        expired
+                    from mutes_new
+                    where expired == 0)
+                order by timestamp;
+            ");
 
             migrationBuilder.DropIndex(
                 name: "IX_mutes_user_id_expired",
@@ -200,9 +212,11 @@ order by timestamp;");
                 name: "mutes_new");
 
             migrationBuilder.Sql(
-@"update commandusage
-set command = 'MuteStatus'
-where command == 'MuteHistory'");
+            @"
+                update commandusage
+                set command = 'MuteStatus'
+                where command == 'MuteHistory'
+            ");
         }
     }
 }
