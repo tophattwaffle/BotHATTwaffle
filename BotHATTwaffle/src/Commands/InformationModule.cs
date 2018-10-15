@@ -349,7 +349,7 @@ namespace BotHATTwaffle.Commands
             await _dataService.ChannelLog($"{Context.Message.Author.Username.ToUpper()} JUST GOT HIT WITH A PENGUIN FACT");
             await ReplyAsync(string.Empty, false, embed.Build());
 
-            await DataBaseUtil.AddCommandAsync("PenguineFact", Context); // TODO: Fix typo & create migration.
+            await DataBaseUtil.AddCommandAsync("PenguinFact", Context);
         }
 
         [Command("TanookiFact", RunMode = RunMode.Async)]

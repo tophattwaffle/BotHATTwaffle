@@ -315,7 +315,7 @@ namespace BotHATTwaffle.Services
             };
 
             await message.Channel.SendMessageAsync("",false,builder);
-            await DataBaseUtil.AddShitpostAsync("PakRat", message); // TODO: Fix typo & create migration.
+            await DataBaseUtil.AddShitpostAsync("Pakrat", message);
         }
 
         /// <summary>
