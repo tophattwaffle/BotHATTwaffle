@@ -61,5 +61,40 @@ namespace BotHATTwaffle
 		/// <returns>A distinct collection of mentioned text channels.</returns>
 		public static IReadOnlyCollection<SocketTextChannel> GetChannelMentions(this SocketMessage message) =>
 			message.MentionedChannels.Distinct().OfType<SocketTextChannel>().ToImmutableArray();
+
+		/// <summary>
+		/// Shortens a string to the specified length by cutting off the end.
+		/// </summary>
+		/// <remarks>If the string's length is less than the maximum length, the original string is returned.</remarks>
+		/// <param name="input">The string to truncate.</param>
+		/// <param name="maxLength">The maximum length the resulting string should be.</param>
+		/// <returns>The resulting string.</returns>
+		public static string Truncate(this string input, int maxLength) =>
+			input.Length < maxLength ? input : input.Substring(0, maxLength);
+
+		public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source) => source.Shuffle(new Random());
+
+		public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
+		{
+			if (source == null)
+				throw new ArgumentNullException(nameof(source));
+			if (rng == null)
+				throw new ArgumentNullException(nameof(rng));
+
+			return source.ShuffleIterator(rng);
+		}
+
+		private static IEnumerable<T> ShuffleIterator<T>(this IEnumerable<T> source, Random rng)
+		{
+			List<T> buffer = source.ToList();
+
+			for (var i = 0; i < buffer.Count; i++)
+			{
+				int j = rng.Next(i, buffer.Count);
+				yield return buffer[j];
+
+				buffer[j] = buffer[i];
+			}
+		}
 	}
 }

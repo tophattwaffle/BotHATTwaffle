@@ -23,7 +23,7 @@ namespace BotHATTwaffle
 		public Dictionary<string, string> Config;
 
 		private List<TutorialSeries> _series;
-		private List<LevelTestingServer> _servers;
+		public Dictionary<string, LevelTestingServer> Servers { get; private set; }
 		private readonly DiscordSocketClient _client;
 		private readonly Random _random;
 		public string DemoPath;
@@ -106,7 +106,8 @@ namespace BotHATTwaffle
 			_series = DeserialiseToken<List<TutorialSeries>>(@"searchData.json", "Series");
 
 			//Read in the server JSON data
-			_servers = DeserialiseToken<List<LevelTestingServer>>(@"servers.json", "servers");
+			Servers = DeserialiseToken<List<LevelTestingServer>>(@"servers.json", "servers")
+				.ToDictionary(s => s.Name, s => s, StringComparer.OrdinalIgnoreCase);
 
 			Console.ForegroundColor = ConsoleColor.Magenta;
 			Console.WriteLine("SETTINGS HAVE BEEN LOADED\n");
@@ -421,44 +422,6 @@ namespace BotHATTwaffle
 			LogChannel.SendMessageAsync($"{alert}```{DateTime.Now}\n{title}\n{message}```");
 			Console.WriteLine($"{DateTime.Now}: {title}\n{message}\n");
 			return Task.CompletedTask;
-		}
-
-		/// <summary>
-		/// Takes a 3 letter server prefix to find the correct server
-		/// </summary>
-		/// <param name="serverStr">3 letter server code</param>
-		/// <returns>Server object that was located in JSON file</returns>
-		public LevelTestingServer GetServer(string serverStr) => _servers.Find(x => x.Name == serverStr.ToLower());
-
-		/// <summary>
-		/// Gets all the servers that exist in the servers JSON file
-		/// and gives you an embed that lets you visualize their information.
-		/// </summary>
-		/// <returns>Embed object with server information</returns>
-		public Embed GetAllServers()
-		{
-			var authBuilder = new EmbedAuthorBuilder()
-			{
-				Name = $"Server List",
-				IconUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-			};
-
-			List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-			foreach (var s in _servers)
-			{
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{s.Address}", Value = $"Prefix: `{s.Name}`\n{s.Description}", IsInline = false });
-			}
-
-			var builder = new EmbedBuilder()
-			{
-				Fields = fieldBuilder,
-				Author = authBuilder,
-				Color = new Color(243, 128, 72),
-
-				Description = $""
-			};
-
-			return builder;
 		}
 
 		/// <summary>

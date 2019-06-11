@@ -120,7 +120,7 @@ namespace BotHATTwaffle.Modules
 			// Command blacklist.
 			// TODO: Move to a config file.
 			if (command.Contains("rcon_password", StringComparison.OrdinalIgnoreCase ) ||
-			    command.Contains("exit", StringComparison.OrdinalIgnoreCase ))
+				command.Contains("exit", StringComparison.OrdinalIgnoreCase ))
 			{
 				await ReplyAsync("```This command cannot be run from here. Ask TopHATTwaffle to do it.```");
 				await _data.ChannelLog($"{Context.User} was trying to run a blacklisted command", $"{command} was trying to be sent to {serverCode}");
@@ -190,7 +190,7 @@ namespace BotHATTwaffle.Modules
 		[Summary("Peforms an action on a server.")]
 		[Remarks(
 			"Actions:\n" +
-		    "`pre` - Sets the testing config and reloads the map to clear cheats.\n" +
+			"`pre` - Sets the testing config and reloads the map to clear cheats.\n" +
 			"`start` - Starts the playtest, starts recording a demo, and then tells the server it is live.\n" +
 			"`post` - Starts the postgame config. Gets the playtest's demo and BSP files and stores them in the public " +
 			"DropBox folder.\n" +
@@ -220,7 +220,7 @@ namespace BotHATTwaffle.Modules
 			LevelTestingServer server = _data.GetServer(serverCode ?? _levelTesting.CurrentEventInfo[10].Substring(0, 3));
 
 			if (gameMode.Equals("competitive", StringComparison.OrdinalIgnoreCase ) ||
-			    gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
+				gameMode.Equals("comp", StringComparison.OrdinalIgnoreCase ))
 			{
 				config = _data.CompConfig;
 			}
@@ -282,7 +282,7 @@ namespace BotHATTwaffle.Modules
 					$"exec {_data.PostConfig}\nsv_voiceenable 0\nGetting Demo and BSP file and moving into DropBox");
 			}
 			else if (action.Equals("scramble", StringComparison.OrdinalIgnoreCase ) ||
-			         action.Equals("s", StringComparison.OrdinalIgnoreCase ))
+					 action.Equals("s", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _data.RconCommand("mp_scrambleteams 1", server);
 
@@ -290,7 +290,7 @@ namespace BotHATTwaffle.Modules
 				await _data.ChannelLog($"Playtest Scramble on {server.Name}", "mp_scrambleteams 1");
 			}
 			else if (action.Equals("pause", StringComparison.OrdinalIgnoreCase ) ||
-			         action.Equals("p", StringComparison.OrdinalIgnoreCase ))
+					 action.Equals("p", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _data.RconCommand(@"mp_pause_match; say Pausing Match", server);
 
@@ -298,7 +298,7 @@ namespace BotHATTwaffle.Modules
 				await _data.ChannelLog($"Playtest Pause on {server.Name}", "mp_pause_match");
 			}
 			else if (action.Equals("unpause", StringComparison.OrdinalIgnoreCase ) ||
-			         action.Equals("u", StringComparison.OrdinalIgnoreCase ))
+					 action.Equals("u", StringComparison.OrdinalIgnoreCase ))
 			{
 				await _data.RconCommand(@"mp_unpause_match; say Unpausing Match", server);
 
@@ -360,9 +360,9 @@ namespace BotHATTwaffle.Modules
 				ThumbnailUrl = _testInfo[4],
 				Color = new Color(243, 128, 72),
 				Description = "You can get the demo for this playtest by clicking above!\n\n*Thanks for testing with us!*\n\n" +
-				              $"[Map Images]({_testInfo[5]}) | [Schedule a Playtest]" +
-				              "(https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar]" +
-				              "(http://playtesting.tophattwaffle.com)"
+							  $"[Map Images]({_testInfo[5]}) | [Schedule a Playtest]" +
+							  "(https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar]" +
+							  "(http://playtesting.tophattwaffle.com)"
 			};
 
 			string[] splitUser = _testInfo[3].Split('#');
@@ -458,24 +458,6 @@ namespace BotHATTwaffle.Modules
 			string reason = "No reason provided.")
 		{
 			await _mute.MuteAsync(user, duration, Context.User, reason);
-		}
-
-		[Command("ClearReservations")]
-		[Summary("Clears server reservations.")]
-		[Remarks("If no server is specified, _all_ server reservations are cleared.")]
-		[Alias("cr")]
-		[RequireContext(ContextType.Guild)]
-		[RequireRole(Role.Moderators)]
-		public async Task ClearReservationsAsync(
-			[Summary("The three-letter code which identifies the server to clear.")]
-			string serverCode = null)
-		{
-			if (serverCode == null)
-				await _levelTesting.ClearServerReservations();
-			else
-				await _levelTesting.ClearServerReservations(serverCode);
-
-			await ReplyAsync(string.Empty, false, _levelTesting.DisplayServerReservations());
 		}
 	}
 }

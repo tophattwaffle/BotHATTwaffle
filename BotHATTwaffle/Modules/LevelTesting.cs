@@ -267,54 +267,6 @@ namespace BotHATTwaffle.Modules
 		}
 
 		/// <summary>
-		/// Sets up the playtesting server for a playtest.
-		/// </summary>
-		/// <param name="serverStr">The full server information</param>
-		/// <param name="type">What action to do. See inner comments</param>
-		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task SetupServerAsync(string serverStr, bool type)
-		{
-			//type true = Change map
-			//type false = set config
-			var server = _dataServices.GetServer(serverStr.Substring(0, 3));
-
-			if (type) //Change map
-			{
-				var result = Regex.Match(CurrentEventInfo[6], @"\d+$").Value;
-				await _dataServices.RconCommand($"exec postgame", server);
-				await Task.Delay(5000);
-				await _dataServices.RconCommand($"host_workshop_map {result}", server);
-				await _dataServices.ChannelLog("Changing Map on Test Server", $"'host_workshop_map {result}' on {server.Address}");
-			}
-			else //Set config and post about it
-			{
-				List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-				var authBuilder = new EmbedAuthorBuilder()
-				{
-					Name = $"Setting up {server.Address} for {CurrentEventInfo[2]}",
-					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
-				};
-
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {CurrentEventInfo[10]}`", IsInline = false });
-
-				var builder = new EmbedBuilder()
-				{
-					Author = authBuilder,
-					Fields = fieldBuilder,
-					Title = $"Workshop Link",
-					Url = CurrentEventInfo[6],
-					ThumbnailUrl = CurrentEventInfo[4],
-					Color = new Color(71, 126, 159),
-
-					Description = $"**{server.Description}**\n\n{CurrentEventInfo[9]}"
-				};
-				await _dataServices.TestingChannel.SendMessageAsync("", false, builder);
-				await _dataServices.ChannelLog("Setting postgame config", $"'exec postgame' on {server.Address}");
-				await _dataServices.RconCommand($"exec postgame", server);
-			}
-		}
-
-		/// <summary>
 		/// Formats the playtesting information into an embed message for sending in Announcements.
 		/// Also preforms the tasks of:
 		/// 1 Hour playtest alert
@@ -348,6 +300,8 @@ namespace BotHATTwaffle.Modules
 
 			if (eventInfo[0].Equals("BEGIN_EVENT"))
 			{
+				#region Timezones
+
 				DateTime time = Convert.ToDateTime(eventInfo[1]);
 				string timeStr = time.ToString("MMMM ddd d, HH:mm");
 				TimeSpan timeLeft = time.Subtract(DateTime.Now);
@@ -362,6 +316,8 @@ namespace BotHATTwaffle.Modules
 				//string gmt8 = TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("W. Australia Standard Time")).ToString("ddd HH:mm");
 
 				string postTime = $"{timeStr} CT | {est} EST | {pst} PST | {gmt} GMT"; // | {gmt8} GMT+8";
+
+				#endregion
 
 				//Check if we need to adjust the time until for after a test starts.
 				//Switches time left to display "Started: HH MM ago!" instead of a count down.
@@ -430,6 +386,8 @@ namespace BotHATTwaffle.Modules
 					});
 				}
 
+				#region SetupServer
+
 				//Change map 20 minutes beforehand
 				TimeSpan twentyMinutes = new TimeSpan(0, 20, 0);
 				DateTime twentyAdjusted = DateTime.Now.Add(twentyMinutes);
@@ -450,6 +408,10 @@ namespace BotHATTwaffle.Modules
 					await SetupServerAsync(eventInfo[10], false);
 				}
 
+				#endregion
+
+				#region Embed Base
+
 				//Try to use the user's avatar as the thumbnail
 				string thumbUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png";
 				var splitUser = CurrentEventInfo[3].Split('#');
@@ -465,7 +427,6 @@ namespace BotHATTwaffle.Modules
 					IconUrl = "https://cdn.discordapp.com/icons/111951182947258368/0e82dec99052c22abfbe989ece074cf5.png"
 				};
 
-
 				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Time Until Test", Value = timeLeftStr, IsInline = true });
 				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Where?", Value = $"`{eventInfo[10]}`", IsInline = true });
 				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Creator", Value = eventInfo[3], IsInline = true });
@@ -478,6 +439,10 @@ namespace BotHATTwaffle.Modules
 					Text = $"connect {eventInfo[10]}",
 					IconUrl = _client.CurrentUser.GetAvatarUrl()
 				};
+
+				#endregion
+
+				#region Random Image
 
 				//If possible, use a random image from the imgur album.
 				string embedImage = eventInfo[4];
@@ -501,6 +466,8 @@ namespace BotHATTwaffle.Modules
 
 				}
 				catch{}
+
+				#endregion
 
 				builder = new EmbedBuilder()
 				{
@@ -554,232 +521,6 @@ namespace BotHATTwaffle.Modules
 			}
 			return builder.Build();
 		}
-
-		/// <summary>
-		/// Checks all the server reservations to see if they have expired or not.
-		/// </summary>
-		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async void CheckServerReservations(object sender, ElapsedEventArgs e)
-		{
-			//Loop reservations and clear them if needed.
-			foreach (UserData u in UserData.ToList())
-			{
-				//The server reservation has expired
-				if (u.ReservationExpired())
-				{
-					var authBuilder = new EmbedAuthorBuilder()
-					{
-						Name = $"Hey there {u.User.Username}!",
-						IconUrl = u.User.GetAvatarUrl(),
-					};
-					var footBuilder = new EmbedFooterBuilder()
-					{
-						Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-						IconUrl = _client.CurrentUser.GetAvatarUrl()
-					};
-
-					var builder = new EmbedBuilder()
-					{
-						Footer = footBuilder,
-						Author = authBuilder,
-						ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-						Color = new Color(243, 128, 72),
-
-						Description = $"Your reservation on {u.ReservedServer.Description} has ended! You can stay on the server but you cannot send any more commands to it."
-					};
-
-					try //If we cannot send a DM to the user, just dump it into the testing channel and tag them.
-					{
-						await u.User.SendMessageAsync("", false, builder);
-					}
-					catch
-					{
-						await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
-					}
-
-					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
-					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\";say Hey there {u.User.Username}! Your reservation on this server has ended!", u.ReservedServer);
-					UserData.Remove(u);
-					await Task.Delay(1000);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Adds a server reservation for public user
-		/// </summary>
-		/// <param name="inUser">Requesting User</param>
-		/// <param name="inServerReleaseTime">Release Time</param>
-		/// <param name="server">Reserved Server</param>
-		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task AddServerReservation(SocketGuildUser inUser, DateTime inServerReleaseTime, LevelTestingServer server)
-		{
-			await _dataServices.ChannelLog($"{inUser} reservation on {server.Address} has started.", $"Reservation expires at {inServerReleaseTime}");
-			await _dataServices.RconCommand($"say Hey everyone! {inUser.Username} has reserved this server!", server);
-			UserData.Add(new UserData()
-			{
-				User = inUser,
-				ReservedServer = server,
-				ReservationExpiration = inServerReleaseTime
-			});
-		}
-
-		/// <summary>
-		/// Clears ALL server reservations.
-		/// </summary>
-		/// <returns>No object or value is returned by this method when it completes.</returns>
-		public async Task ClearServerReservations()
-		{
-			foreach (UserData u in UserData.ToList())
-			{
-				var authBuilder = new EmbedAuthorBuilder()
-				{
-					Name = $"Hey there {u.User.Username}!",
-					IconUrl = u.User.GetAvatarUrl(),
-				};
-				var footBuilder = new EmbedFooterBuilder()
-				{
-					Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-					IconUrl = _client.CurrentUser.GetAvatarUrl()
-				};
-
-				var builder = new EmbedBuilder()
-				{
-					Footer = footBuilder,
-					Author = authBuilder,
-					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-					Color = new Color(243, 128, 72),
-
-					Description = $"Your reservation on server {u.ReservedServer.Description} has expired because all reservations were cleared." +
-					$"This is likely due to a playtest starting soon, or a moderator cleared all reservations."
-				};
-
-				try
-				{
-					await u.User.SendMessageAsync("", false, builder);
-				}
-				catch
-				{
-					await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
-				}
-
-				await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
-				await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
-				UserData.Remove(u);
-				await Task.Delay(1000);
-			}
-		}
-
-		/// <summary>
-		/// Clears only a specific reservation
-		/// </summary>
-		/// <param name="serverStr"></param>
-		/// <returns></returns>
-		public async Task ClearServerReservations(string serverStr)
-		{
-			var server = _dataServices.GetServer(serverStr);
-
-			if (server == null)
-				return;
-
-			foreach (UserData u in UserData.ToList())
-			{
-				if (u.ReservedServer == server)
-				{
-					var authBuilder = new EmbedAuthorBuilder()
-					{
-						Name = $"Hey there {u.User.Username}!",
-						IconUrl = u.User.GetAvatarUrl(),
-					};
-					var footBuilder = new EmbedFooterBuilder()
-					{
-						Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-						IconUrl = _client.CurrentUser.GetAvatarUrl()
-					};
-
-					var builder = new EmbedBuilder()
-					{
-						Footer = footBuilder,
-						Author = authBuilder,
-						ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-						Color = new Color(243, 128, 72),
-
-						Description = $"Your reservation on server {u.ReservedServer.Description} has expired because the reservation was cleared." +
-						$"This is likely due to a playtest starting soon, a moderator cleared the reservation, or you released the reservation."
-					};
-
-					try
-					{
-						await u.User.SendMessageAsync("", false, builder);
-					}
-					catch
-					{
-						await _dataServices.TestingChannel.SendMessageAsync(u.User.Mention, false, builder);
-					}
-
-					await _dataServices.ChannelLog($"{u.User}'s reservation on {u.ReservedServer.Address} has ended.");
-					await _dataServices.RconCommand($"sv_cheats 0;sv_password \"\"", u.ReservedServer);
-					UserData.Remove(u);
-					await Task.Delay(1000);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Displays all of the servers that have reservations on them
-		/// </summary>
-		/// <returns>Embed with server reservations</returns>
-		public Embed DisplayServerReservations()
-		{
-			//Loop reservations and clear them if needed.
-			var authBuilder = new EmbedAuthorBuilder()
-			{
-				Name = $"Current Server Reservations",
-				//IconUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-			};
-
-			List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-
-			//Add all of the servers to the field list
-			foreach (UserData u in UserData.ToList())
-			{
-				TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = $"{u.ReservedServer.Address}", Value = $"User: `{u.User}`" +
-				$"\nTime Left: {timeLeft:h\'H \'m\'M\'}", IsInline = false });
-			}
-
-			string description = null;
-
-			if (fieldBuilder.Count == 0)
-				description = "No reservations found";
-
-			var builder = new EmbedBuilder()
-			{
-				Fields = fieldBuilder,
-				Author = authBuilder,
-				Color = new Color(243, 128, 72),
-				ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-
-				Description = description
-			};
-
-			return builder;
-		}
-
-		/// <summary>
-		/// Checks if a server is already reserved
-		/// </summary>
-		/// <param name="server">Server to check</param>
-		/// <returns>True if server is open, false if reserved</returns>
-		public bool IsServerOpen(LevelTestingServer server)
-		{
-			foreach (UserData u in UserData.ToList())
-			{
-				if (u.ReservedServer == server)
-					return false;
-			}
-			return true;
-		}
 	}
 
 	public class LevelTestingModule : ModuleBase<SocketCommandContext>
@@ -793,308 +534,6 @@ namespace BotHATTwaffle.Modules
 			_client = client;
 			_levelTesting = levelTesting;
 			_dataServices = dataServices;
-		}
-
-		[Command("PublicServer")]
-		[Summary("Reserves a public server under the invoking user for personal testing purposes.")]
-		[Remarks("A reservation lasts 2 hours. A Workshop ID can be included in order to have that map automatically hosted.")]
-		[Alias("ps")]
-		[RequireContext(ContextType.Guild)]
-		[RequireRole(Role.ActiveMember)]
-		public async Task PublicTestStartAsync(
-			[Summary("The three-letter code which identifies the server to reserve.")]
-			string serverCode,
-			[Summary("The ID of a Steam Workshop map for the server to host.")]
-			string mapId = null)
-		{
-			if (!_levelTesting.CanReserve)
-			{
-				await ReplyAsync($"```Servers cannot be reserved at this time." +
-					$"\nServer reservation is blocked 1 hour before a scheduled test, and resumes once the calendar event has passed.```");
-				return;
-			}
-
-			foreach (UserData u in _levelTesting.UserData)
-			{
-				if (u.User == Context.Message.Author)
-				{
-					TimeSpan timeLeft = u.ReservationExpiration.Subtract(DateTime.Now);
-					await ReplyAsync($"```You have a reservation on {u.ReservedServer.Name}. You have {timeLeft:h\'H \'m\'M\'} left.```");
-					return;
-				}
-			}
-
-			//Get the server
-			var server = _dataServices.GetServer(serverCode);
-
-			//Cannot find server
-			if (server == null)
-			{
-				var authBuilder = new EmbedAuthorBuilder()
-				{
-					Name = $"Hey there {Context.Message.Author.Username}!",
-					IconUrl = Context.Message.Author.GetAvatarUrl(),
-				};
-
-				var builder = new EmbedBuilder()
-				{
-					Author = authBuilder,
-					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-					Color = new Color(243, 128, 72),
-
-					Description = $"I could not find a server with that prefix." +
-					$"\nA server can be reserved by using `>PublicServer [serverPrefix]`. Using just `>PublicServer` will display all the servers you can use."
-				};
-				await ReplyAsync("", false, builder);
-				return;
-			}
-
-			//Check if there is already a reservation on that server
-			//If the server is open, reserve it
-			if (_levelTesting.IsServerOpen(server))
-			{
-				//Add reservation
-				await _levelTesting.AddServerReservation((SocketGuildUser)Context.User, DateTime.Now.AddHours(2), server);
-
-				var authBuilder = new EmbedAuthorBuilder()
-				{
-					Name = $"Hey there {Context.Message.Author} you have {server.Address} for 2 hours!",
-					IconUrl = Context.Message.Author.GetAvatarUrl(),
-				};
-				var footBuilder = new EmbedFooterBuilder()
-				{
-					Text = $"This is in beta, please let TopHATTwaffle know if you have issues.",
-					IconUrl = _client.CurrentUser.GetAvatarUrl()
-				};
-				List<EmbedFieldBuilder> fieldBuilder = new List<EmbedFieldBuilder>();
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Connect Info", Value = $"`connect {server.Address}`", IsInline = false });
-				fieldBuilder.Add(new EmbedFieldBuilder { Name = "Links", Value = $"[Schedule a Playtest](https://www.tophattwaffle.com/playtesting/) | [View Testing Calendar](http://playtesting.tophattwaffle.com)", IsInline = false });
-				var builder = new EmbedBuilder()
-				{
-					Fields = fieldBuilder,
-					Footer = footBuilder,
-					Author = authBuilder,
-					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-					Color = new Color(243, 128, 72),
-
-					Description = $"For the next 2 hours you can use:" +
-					$"\n`>PublicCommand [command]` or `>pc [command]`" +
-					$"\nTo send commands to the server. Example: `>pc mp_restartgame 1`" +
-					$"\nTo see a list of the commands you can use, type `>pc`" +
-					$"\nOnce the 2 hours has ended you won't have control of the server any more." +
-					$"\n\n*If you cannot connect to the reserved server for any reason, please let TopHATTwaffle know!*"
-				};
-				await ReplyAsync("", false, builder);
-
-				//If they provided a map ID, change the map
-				if (mapId != null)
-				{
-					await Task.Delay(3000);
-					await _dataServices.RconCommand($"host_workshop_map {mapId}", server);
-				}
-			}
-			//Server is already reserved by someone else
-			else
-			{
-				DateTime time = DateTime.Now;
-				foreach (UserData u in _levelTesting.UserData)
-				{
-					if (u.ReservedServer == server)
-						time = u.ReservationExpiration;
-				}
-				TimeSpan timeLeft = time.Subtract(DateTime.Now);
-
-				var authBuilder = new EmbedAuthorBuilder()
-				{
-					Name = $"Unable to Reserver Server for {Context.Message.Author.Username}!",
-					IconUrl = Context.Message.Author.GetAvatarUrl(),
-				};
-
-				var builder = new EmbedBuilder()
-				{
-					Author = authBuilder,
-					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-					Color = new Color(243, 128, 72),
-
-					Description = $"You cannot reserve the server {server.Name} because someone else is using it. Their reservation ends in {timeLeft:h\'H \'m\'M\'}" +
-					$"\nYou can use `>sr` to see all current server reservations."
-				};
-				await ReplyAsync("", false, builder);
-			}
-		}
-
-		[Command("servers")]
-		[Summary("Lists all available servers.")]
-		[Alias("list", "ListServers", "ls")]
-		[RequireContext(ContextType.Guild)]
-		[RequireRole(Role.ActiveMember, Role.Moderators, Role.RconAccess)]
-		public async Task ListServersAsync() => await ReplyAsync(string.Empty, false, _dataServices.GetAllServers());
-
-		[Command("PublicCommand")]
-		[Summary("Invokes a command on the invoking user's reserved test server.")]
-		[Remarks(
-			"One must have a server already reserved to use this command.\n\n" +
-			"A reservation can be extended by 30 minutes using `>pc extend`.")]
-		[Alias("pc")]
-		[RequireContext(ContextType.Guild)]
-		[RequireRole(Role.ActiveMember)]
-		public async Task PublicTestCommandAsync([Remainder]string command = null)
-		{
-			LevelTestingServer server = null;
-
-			if (!_levelTesting.CanReserve)
-			{
-				await ReplyAsync($"```Servers cannot be reserved at this time." +
-					$"\nServer reservation is blocked 1 hour before a scheudled test, and resumes once the calendar event has passed.```");
-				return;
-			}
-
-			//Display all the commands the user can use.
-			if (command == null)
-			{
-				string reply = _dataServices.PublicCommandWhiteList.Aggregate<string, string>(null, (current, s) => current + $"{s}, ");
-
-				await ReplyAsync($"__**Commands that can be used on public test servers**__" +
-								$"```{reply}```");
-				return;
-			}
-
-				//Find the server that the user has reserved
-				UserData user = null;
-				foreach (UserData u in _levelTesting.UserData)
-				{
-					if (u.User == Context.Message.Author)
-					{
-						user = u;
-						server = u.ReservedServer;
-					}
-				}
-
-				//Server found, process command
-				if(server != null)
-				{
-					if (command.ToLower().Equals("extend"))
-					{
-						if (user.CanExtend())
-						{
-							user.ReservationExpiration = user.ReservationExpiration.AddMinutes(30);
-							TimeSpan timeLeft = user.ReservationExpiration.Subtract(DateTime.Now);
-							await ReplyAsync("```Your server reservation has been extended by 30 minutes" +
-							                 $"\nNew time Left: {timeLeft:h\'H \'m\'M\'}```");
-						}
-						else
-						{
-							TimeSpan timeLeft = user.ReservationExpiration.Subtract(DateTime.Now);
-							await ReplyAsync($"```You cannot extend your reservation until there is less than 30 minutes left on the reservation." +
-							                 $"\nCurrent time Left: {timeLeft:h\'H \'m\'M\'}```");
-						}
-						return;
-					}
-
-					if (command.Contains(";"))
-					{
-						await ReplyAsync("```You cannot use ; in a command sent to a server.```");
-						return;
-					}
-					bool valid = false;
-					if (_dataServices.PublicCommandWhiteList.Any(s => command.ToLower().Contains(s))) {
-
-					valid = true;
-					string reply = await _dataServices.RconCommand(command, server);
-					Console.WriteLine($"RCON:\n{reply}");
-
-					//Remove log messages from log
-					string[] replyArray = reply.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-					reply = string.Join("\n", replyArray.Where(x => !x.Trim().StartsWith("L ")));
-					reply = reply.Replace("discord.gg", "discord,gg").Replace(server.Password, "[PASSWORD HIDDEN]");
-
-					//Limit command output
-					if (reply.Length > 1880)
-						reply = $"{reply.Substring(0, 1880)}\n[OUTPUT OMITTED]";
-
-					//Special handling case for a password
-					if (command.Contains("sv_password"))
-					{
-						await Context.Message.DeleteAsync(); //Message was setting password, delete it.
-						await ReplyAsync($"```Command Sent to {server.Name}\nA password was set on the server.```");
-					}
-					//Normal command
-					else
-						await ReplyAsync($"```{command} sent to {server.Name}\n{reply}```");
-
-					await _dataServices.ChannelLog($"{Context.User} Sent RCON command using public command", $"{command} was sent to: {server.Address}\n{reply}");
-				}
-				//Command isn't valid
-				if (!valid)
-				{
-					await ReplyAsync($"```{command} cannot be sent to {server.Name} because the command is not allowed.```" +
-						$"\nYou can use `>pc` to see all commands that can be sent to the server.");
-				}
-			}
-			//No reservation found
-			else
-			{
-				var authBuilder = new EmbedAuthorBuilder()
-				{
-					Name = $"Hey there {Context.Message.Author}!",
-					IconUrl = Context.Message.Author.GetAvatarUrl(),
-				};
-
-				var builder = new EmbedBuilder()
-				{
-					Author = authBuilder,
-					ThumbnailUrl = "https://www.tophattwaffle.com/wp-content/uploads/2017/11/1024_png-300x300.png",
-					Color = new Color(243, 128, 72),
-
-					Description = $"I was unable to find a server reservation for you. You'll need to reserve a server before you can send commands." +
-					$" A server can be reserved by using `>PublicServer [serverPrefix]`. Using just `>PublicServer` will display all the servers you can use."
-				};
-				await ReplyAsync("", false, builder);
-			}
-		}
-
-		[Command("ReleaseServer")]
-		[Summary("Releases the invoking user's reservation on a public server.")]
-		[Alias("rs")]
-		[RequireContext(ContextType.Guild)]
-		[RequireRole(Role.ActiveMember)]
-		public async Task ReleasePublicTestCommandAsync([Remainder]string command = null)
-		{
-			LevelTestingServer server = null;
-
-			if (!_levelTesting.CanReserve)
-			{
-				await ReplyAsync($"```Servers cannot be reserved at this time." +
-				                 $"\nServer reservation is blocked 1 hour before a scheduled test, and resumes once the calendar event has passed.```");
-				return;
-			}
-			bool hasServer = false;
-			foreach (UserData u in _levelTesting.UserData)
-			{
-				if (u.User != Context.Message.Author)
-					continue;
-				server = u.ReservedServer;
-				hasServer = true;
-			}
-
-			if (hasServer)
-			{
-				await ReplyAsync("```Releasing Server reservation.```");
-				await _levelTesting.ClearServerReservations(server.Name);
-			}
-			else
-			{
-				await ReplyAsync("```I could not locate a server reservation for your account.```");
-			}
-		}
-
-		[Command("ShowReservations")]
-		[Summary("Displays all currently reserved servers.")]
-		[Alias("sr")]
-		[RequireContext(ContextType.Guild)]
-		public async Task ShowReservationsAsync()
-		{
-			await ReplyAsync("", false, _levelTesting.DisplayServerReservations());
 		}
 
 		[Command("playtester")]

@@ -16,6 +16,9 @@ using Discord.WebSocket;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using NodaTime;
+using NodaTime.Extensions;
+
 namespace BotHATTwaffle
 {
 	public class Program
@@ -76,6 +79,7 @@ namespace BotHATTwaffle
 				.AddSingleton<IHelpService, HelpService>()
 				.AddSingleton<IMuteService, MuteService>()
 				.AddSingleton(s => new InteractiveService(_client, TimeSpan.FromSeconds(120)))
+				.AddSingleton<IClock, ZonedClock>(c => SystemClock.Instance.InUtc())
 				.BuildServiceProvider();
 
 			// Retrieves services that this class uses.

@@ -122,6 +122,9 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NodaTime, Version=2.2.4.0, Culture=neutral, PublicKeyToken=4226afe0d9b296d1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NodaTime.2.2.4\lib\net45\NodaTime.dll</HintPath>
+    </Reference>
     <Reference Include="Renci.SshNet, Version=2016.1.0.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
       <HintPath>..\packages\SSH.NET.2016.1.0\lib\net40\Renci.SshNet.dll</HintPath>
     </Reference>
@@ -206,7 +209,11 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="GoogleCalendar.cs" />
     <Compile Include="DataService.cs" />
+    <Compile Include="Models\Announcement.cs" />
+    <Compile Include="Models\Event.cs" />
+    <Compile Include="Models\EventResult.cs" />
     <Compile Include="Modules\Help.cs" />
+    <Compile Include="Modules\ServerModule.cs" />
     <Compile Include="Objects\ChannelTypeReader.cs" />
     <Compile Include="Objects\Json\LevelTestingServer.cs" />
     <Compile Include="Modules\Shaders.cs" />
@@ -216,7 +223,13 @@
     <Compile Include="Objects\Json\Tutorial.cs" />
     <Compile Include="Modules\LevelTesting.cs" />
     <Compile Include="Modules\Moderation.cs" />
+    <Compile Include="Models\Reservation.cs" />
     <Compile Include="Services\ITimerService.cs" />
+    <Compile Include="Services\Playtesting\AnnouncementService.cs" />
+    <Compile Include="Services\Playtesting\IAnnouncementService.cs" />
+    <Compile Include="Services\Playtesting\IPlaytestingService.cs" />
+    <Compile Include="Services\Playtesting\PlaytestingService.cs" />
+    <Compile Include="Services\ServerService.cs" />
     <Compile Include="Services\TimerService.cs" />
     <Compile Include="Modules\Utilities.cs" />
     <Compile Include="Objects\Downloader\Downloader.cs" />
@@ -265,6 +278,7 @@
       <Name>CoreRCON</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

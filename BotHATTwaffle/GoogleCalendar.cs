@@ -1,14 +1,27 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+
+using BotHATTwaffle.Models;
+using BotHATTwaffle.Services;
+
+using Discord.WebSocket;
 
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+
+using NodaTime;
+using NodaTime.Text;
+
+using Event = Google.Apis.Calendar.v3.Data.Event;
 
 namespace BotHATTwaffle
 {
@@ -18,16 +31,219 @@ namespace BotHATTwaffle
 	public class GoogleCalendar
 	{
 		private readonly CalendarService _calendar;
-		private readonly DataServices _dataServices;
+		private readonly DiscordSocketClient _client;
+		private readonly DataServices _data;
+		private readonly ServerService _server;
+		private Event _previousEvent;
 
-		public GoogleCalendar(DataServices dataServices)
+		public GoogleCalendar(DiscordSocketClient client, DataServices data, ServerService server)
 		{
-			_dataServices = dataServices;
+			_client = client;
+			_data = data;
+			_server = server;
+
 			_calendar = new CalendarService(new BaseClientService.Initializer
 			{
 				HttpClientInitializer = GetCredential(),
 				ApplicationName = "Google Calendar API .NET Quickstart"
 			});
+
+			TimeZone = DateTimeZoneProviders.Tzdb[_calendar.Settings.Get("timezone").Execute().Value];
+		}
+
+		/// <summary>
+		/// The calendar's default time zone setting.
+		/// </summary>
+		public DateTimeZone TimeZone { get; }
+
+		/// <summary>
+		/// Tries to retrieves a playtesting event from the calendar.
+		/// </summary>
+		/// <returns>The retrieved event, or <c>null</c> if no event was found.</returns>
+		/// <exception cref="InvalidOperationException">Thrown when the event can't be serialised.</exception>
+		public async Task<EventResult> GetEventAsync()
+		{
+			// Defines request and parameters.
+			EventsResource.ListRequest request = _calendar.Events.List(_data.Config["testCalID"]);
+
+			request.Q = " by "; // This will limit all search requests to ONLY get playtest events.
+			request.TimeMin = DateTime.Now;
+			request.ShowDeleted = false;
+			request.SingleEvents = true;
+			request.MaxResults = 1;
+			request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+
+			// Executes the request for events and retrieves the first event in the resulting items.
+			// TODO: Is it safe to change to SingleOrDefault given that MaxResults = 1?
+			Event e = (await request.ExecuteAsync()).Items?.FirstOrDefault();
+
+			if (e == null)
+				return new EventResult { Status = Status.NotFound };
+
+			Status? status = null;
+
+			if (_previousEvent != null && _previousEvent.Id == e.Id)
+			{
+				if (_previousEvent.Updated == e.Updated)
+					return new EventResult {CalEvent = e, Status = Status.Same};
+
+				status = Status.Updated;
+			}
+
+			_previousEvent = e;
+
+			if (!TrySerialiseEvent(e, out Models.Event output))
+				return new EventResult { CalEvent = e, Status = status | Status.SerialisationError ?? Status.SerialisationError};
+
+			return new EventResult { CalEvent = e, Event = output, Status = status | Status.Success ?? Status.Success};
+		}
+
+		/// <summary>
+		/// Tries to serialises an event into a <see cref="Models.Event"/> instance.
+		/// </summary>
+		/// <param name="calEvent">The event to serialise.</param>
+		/// <param name="output">The serialised object, or <c>null</c> if serialisation failed.</param>
+		/// <returns><c>true</c> if serialisation is successful; <c>false</c> otherwise.</returns>
+		private bool TrySerialiseEvent(Event calEvent, out Models.Event output)
+		{
+			ImmutableArray<string>? description = calEvent?.Description.Split('\n')
+				.Select(line => line.Substring(line.IndexOf(':') + 1).Trim())
+				.ToImmutableArray();
+
+			// Null event or invalid description.
+			if (description?.Length != 7)
+			{
+				output = null;
+				return false;
+			}
+
+			string[] author = description.Value[0].Split('#');
+
+			output = new Models.Event
+			{
+				StartTime = TryParseEventTime(calEvent.Start, out OffsetDateTime? start) ? start : null,
+				Title = calEvent.Summary,
+				Description = description.Value[6],
+				Mode = Enum.TryParse(description.Value[4], true, out GameMode gameMode) ? gameMode : GameMode.Competitive,
+				Server = _server.GetServer(calEvent.Location?.Split('.').FirstOrDefault()), // Splits to get the prefix.
+				Author = _client.GetUser(author.ElementAtOrDefault(0), author.ElementAtOrDefault(1)), // Null if not found.
+				AuthorName = description.Value[0],
+				ModeratorName = description.Value[5],
+				FeaturedImage = TryCreateUri(description.Value[1], out Uri image)? image : null,
+				AlbumId = TryParseAlbumId(description.Value[2], out string id) ? id : null,
+				WorkshopId = TryParseWorkshopId(description.Value[3], out string wId) ? wId : null
+			};
+
+			return true;
+		}
+
+		/// <summary>
+		/// Tries to parse the starting time for an event.
+		/// </summary>
+		/// <param name="time">The starting time of the event.</param>
+		/// <param name="output">An object representing the time in UTC, or <c>null</c> if the time failed to be parsed.</param>
+		/// <returns><c>true</c> if parsing is successful; <c>false</c> otherwise.</returns>
+		private bool TryParseEventTime(EventDateTime time, out OffsetDateTime? output)
+		{
+			output = null;
+
+			if (time.DateTime.HasValue)
+			{
+				LocalDateTime lt = LocalDateTime.FromDateTime(time.DateTime.Value);
+				ZonedDateTime zdt = lt.InZoneLeniently(TimeZone);
+				output = zdt.ToOffsetDateTime().WithOffset(Offset.Zero);
+
+				return true;
+			}
+
+			// Event is a whole-day event.
+			LocalDatePattern pattern = LocalDatePattern.Iso;
+
+			if (!pattern.Parse(time.Date).TryGetValue(LocalDate.MinIsoValue, out LocalDate date))
+				return false;
+
+			try
+			{
+				output = date.AtStartOfDayInZone(TimeZone).ToOffsetDateTime().WithOffset(Offset.Zero);
+
+				return true;
+			}
+			catch (SkippedTimeException)
+			{
+				return false; // Extremely rare for this to occur (entire day skipped); not worth handling.
+			}
+		}
+
+		/// <summary>
+		/// Tries to parse the ID of an Imgur album from its URL.
+		/// </summary>
+		/// <param name="url">The album's URL.</param>
+		/// <param name="id">The album's ID.</param>
+		/// <returns><c>true</c> if parsing is successful; <c>false</c> otherwise.</returns>
+		private static bool TryParseAlbumId(string url, out string id)
+		{
+			id = null;
+
+			if (!TryCreateUri(url, out Uri uri))
+				return false;
+
+			if (uri.Host.Equals("imgur.com", StringComparison.OrdinalIgnoreCase) &&
+				uri.Segments.Length == 3 &&
+				uri.Segments[1].Equals("a/", StringComparison.OrdinalIgnoreCase))
+			{
+				id = uri.Segments[2].TrimEnd('/');
+			}
+
+			return !string.IsNullOrWhiteSpace(id);
+		}
+
+		/// <summary>
+		/// Tries to parse the ID of a Steam workshop item from its URL.
+		/// </summary>
+		/// <param name="url">The workshop item's URL.</param>
+		/// <param name="id">The workshop item's ID.</param>
+		/// <returns><c>true</c> if parsing is successful; <c>false</c> otherwise.</returns>
+		private static bool TryParseWorkshopId(string url, out string id)
+		{
+			id = null;
+
+			if (!TryCreateUri(url, out Uri uri))
+				return false;
+
+			if (uri.Host.Equals("steamcommunity.com", StringComparison.OrdinalIgnoreCase) &&
+				uri.Segments.Length == 3 &&
+				uri.Segments[1].Equals("sharedfiledetails/", StringComparison.OrdinalIgnoreCase) &&
+				uri.Segments[2].Equals("filedetails/", StringComparison.OrdinalIgnoreCase))
+			{
+				NameValueCollection query = HttpUtility.ParseQueryString(uri.Query);
+
+				if (query.AllKeys.Contains("id", StringComparer.OrdinalIgnoreCase))
+					id = query["id"];
+			}
+
+			return !string.IsNullOrWhiteSpace(id);
+		}
+
+		/// <summary>
+		/// Tries to create a <see cref="Uri"/> from an absolute URL string.
+		/// </summary>
+		/// <param name="url">The string from which to construct the Uri.</param>
+		/// <param name="uri">The created Uri, or <c>null</c> if it failed to be created.</param>
+		/// <returns><c>true</c> if the Uri was successfully created; <c>false</c> otherwise.</returns>
+		private static bool TryCreateUri(string url, out Uri uri)
+		{
+			try
+			{
+				uri = new Uri(url, UriKind.Absolute);
+
+				return true;
+			}
+			catch (Exception e) when (e is ArgumentNullException || e is UriFormatException)
+			{
+				uri = null;
+
+				return false;
+			}
 		}
 
 		/// <summary>
@@ -51,95 +267,12 @@ namespace BotHATTwaffle
 
 				return GoogleWebAuthorizationBroker.AuthorizeAsync(
 						GoogleClientSecrets.Load(stream).Secrets,
-						new[] {CalendarService.Scope.CalendarReadonly},
+						new[] { CalendarService.Scope.CalendarReadonly },
 						"user",
 						CancellationToken.None,
 						new FileDataStore(credPath, true))
 					.Result;
 			}
-		}
-
-		/// <summary>
-		/// Retrieves a playtesting event from the calendar.
-		/// </summary>
-		/// <remarks>
-		/// <list type="number">
-		///	<item><description>
-		///	Header; possible values: <c>BEGIN_EVENT</c>, <c>NO_EVENT_FOUND</c>, <c>BAD_DESCRIPTION</c>
-		///	</description></item>
-		/// <item><description>Starting time</description></item>
-		/// <item><description>Title</description></item>
-		/// <item><description>Creator</description></item>
-		/// <item><description>Featured image link</description></item>
-		/// <item><description>Map images link</description></item>
-		/// <item><description>Workshop link</description></item>
-		/// <item><description>Game mode</description></item>
-		/// <item><description>Moderator</description></item>
-		/// <item><description>Description</description></item>
-		/// <item><description>Server</description></item>
-		/// </list>
-		/// </remarks>
-		/// <returns>An array of the details of the retrieved event.</returns>
-		public string[] GetEvents()
-		{
-			// TODO: Replace the array with an object.
-			var finalEvent = new string[11];
-
-			// Defines request and parameters.
-			EventsResource.ListRequest request = _calendar.Events.List(_dataServices.Config["testCalID"]);
-
-			request.Q = " by "; // This will limit all search requests to ONLY get playtest events.
-			request.TimeMin = DateTime.Now;
-			request.ShowDeleted = false;
-			request.SingleEvents = true;
-			request.MaxResults = 1;
-			request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
-
-			// Executes the request for events and retrieves the first event in the resulting items.
-			// TODO: Is it safe to change to SingleOrDefault given that MaxResults = 1?
-			Event eventItem = request.Execute().Items?.FirstOrDefault();
-
-			if (eventItem == null)
-			{
-				finalEvent[0] = "NO_EVENT_FOUND";
-				return finalEvent;
-			}
-
-			// Handles the event.
-			try
-			{
-				// Splits description into lines and keeps only the part after the colon, if one exists.
-				ImmutableArray<string> description = eventItem.Description.Split('\n')
-					.Select(line => line.Substring(line.IndexOf(':') + 1).Trim())
-					.ToImmutableArray();
-
-				finalEvent[0] = "BEGIN_EVENT";
-				finalEvent[1] = eventItem.Start.DateTime?.ToString() ?? eventItem.Start.Date; // Accounts for all-day events.
-				finalEvent[2] = eventItem.Summary;
-				finalEvent[3] = description.ElementAtOrDefault(0) ?? string.Empty;
-				finalEvent[4] = description.ElementAtOrDefault(1) ?? string.Empty;
-				finalEvent[5] = description.ElementAtOrDefault(2) ?? string.Empty;
-				finalEvent[6] = description.ElementAtOrDefault(3) ?? string.Empty;
-				finalEvent[7] = description.ElementAtOrDefault(4) ?? string.Empty;
-				finalEvent[8] = description.ElementAtOrDefault(5) ?? string.Empty;
-				finalEvent[9] = description.ElementAtOrDefault(6) ?? string.Empty;
-				finalEvent[10] = eventItem.Location ?? "No Server Set";
-			}
-			catch (Exception e)
-			{
-				// TODO: Narrow the exception being caught.
-
-				// TODO: Is this even needed now that the description is parsed more safely?
-				_dataServices.ChannelLog(
-					"There is an issue with the description on the next playtest event. This is likely caused by HTML " +
-					$"formatting on the description.\n{e}");
-
-				// TODO: Is nulling the elements necessary? Are they ever accessed before the first element is validated?
-				finalEvent = Enumerable.Repeat<string>(null, 11).ToArray();
-				finalEvent[0] = "BAD_DESCRIPTION";
-			}
-
-			return finalEvent;
 		}
 	}
 }
