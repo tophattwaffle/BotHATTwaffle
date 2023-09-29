@@ -1,3 +1,5 @@
+This project has been retired as of the release of CS2
+
 ## Synopsis
 
 BotHATTwaffle - the Source Engine Discord server's overlord. Used for announcing playtests and basic server tasks.
